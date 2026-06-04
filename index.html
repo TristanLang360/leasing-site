@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rentalium — Rentals & Recovery</title>
+<meta name="description" content="A modern rental agency with curated available units and a forthcoming debt collection practice." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="brand">
+      <span class="brand-mark"></span>
+      Rentalium
+    </a>
+    <nav class="nav-links">
+      <a href="#services">Services</a>
+      <a href="units.html">Available units</a>
+      <a href="#contact">Contact</a>
+      <a href="units.html" class="btn btn-primary btn-sm">Browse units</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="eyebrow">Rentals &middot; Recovery</div>
+      <h1>Homes that move <span class="accent">fast</span>, <br/>tenants who stay.</h1>
+      <p class="hero-lede">
+        Rentalium is a boutique leasing agency placing renters in vetted units across the city —
+        with a debt recovery practice launching soon.
+      </p>
+      <div class="hero-cta">
+        <a href="units.html" class="btn btn-primary">View available units &rarr;</a>
+        <a href="#services" class="btn btn-ghost">Our services</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-badge">
+        <span class="k">Available now</span>
+        <span class="v">24 units available</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="container stats-grid">
+    <div class="stat"><div class="num">98%</div><div class="lbl">Occupancy rate</div></div>
+    <div class="stat"><div class="num">14d</div><div class="lbl">Avg. time to lease</div></div>
+    <div class="stat"><div class="num">320+</div><div class="lbl">Units under management</div></div>
+    <div class="stat"><div class="num">4.9★</div><div class="lbl">Landlord rating</div></div>
+  </div>
+</section>
+
+<section id="services" class="services">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">What we do</div>
+        <h2>Two practices.<br/>One standard.</h2>
+      </div>
+      <p>We pair fast, transparent leasing with disciplined recovery — both built on the same operating principles: clear data, clear communication, no surprises.</p>
+    </div>
+
+    <div class="services-grid">
+
+      <div class="service-card">
+        <div class="num">01 / Rental Agency</div>
+        <h3>Find tenants. Fill units. Stay informed.</h3>
+        <p>End-to-end leasing for owners and operators — listings, screening, showings, lease signing, and turnover. Every available unit is tracked in one place.</p>
+        <ul>
+          <li>Centralized unit dashboard with photos &amp; floor plans</li>
+          <li>Tenant pre-screening &amp; credit verification</li>
+          <li>Showing scheduling &amp; lease prep</li>
+          <li>Monthly portfolio reporting for owners</li>
+        </ul>
+        <a href="units.html" class="btn btn-primary">See available units &rarr;</a>
+      </div>
+
+      <div class="service-card disabled">
+        <span class="coming-soon">Coming soon</span>
+        <div class="num">02 / Debt Collection</div>
+        <h3>Recover what you're owed — professionally.</h3>
+        <p>A dedicated recovery practice for landlords, small businesses, and service providers. Compliant, transparent, and built on the same data discipline.</p>
+        <ul>
+          <li>First-party &amp; third-party recovery</li>
+          <li>Skip tracing &amp; verification</li>
+          <li>Negotiated repayment plans</li>
+          <li>Full audit trail for every account</li>
+        </ul>
+        <a href="#" class="btn btn-primary">Notify me when live</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Available units</div>
+        <h2>Move-in ready.</h2>
+      </div>
+      <a href="units.html" class="btn btn-ghost">View all units &rarr;</a>
+    </div>
+
+    <div class="units-grid" id="featured-grid">
+      <!-- populated from /api/units -->
+    </div>
+  </div>
+</section>
+
+<section class="cta-band" id="contact">
+  <div class="container">
+    <div class="section-head" style="margin-bottom: 24px;">
+      <div>
+        <div class="eyebrow" style="color: rgba(255,255,255,0.6);">Get in touch</div>
+        <h2>Got a unit to fill,<br/>or an account to recover?</h2>
+        <p>Tell us what you need. We'll respond within one business day.</p>
+      </div>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="mailto:hello@rentalium.example" class="btn btn-primary">hello@rentalium.example</a>
+        <a href="tel:+15145550100" class="btn btn-ghost">+1 (514) 555-0100</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container footer-grid">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      Rentalium
+    </div>
+    <small>&copy; 2026 Rentalium. All rights reserved. · <a href="/admin" style="color: inherit;">Staff</a></small>
+  </div>
+</footer>
+
+<script>
+  // Fetch up to 3 featured units for the landing page
+  (async () => {
+    try {
+      const r = await fetch('/api/units');
+      if (!r.ok) return;
+      const all = await r.json();
+      const grid = document.getElementById('featured-grid');
+      const fmtPrice = (n) => '$' + (n || 0).toLocaleString('en-US') + ' / mo';
+      const fmtBeds = (n) => n === 0 ? 'Studio' : `${n} bed${n > 1 ? 's' : ''}`;
+      const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;" }[c]));
+      grid.innerHTML = all.slice(0, 3).map((u, i) => {
+        const variant = (i % 6) + 1;
+        const photo = u.photos && u.photos[0]
+          ? `<div class="unit-photo has-image" style="background-image:url('${u.photos[0].url}')">`
+          : `<div class="unit-photo v${variant}">`;
+        return `
+          <article class="unit-card">
+            ${photo}
+              <span class="unit-tag">Available</span>
+              <span class="unit-price">${fmtPrice(u.price)}</span>
+            </div>
+            <div class="unit-body">
+              <h3>${esc(u.title)}</h3>
+              <div class="unit-addr">${esc(u.address)}</div>
+              <div class="unit-meta">
+                <span>${fmtBeds(u.beds)}</span>
+                <span>${u.baths} bath${u.baths > 1 ? 's' : ''}</span>
+                ${u.sqft ? `<span>${u.sqft.toLocaleString()} sqft</span>` : ''}
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+      // Also update the hero badge count
+      const badge = document.querySelector('.hero-badge .v');
+      if (badge) badge.textContent = `${all.length} unit${all.length === 1 ? '' : 's'} available`;
+    } catch (e) {}
+  })();
+</script>
+
+</body>
+</html>

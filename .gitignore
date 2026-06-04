@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Local database (regenerated/seeded on first run)
+rentalium.db
+rentalium.db-shm
+rentalium.db-wal
+
+# Uploaded photos (user content)
+uploads/
+
+# Env / secrets
+.env
+.env.local
+
+# OS noise
+.DS_Store
+
+# Editor / local tooling
+.claude/

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Available Units — Rentalium</title>
+<meta name="description" content="Browse currently available rental units. Filter by bedrooms, price, and neighborhood." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="brand">
+      <span class="brand-mark"></span>
+      Rentalium
+    </a>
+    <nav class="nav-links">
+      <a href="index.html#services">Services</a>
+      <a href="units.html" class="active">Available units</a>
+      <a href="index.html#contact">Contact</a>
+      <a href="mailto:hello@rentalium.example" class="btn btn-primary btn-sm">Contact agent</a>
+    </nav>
+  </div>
+</header>
+
+<section class="page-header">
+  <div class="container">
+    <div class="eyebrow">Available units</div>
+    <h1>Available now.</h1>
+    <p>Every listing below is currently available for showings. Filter by bedrooms, price, or neighborhood to narrow your search.</p>
+  </div>
+</section>
+
+<section style="padding-top: 0;">
+  <div class="container">
+
+    <div class="filters">
+      <input id="f-search" type="text" placeholder="Search by address or neighborhood…" />
+      <select id="f-beds">
+        <option value="">Any bedrooms</option>
+        <option value="0">Studio</option>
+        <option value="1">1 bedroom</option>
+        <option value="2">2 bedrooms</option>
+        <option value="3">3+ bedrooms</option>
+      </select>
+      <select id="f-price">
+        <option value="">Any price</option>
+        <option value="1500">Under $1,500</option>
+        <option value="2000">Under $2,000</option>
+        <option value="2500">Under $2,500</option>
+        <option value="3500">Under $3,500</option>
+      </select>
+      <select id="f-sort">
+        <option value="price-asc">Price: low to high</option>
+        <option value="price-desc">Price: high to low</option>
+        <option value="size-desc">Largest first</option>
+      </select>
+      <button class="btn btn-ghost" id="f-reset">Reset</button>
+    </div>
+
+    <div class="results-meta">
+      <span id="result-count">Showing all units</span>
+      <span>Updated daily</span>
+    </div>
+
+    <div class="units-grid four" id="units-grid">
+      <!-- Cards rendered by JS -->
+    </div>
+
+    <div class="no-results" id="no-results" style="display:none;">
+      No units match your filters. Try widening your search.
+    </div>
+
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container">
+    <div class="section-head" style="margin-bottom: 0;">
+      <div>
+        <div class="eyebrow" style="color: rgba(255,255,255,0.6);">Don't see what you need?</div>
+        <h2>Tell us what you're looking for.</h2>
+        <p>New units come available every week. We'll match you with ones that fit before they go public.</p>
+      </div>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="mailto:hello@rentalium.example" class="btn btn-primary">Email an agent</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container footer-grid">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      Rentalium
+    </div>
+    <small>&copy; 2026 Rentalium. All rights reserved.</small>
+  </div>
+</footer>
+
+<script src="units.js"></script>
+</body>
+</html>

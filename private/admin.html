@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin — Rentalium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="brand">
+      <span class="brand-mark"></span>
+      Rentalium <span class="admin-tag">admin</span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Public site</a>
+      <a href="units.html">Available units</a>
+      <a href="#" id="new-unit-btn" class="btn btn-primary btn-sm">+ New unit</a>
+    </nav>
+  </div>
+</header>
+
+<section class="page-header">
+  <div class="container">
+    <div class="eyebrow">Admin</div>
+    <h1>Manage units &amp; photos.</h1>
+    <p>Add new listings, upload photos, mark units as hidden when they're no longer available. Changes are live immediately.</p>
+  </div>
+</section>
+
+<section style="padding-top: 0;">
+  <div class="container">
+    <div class="results-meta">
+      <span id="result-count">Loading…</span>
+      <span>
+        <label style="font-size: 0.9rem; color: var(--ink-muted); display: inline-flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="show-hidden" /> Show hidden units
+        </label>
+      </span>
+    </div>
+
+    <div id="admin-grid" class="admin-grid"></div>
+  </div>
+</section>
+
+<!-- Unit editor drawer -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <h2 id="drawer-title">New unit</h2>
+    <button class="icon-btn" id="drawer-close" aria-label="Close">×</button>
+  </div>
+  <form id="unit-form" class="drawer-body">
+    <input type="hidden" name="id" />
+
+    <div class="grid-2">
+      <label class="field">
+        <span>Unit code</span>
+        <input name="unit_code" placeholder="e.g. A-304" />
+      </label>
+      <label class="field">
+        <span>Status</span>
+        <select name="status">
+          <option value="available">Available</option>
+          <option value="hidden">Hidden</option>
+        </select>
+      </label>
+    </div>
+
+    <label class="field">
+      <span>Title *</span>
+      <input name="title" required placeholder="Suite 304 — Loft" />
+    </label>
+
+    <label class="field">
+      <span>Address *</span>
+      <input name="address" required placeholder="1420 Saint-Laurent, Montréal" />
+    </label>
+
+    <label class="field">
+      <span>Neighborhood</span>
+      <input name="neighborhood" placeholder="Plateau" />
+    </label>
+
+    <div class="grid-3">
+      <label class="field">
+        <span>Bedrooms</span>
+        <input name="beds" type="number" min="0" step="1" value="1" />
+      </label>
+      <label class="field">
+        <span>Bathrooms</span>
+        <input name="baths" type="number" min="0" step="1" value="1" />
+      </label>
+      <label class="field">
+        <span>Sq ft</span>
+        <input name="sqft" type="number" min="0" step="10" />
+      </label>
+    </div>
+
+    <div class="grid-2">
+      <label class="field">
+        <span>Price ($ / month)</span>
+        <input name="price" type="number" min="0" step="50" value="1800" />
+      </label>
+      <label class="field">
+        <span>Available date</span>
+        <input name="available_date" type="date" />
+      </label>
+    </div>
+
+    <label class="field">
+      <span>⚡︎ Appliances</span>
+      <input name="appliances" placeholder="Fridge, stove, dishwasher, in-unit laundry" />
+    </label>
+
+    <div class="grid-2">
+      <label class="field">
+        <span>Parking available</span>
+        <select name="parking_available" id="parking-available">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </label>
+      <label class="field" id="parking-cost-field" hidden>
+        <span>Parking cost ($ / month)</span>
+        <input name="parking_cost" type="number" min="0" step="5" placeholder="150" />
+      </label>
+    </div>
+
+    <div class="grid-2">
+      <label class="field">
+        <span>Locker available</span>
+        <select name="locker_available" id="locker-available">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </label>
+      <label class="field" id="locker-cost-field" hidden>
+        <span>Locker cost ($ / month)</span>
+        <input name="locker_cost" type="number" min="0" step="5" placeholder="50" />
+      </label>
+    </div>
+
+    <label class="field">
+      <span>Dogs</span>
+      <select name="dogs_policy">
+        <option value="no">No dogs</option>
+        <option value="yes">Dogs welcome</option>
+        <option value="contact">Contact us to see if your dog is accepted</option>
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Description</span>
+      <textarea name="description" rows="3" placeholder="Bright corner unit with…"></textarea>
+    </label>
+
+    <fieldset class="field photos-field" id="photos-field" hidden>
+      <legend>Photos</legend>
+      <div class="photo-list" id="photo-list"></div>
+      <label class="dropzone" id="dropzone">
+        <input type="file" id="photo-input" accept="image/*" multiple hidden />
+        <span><strong>Click to upload</strong> or drag images here</span>
+        <span class="hint">JPG, PNG, WEBP, HEIC — up to 15 MB each</span>
+      </label>
+    </fieldset>
+
+    <div class="drawer-foot">
+      <button type="button" class="btn btn-ghost" id="drawer-cancel">Cancel</button>
+      <button type="submit" class="btn btn-primary" id="save-btn">Save unit</button>
+    </div>
+  </form>
+</aside>
+
+<script src="admin.js"></script>
+</body>
+</html>
