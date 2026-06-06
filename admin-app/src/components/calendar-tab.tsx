@@ -4,19 +4,18 @@ import { AppointmentDialog } from '@/components/appointment-dialog'
 import { TaskDialog } from '@/components/task-dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const TASK_LABEL: Record<string, string> = { todo: 'To do', in_progress: 'In progress', done: 'Done' }
 
 export function CalendarTab({ me }: { me: Me }) {
-  const isMaster = cap.manageTasks(me.role)
+  // Tasks only appear on the assigned agent's calendar — never the master's.
+  const showTasks = !cap.manageTasks(me.role)
   const [cursor, setCursor] = useState(() => { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); return d })
   const [appts, setAppts] = useState<Appointment[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
   const [units, setUnits] = useState<Unit[]>([])
   const [agents, setAgents] = useState<User[]>([])
-  const [agentFilter, setAgentFilter] = useState('all')
   const [editing, setEditing] = useState<Appointment | null | undefined>(undefined)
   const [presetStart, setPresetStart] = useState<string | undefined>()
   const [taskEditing, setTaskEditing] = useState<Task | null | undefined>(undefined)
@@ -28,10 +27,9 @@ export function CalendarTab({ me }: { me: Me }) {
     const to = new Date(y, m + 1, 0, 23, 59, 59).toISOString()
     const range = `from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
     try { setAppts(await api.get<Appointment[]>(`/api/appointments?${range}`)) } catch { setAppts([]) }
-    const taskQ = isMaster && agentFilter !== 'all' ? `${range}&agent_id=${agentFilter}` : range
-    try { setTasks(await api.get<Task[]>(`/api/tasks?${taskQ}`)) } catch { setTasks([]) }
+    if (showTasks) { try { setTasks(await api.get<Task[]>(`/api/tasks?${range}`)) } catch { setTasks([]) } }
   }
-  useEffect(() => { load() /* eslint-disable-next-line */ }, [cursor, agentFilter])
+  useEffect(() => { load() /* eslint-disable-next-line */ }, [cursor])
 
   useEffect(() => {
     api.get<Unit[]>('/api/units?all=1').then(setUnits).catch(() => setUnits([]))
@@ -61,19 +59,7 @@ export function CalendarTab({ me }: { me: Me }) {
           <Button variant="outline" size="sm" onClick={() => setCursor(new Date(y, m + 1, 1))}>→</Button>
           <Button variant="ghost" size="sm" onClick={() => { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); setCursor(d) }}>Today</Button>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {isMaster && (
-            <Select value={agentFilter} onValueChange={(v) => v && setAgentFilter(v)}>
-              <SelectTrigger className="h-8"><SelectValue>{(v: any) => (v === 'all' ? 'All agents' : (agents.find((a) => String(a.id) === String(v))?.name || agents.find((a) => String(a.id) === String(v))?.email || 'Agent'))}</SelectValue></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All agents</SelectItem>
-                {agents.filter((a) => a.role !== 'master').map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.name || a.email}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          )}
-          {isMaster && <Button variant="outline" size="sm" onClick={() => setTaskEditing(null)}>+ New task</Button>}
-          {canEditAppts && <Button size="sm" onClick={() => { setPresetStart(undefined); setEditing(null) }}>+ New showing</Button>}
-        </div>
+        {canEditAppts && <Button size="sm" onClick={() => { setPresetStart(undefined); setEditing(null) }}>+ New showing</Button>}
       </div>
 
       <div className="overflow-hidden rounded-lg border">
@@ -87,10 +73,9 @@ export function CalendarTab({ me }: { me: Me }) {
             const isToday = new Date(y, m, day).getTime() === today.getTime()
             const dayAppts = (apptByDay[day] || []).sort((a, b) => a.start_at.localeCompare(b.start_at))
             const dayTasks = taskByDay[day] || []
-            const total = dayAppts.length + dayTasks.length
             const shownAppts = dayAppts.slice(0, 2)
             const shownTasks = dayTasks.slice(0, Math.max(0, 3 - shownAppts.length))
-            const more = total - shownAppts.length - shownTasks.length
+            const more = (dayAppts.length + dayTasks.length) - shownAppts.length - shownTasks.length
             return (
               <div key={day}
                 className={`min-h-24 border-b border-r p-1 ${canEditAppts ? 'cursor-pointer hover:bg-muted/40' : ''} ${isToday ? 'bg-amber-50' : ''}`}
@@ -117,30 +102,29 @@ export function CalendarTab({ me }: { me: Me }) {
         </div>
       </div>
 
-      {/* Tasks */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">{isMaster ? 'Tasks' : 'My tasks'}</h3>
-        {isMaster && <span className="text-xs text-muted-foreground">{tasks.length} task{tasks.length === 1 ? '' : 's'}{agentFilter !== 'all' ? ' (filtered)' : ''}</span>}
-      </div>
-      {taskList.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{isMaster ? 'No tasks this month. Click “+ New task” to assign work to an agent.' : 'No tasks assigned to you this month.'}</p>
-      ) : (
-        <div className="grid gap-2">
-          {taskList.map((t) => (
-            <button key={t.id} onClick={() => setTaskEditing(t)} className="flex items-center gap-4 rounded-lg border bg-card p-3 text-left hover:bg-muted/40">
-              <span className="w-36 shrink-0 text-sm font-medium">
-                {t.due_at ? new Date(t.due_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : <span className="text-muted-foreground">No due date</span>}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-medium">📋 {t.title}</span>
-                <span className="block truncate text-xs text-muted-foreground">
-                  {t.unit ? t.unit.title : 'No unit'}{isMaster && t.agent ? ` · ${t.agent.name || t.agent.email}` : ''}
-                </span>
-              </span>
-              <Badge variant="outline" className={taskTextChip(t.status)}>{TASK_LABEL[t.status] ?? t.status}</Badge>
-            </button>
-          ))}
-        </div>
+      {/* My tasks (agents only) */}
+      {showTasks && (
+        <>
+          <h3 className="mt-2 text-lg font-semibold">My tasks</h3>
+          {taskList.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No tasks assigned to you this month.</p>
+          ) : (
+            <div className="grid gap-2">
+              {taskList.map((t) => (
+                <button key={t.id} onClick={() => setTaskEditing(t)} className="flex items-center gap-4 rounded-lg border bg-card p-3 text-left hover:bg-muted/40">
+                  <span className="w-36 shrink-0 text-sm font-medium">
+                    {t.due_at ? new Date(t.due_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : <span className="text-muted-foreground">No due date</span>}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-medium">📋 {t.title}</span>
+                    <span className="block truncate text-xs text-muted-foreground">{t.unit ? t.unit.title : 'No unit'}</span>
+                  </span>
+                  <Badge variant="outline" className={t.status === 'done' ? 'text-emerald-700' : t.status === 'in_progress' ? 'text-violet-700' : 'text-slate-600'}>{TASK_LABEL[t.status] ?? t.status}</Badge>
+                </button>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Showings */}
@@ -202,11 +186,6 @@ function taskChip(status: string) {
   if (status === 'done') return 'bg-emerald-100 text-emerald-800 line-through'
   if (status === 'in_progress') return 'bg-violet-100 text-violet-800'
   return 'bg-slate-100 text-slate-700'
-}
-function taskTextChip(status: string) {
-  if (status === 'done') return 'text-emerald-700'
-  if (status === 'in_progress') return 'text-violet-700'
-  return 'text-slate-600'
 }
 function chipText(status: string) {
   if (status === 'requested') return 'text-amber-700'
