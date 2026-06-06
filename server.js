@@ -85,9 +85,18 @@ async function seedMaster() {
 // ───────────────────────────────────────────────────────────────
 // Geocoding (free OpenStreetMap Nominatim) + background queue
 // ───────────────────────────────────────────────────────────────
+// Strip apartment/unit/basement suffixes and add city/province context so
+// Nominatim can resolve bare street addresses from imports.
+function geocodeQuery(address) {
+  let s = String(address || '')
+    .split(/\s*(?:#|\bapt\.?|\bunit\b|\bbsmt\b|\bbasement\b|\bsuite\b|\bste\.?)/i)[0]
+    .replace(/[,\s]+$/, '').trim();
+  if (!/montr|qu[ée]bec|,\s*qc\b|canada/i.test(s)) s += ', Montréal, QC, Canada';
+  return s;
+}
 async function geocode(address) {
   try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(geocodeQuery(address))}`;
     const r = await fetch(url, { headers: { 'User-Agent': config.geocode.userAgent } });
     if (!r.ok) return null;
     const j = await r.json();
@@ -208,7 +217,7 @@ function parseUnitBody(b) {
     locker_available,
     locker_cost: locker_available === 'yes' ? num(b.locker_cost, null) : null,
     dogs_policy: ['yes', 'no', 'contact'].includes(b.dogs_policy) ? b.dogs_policy : 'no',
-    status: ['available', 'hidden'].includes(b.status) ? b.status : 'available',
+    status: ['available', 'on_hold', 'unavailable', 'hidden'].includes(b.status) ? b.status : 'available',
     lat: num(b.lat, null),
     lng: num(b.lng, null),
   };

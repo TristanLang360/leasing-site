@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 export type UnitFilter = {
   q: string
-  status: 'all' | 'available' | 'hidden'
+  status: 'all' | 'available' | 'on_hold' | 'unavailable'
   beds: 'any' | '0' | '1' | '2' | '3+'
   baths: 'any' | '1+' | '2+' | '3+'
   priceMin: number | null
@@ -103,7 +103,7 @@ export function UnitFilters({
         </div>
 
         <FilterSelect label="Status" value={filter.status} onChange={(v) => set('status', v as UnitFilter['status'])}
-          options={[['all', 'Any status'], ['available', 'Available'], ['hidden', 'Hidden']]} />
+          options={[['all', 'Any status'], ['available', 'Available'], ['on_hold', 'On hold'], ['unavailable', 'Not available']]} />
 
         <FilterSelect label="Map pin" value={filter.located} onChange={(v) => set('located', v as UnitFilter['located'])}
           options={[['any', 'Any'], ['yes', 'Located'], ['no', 'No pin']]} />

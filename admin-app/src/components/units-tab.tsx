@@ -10,6 +10,13 @@ import { UnitsMap } from '@/components/units-map'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
+const STATUS_META: Record<string, { label: string; cls: string }> = {
+  available: { label: 'Available', cls: '' },
+  on_hold: { label: 'On hold', cls: 'bg-amber-100 text-amber-800' },
+  unavailable: { label: 'Not available', cls: 'bg-rose-100 text-rose-800' },
+  hidden: { label: 'Hidden', cls: '' },
+}
+
 export function UnitsTab({ me }: { me: Me }) {
   const [units, setUnits] = useState<Unit[]>([])
   const [loading, setLoading] = useState(true)
@@ -84,7 +91,8 @@ export function UnitsTab({ me }: { me: Me }) {
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{u.title}</span>
-                  <Badge variant={u.status === 'hidden' ? 'secondary' : 'default'}>{u.status === 'hidden' ? 'Hidden' : 'Available'}</Badge>
+                  <Badge variant={u.status === 'available' ? 'default' : 'secondary'}
+                    className={STATUS_META[u.status]?.cls}>{STATUS_META[u.status]?.label ?? u.status}</Badge>
                   {u.lat != null
                     ? <Badge variant="outline" className="text-teal-700">📍 located</Badge>
                     : <Badge variant="outline" className="text-amber-700">no pin</Badge>}

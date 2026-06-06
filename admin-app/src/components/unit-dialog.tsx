@@ -151,10 +151,11 @@ export function UnitDialog({
               <Field label="Unit code"><Input value={form.unit_code} onChange={(e) => set('unit_code', e.target.value)} placeholder="A-304" /></Field>
               <Field label="Status">
                 <Select value={form.status} onValueChange={(v) => set('status', v)}>
-                  <SelectTrigger><SelectValue>{lbl({ available: 'Available', hidden: 'Hidden' })}</SelectValue></SelectTrigger>
+                  <SelectTrigger><SelectValue>{lbl({ available: 'Available', on_hold: 'On hold', unavailable: 'Not available', hidden: 'Hidden' })}</SelectValue></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="available">Available</SelectItem>
-                    <SelectItem value="hidden">Hidden</SelectItem>
+                    <SelectItem value="on_hold">On hold</SelectItem>
+                    <SelectItem value="unavailable">Not available</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
