@@ -38,12 +38,12 @@ export function Login({ onLogin }: { onLogin: (me: Me) => void }) {
         </CardHeader>
         <CardContent>
           <form onSubmit={submit} className="grid gap-4">
-            <div className="grid gap-2">
+            <div className="grid grid-cols-1 gap-2">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" autoComplete="username" required
                 value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@rentalium.com" />
             </div>
-            <div className="grid gap-2">
+            <div className="grid grid-cols-1 gap-2">
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" autoComplete="current-password" required
                 value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />

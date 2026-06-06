@@ -78,7 +78,7 @@ export function UnitsTab({ me }: { me: Me }) {
             : 'No units match these filters.'}
         </div>
       ) : (
-        <div className="grid gap-2">
+        <div className="grid grid-cols-1 gap-2">
           {filtered.map((u) => (
             <div key={u.id} className="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-3">
               <button type="button" onClick={() => setViewing(u)}

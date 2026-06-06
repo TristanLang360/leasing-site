@@ -109,7 +109,7 @@ export function CalendarTab({ me }: { me: Me }) {
           {taskList.length === 0 ? (
             <p className="text-sm text-muted-foreground">No tasks assigned to you this month.</p>
           ) : (
-            <div className="grid gap-2">
+            <div className="grid grid-cols-1 gap-2">
               {taskList.map((t) => (
                 <button key={t.id} onClick={() => setTaskEditing(t)} className="flex items-center gap-4 rounded-lg border bg-card p-3 text-left hover:bg-muted/40">
                   <span className="w-36 shrink-0 text-sm font-medium">
@@ -132,7 +132,7 @@ export function CalendarTab({ me }: { me: Me }) {
       {upcoming.length === 0 ? (
         <p className="text-sm text-muted-foreground">No showings this month.</p>
       ) : (
-        <div className="grid gap-2">
+        <div className="grid grid-cols-1 gap-2">
           {upcoming.map((a) => (
             <button key={a.id} onClick={() => setEditing(a)} className="flex items-center gap-4 rounded-lg border bg-card p-3 text-left hover:bg-muted/40">
               <span className="w-40 shrink-0 text-sm font-medium">

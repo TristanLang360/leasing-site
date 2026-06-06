@@ -38,7 +38,7 @@ export function AgentsTab({ me }: { me: Me }) {
         <span><strong>Viewer</strong> — read-only + downloads</span>
       </div>
 
-      <div className="grid gap-2">
+      <div className="grid grid-cols-1 gap-2">
         {users.map((u) => (
           <div key={u.id} className="flex items-center gap-4 rounded-lg border bg-card p-3">
             <div className="grid size-11 shrink-0 place-items-center rounded-full bg-muted text-sm font-semibold">

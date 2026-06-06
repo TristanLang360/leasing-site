@@ -88,9 +88,9 @@ export function TasksTab({ me }: { me: Me }) {
           <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">No tasks assigned to you. 🎉</div>
         ) : (
           <>
-            <div className="grid gap-2">{open.map((t) => TaskRow(t, false))}</div>
+            <div className="grid grid-cols-1 gap-2">{open.map((t) => TaskRow(t, false))}</div>
             {done.length > 0 && (
-              <div className="grid gap-2">
+              <div className="grid grid-cols-1 gap-2">
                 <h3 className="mt-2 text-sm font-medium text-muted-foreground">Completed</h3>
                 {done.map((t) => TaskRow(t, false))}
               </div>
@@ -128,9 +128,9 @@ export function TasksTab({ me }: { me: Me }) {
           </div>
         ) : (
           <>
-            <div className="grid gap-2">{open.map((t) => TaskRow(t, false))}</div>
+            <div className="grid grid-cols-1 gap-2">{open.map((t) => TaskRow(t, false))}</div>
             {done.length > 0 && (
-              <div className="grid gap-2">
+              <div className="grid grid-cols-1 gap-2">
                 <h3 className="mt-2 text-sm font-medium text-muted-foreground">Completed</h3>
                 {done.map((t) => TaskRow(t, false))}
               </div>
@@ -154,7 +154,7 @@ export function TasksTab({ me }: { me: Me }) {
           No agents yet. Add agents in the <strong>Agents</strong> tab, then assign them tasks here.
         </div>
       ) : (
-        <div className="grid gap-2">
+        <div className="grid grid-cols-1 gap-2">
           {realAgents.map((a) => {
             const theirs = byAgent.get(a.id) || []
             const active = theirs.filter((t) => t.status !== 'done').length

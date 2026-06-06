@@ -130,7 +130,7 @@ export function UnitDetails({
         <Separator />
 
         {/* Location / map */}
-        <div className="grid gap-2">
+        <div className="grid grid-cols-1 gap-2">
           <h3 className="text-sm font-medium">Location</h3>
           <p className="text-sm text-muted-foreground">{unit.address}{unit.neighborhood ? ` · ${unit.neighborhood}` : ''}</p>
           {located ? (
@@ -145,7 +145,7 @@ export function UnitDetails({
         <Separator />
 
         {/* Similar units nearby */}
-        <div className="grid gap-2">
+        <div className="grid grid-cols-1 gap-2">
           <h3 className="text-sm font-medium">Similar units nearby</h3>
           {!located ? (
             <p className="text-sm text-muted-foreground">Locate this unit on the map to find nearby ones.</p>

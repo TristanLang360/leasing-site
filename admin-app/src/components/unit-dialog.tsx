@@ -215,7 +215,7 @@ export function UnitDialog({
           {unit?.id && (
             <>
               <Separator />
-              <div className="grid gap-2">
+              <div className="grid grid-cols-1 gap-2">
                 <Label>Location</Label>
                 <LocationMap
                   lat={lat} lng={lng} editable={editable} nearby={nearby}
@@ -237,7 +237,7 @@ export function UnitDialog({
 
               {/* Photos */}
               <Separator />
-              <div className="grid gap-2">
+              <div className="grid grid-cols-1 gap-2">
                 <div className="flex items-center justify-between">
                   <Label>Photos</Label>
                   {photos.length > 0 && (
@@ -268,11 +268,11 @@ export function UnitDialog({
 
               {/* Nearby */}
               <Separator />
-              <div className="grid gap-2">
+              <div className="grid grid-cols-1 gap-2">
                 <Label>Nearby units</Label>
                 {nearbyReason === 'no-coords' && <p className="text-sm text-muted-foreground">This unit isn't located yet, so we can't measure distances.</p>}
                 {!nearbyReason && nearby.length === 0 && <p className="text-sm text-muted-foreground">No other located units to compare against.</p>}
-                <div className="grid gap-2">
+                <div className="grid grid-cols-1 gap-2">
                   {nearby.map((n) => (
                     <div key={n.id} className="flex items-center gap-3 rounded-md border px-3 py-2">
                       <span className="rounded-full border px-2 py-0.5 text-xs font-medium text-primary">{n.distance_km} km</span>

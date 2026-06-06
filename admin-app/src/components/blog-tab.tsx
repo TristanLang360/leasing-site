@@ -49,7 +49,7 @@ export function BlogTab({ me }: { me: Me }) {
           No posts yet. Click “+ New post” to write your first article.
         </div>
       ) : (
-        <div className="grid gap-2">
+        <div className="grid grid-cols-1 gap-2">
           {posts.map((p) => (
             <div key={p.id} className="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-3">
               <button type="button" onClick={() => setEditing(p)} className="flex min-w-0 flex-1 items-center gap-4 text-left">
