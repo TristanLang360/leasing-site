@@ -98,6 +98,7 @@ p { margin: 0 0 1em; color: var(--ink-muted); }
 .nav-links a {
   font-size: 0.92rem;
   color: var(--ink-muted);
+  white-space: nowrap;
   transition: color var(--t);
 }
 .nav-links a:hover { color: var(--ink); }
@@ -112,6 +113,7 @@ p { margin: 0 0 1em; color: var(--ink-muted); }
   border-radius: 999px;
   font-size: 0.92rem;
   font-weight: 500;
+  white-space: nowrap;
   transition: transform var(--t), background var(--t), color var(--t), border-color var(--t);
 }
 .btn-primary {
@@ -958,7 +960,10 @@ footer {
   section { padding: 64px 0; }
   .units-grid, .units-grid.four { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
-  .nav-links a:not(.active):not(.btn) { display: none; }
+  /* On phones keep the nav to brand + the call-to-action button; the other
+     links (incl. the current page's "active" link) are redundant here. */
+  .nav-links a:not(.btn) { display: none; }
+  .container { padding: 0 16px; }
   .admin-row { grid-template-columns: 72px 1fr; }
   .row-actions { grid-column: span 2; justify-content: flex-end; }
   .row-thumb { width: 72px; height: 56px; }
