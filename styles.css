@@ -819,8 +819,31 @@ footer {
 }
 .account-card form { display: grid; gap: 14px; margin-top: 10px; }
 
+/* ---------- Neighbourhoods ---------- */
+.areas {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;
+}
+.area {
+  display: inline-flex; align-items: center; padding: 10px 16px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+  font-size: 0.95rem; color: var(--ink); transition: all var(--t);
+}
+.area:hover { border-color: var(--accent-soft); background: #fff; box-shadow: var(--shadow-sm); }
+
+/* ---------- FAQ ---------- */
+.faq {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 8px;
+}
+.faq-item {
+  background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 22px 24px;
+}
+.faq-item h3 { font-size: 1.05rem; margin-bottom: 8px; }
+.faq-item p { margin: 0; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 960px) {
+  .faq { grid-template-columns: 1fr; }
   .hero-grid { grid-template-columns: 1fr; }
   .hero-visual { aspect-ratio: 16 / 10; max-width: 560px; }
   .services-grid { grid-template-columns: 1fr; }

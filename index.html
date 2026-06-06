@@ -1,14 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-CA">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Rentalium — Rentals & Recovery</title>
-<meta name="description" content="A modern rental agency with curated available units and a forthcoming debt collection practice." />
+<title>Montréal Leasing Agency | Rentalium — Apartment Rentals & Tenant Placement</title>
+<meta name="description" content="Rentalium is a boutique leasing agency in Montréal. We place renters in vetted apartments and fill landlords' units fast — across the Plateau, Downtown, Griffintown and beyond." />
+<link rel="canonical" href="https://rentalium.ca/" />
+<meta name="geo.region" content="CA-QC" />
+<meta name="geo.placename" content="Montréal" />
+<meta name="robots" content="index, follow" />
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="en_CA" />
+<meta property="og:url" content="https://rentalium.ca/" />
+<meta property="og:title" content="Montréal Leasing Agency | Rentalium" />
+<meta property="og:description" content="A boutique Montréal leasing agency placing renters in vetted apartments and filling landlords' units fast." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
+<!-- Local business structured data (RealEstateAgent). Replace address/phone with your real NAP. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "RealEstateAgent",
+  "name": "Rentalium",
+  "description": "Boutique leasing agency in Montréal placing renters in vetted apartments and filling landlords' units fast.",
+  "url": "https://rentalium.ca/",
+  "telephone": "+1-514-555-0100",
+  "email": "hello@rentalium.ca",
+  "image": "https://rentalium.ca/og-cover.jpg",
+  "priceRange": "$$",
+  "knowsLanguage": ["en", "fr"],
+  "areaServed": { "@type": "City", "name": "Montréal", "sameAs": "https://en.wikipedia.org/wiki/Montreal" },
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "1500 Rue Saint-Laurent",
+    "addressLocality": "Montréal",
+    "addressRegion": "QC",
+    "postalCode": "H2X 2S6",
+    "addressCountry": "CA"
+  },
+  "openingHoursSpecification": [{
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+    "opens": "09:00", "closes": "18:00"
+  }]
+}
+</script>
 </head>
 <body>
 
@@ -20,9 +59,10 @@
     </a>
     <nav class="nav-links">
       <a href="#services">Services</a>
+      <a href="#neighbourhoods">Neighbourhoods</a>
       <a href="units.html">Available units</a>
       <a href="#contact">Contact</a>
-      <a href="units.html" class="btn btn-primary btn-sm">Browse units</a>
+      <a href="units.html" class="btn btn-primary btn-sm">Browse rentals</a>
     </nav>
   </div>
 </header>
@@ -30,15 +70,16 @@
 <section class="hero">
   <div class="container hero-grid">
     <div>
-      <div class="eyebrow">Rentals &middot; Recovery</div>
-      <h1>Homes that move <span class="accent">fast</span>, <br/>tenants who stay.</h1>
+      <div class="eyebrow">Leasing agency &middot; Montréal</div>
+      <h1>Montréal's leasing agency for homes that move <span class="accent">fast</span>.</h1>
       <p class="hero-lede">
-        Rentalium is a boutique leasing agency placing renters in vetted units across the city —
-        with a debt recovery practice launching soon.
+        Rentalium is a boutique <strong>leasing agency in Montréal</strong>. We place renters in vetted
+        apartments and fill landlords' units fast — across the Plateau, Downtown, Griffintown,
+        the Sud-Ouest and beyond.
       </p>
       <div class="hero-cta">
-        <a href="units.html" class="btn btn-primary">View available units &rarr;</a>
-        <a href="#services" class="btn btn-ghost">Our services</a>
+        <a href="units.html" class="btn btn-primary">Browse available apartments &rarr;</a>
+        <a href="#process" class="btn btn-ghost">How we work</a>
       </div>
     </div>
     <div class="hero-visual">
@@ -54,8 +95,25 @@
   <div class="container stats-grid">
     <div class="stat"><div class="num">98%</div><div class="lbl">Occupancy rate</div></div>
     <div class="stat"><div class="num">14d</div><div class="lbl">Avg. time to lease</div></div>
-    <div class="stat"><div class="num">320+</div><div class="lbl">Units under management</div></div>
+    <div class="stat"><div class="num">320+</div><div class="lbl">Montréal units managed</div></div>
     <div class="stat"><div class="num">4.9★</div><div class="lbl">Landlord rating</div></div>
+  </div>
+</section>
+
+<!-- Intro / local E-E-A-T -->
+<section>
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Why Rentalium</div>
+        <h2>A leasing agency built<br/>for Montréal.</h2>
+      </div>
+      <p>
+        We're a Montréal-based leasing team that knows the difference between a Plateau triplex and a
+        Griffintown condo. Our agents handle Québec lease (bail) paperwork, credit and reference checks,
+        and TAL rules — in English and French — so landlords lease faster and renters move in with confidence.
+      </p>
+    </div>
   </div>
 </section>
 
@@ -64,40 +122,102 @@
     <div class="section-head">
       <div>
         <div class="eyebrow">What we do</div>
-        <h2>Two practices.<br/>One standard.</h2>
+        <h2>Leasing for landlords.<br/>Apartments for renters.</h2>
       </div>
-      <p>We pair fast, transparent leasing with disciplined recovery — both built on the same operating principles: clear data, clear communication, no surprises.</p>
+      <p>Whether you own a unit to fill or you're hunting for your next apartment in Montréal, you get the same thing: clear data, fast communication, and no surprises.</p>
     </div>
 
     <div class="services-grid">
 
       <div class="service-card">
-        <div class="num">01 / Rental Agency</div>
-        <h3>Find tenants. Fill units. Stay informed.</h3>
-        <p>End-to-end leasing for owners and operators — listings, screening, showings, lease signing, and turnover. Every available unit is tracked in one place.</p>
+        <div class="num">01 / For landlords</div>
+        <h3>Fill your Montréal unit, fast.</h3>
+        <p>End-to-end tenant placement for owners and operators — professional listings, screening, showings, lease signing and turnover. Every available unit is tracked in one place.</p>
         <ul>
-          <li>Centralized unit dashboard with photos &amp; floor plans</li>
+          <li>Listing &amp; marketing across rental channels</li>
           <li>Tenant pre-screening &amp; credit verification</li>
-          <li>Showing scheduling &amp; lease prep</li>
+          <li>Showing scheduling &amp; Québec lease (bail) prep</li>
           <li>Monthly portfolio reporting for owners</li>
+        </ul>
+        <a href="#contact" class="btn btn-primary">List your unit &rarr;</a>
+      </div>
+
+      <div class="service-card">
+        <div class="num">02 / For renters</div>
+        <h3>Find your next apartment in Montréal.</h3>
+        <p>Browse vetted, move-in-ready rentals across Montréal's best neighbourhoods. Tell us what you need and we'll match you with units that fit — often before they go public.</p>
+        <ul>
+          <li>Curated, currently-available listings</li>
+          <li>Neighbourhood &amp; budget matching</li>
+          <li>Pet-friendly, parking &amp; locker filters</li>
+          <li>Straightforward lease signing</li>
         </ul>
         <a href="units.html" class="btn btn-primary">See available units &rarr;</a>
       </div>
 
-      <div class="service-card disabled">
-        <span class="coming-soon">Coming soon</span>
-        <div class="num">02 / Debt Collection</div>
-        <h3>Recover what you're owed — professionally.</h3>
-        <p>A dedicated recovery practice for landlords, small businesses, and service providers. Compliant, transparent, and built on the same data discipline.</p>
-        <ul>
-          <li>First-party &amp; third-party recovery</li>
-          <li>Skip tracing &amp; verification</li>
-          <li>Negotiated repayment plans</li>
-          <li>Full audit trail for every account</li>
-        </ul>
-        <a href="#" class="btn btn-primary">Notify me when live</a>
-      </div>
+    </div>
+    <p class="muted small" style="margin-top:18px;">Also coming soon: a compliant debt-recovery practice for Québec landlords and small businesses.</p>
+  </div>
+</section>
 
+<!-- Neighbourhoods -->
+<section id="neighbourhoods">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Service area</div>
+        <h2>Neighbourhoods we lease<br/>across Montréal.</h2>
+      </div>
+      <p>From the Plateau to the West Island, Rentalium places tenants and manages rentals island-wide. A few of the areas we cover:</p>
+    </div>
+    <div class="areas">
+      <a class="area" href="units.html">Plateau-Mont-Royal</a>
+      <a class="area" href="units.html">Downtown / Ville-Marie</a>
+      <a class="area" href="units.html">Griffintown</a>
+      <a class="area" href="units.html">Le Sud-Ouest</a>
+      <a class="area" href="units.html">Mile End</a>
+      <a class="area" href="units.html">Rosemont–La Petite-Patrie</a>
+      <a class="area" href="units.html">Verdun</a>
+      <a class="area" href="units.html">NDG</a>
+      <a class="area" href="units.html">Outremont</a>
+      <a class="area" href="units.html">Le Village</a>
+      <a class="area" href="units.html">Hochelaga-Maisonneuve</a>
+      <a class="area" href="units.html">Old Montréal</a>
+    </div>
+  </div>
+</section>
+
+<!-- Process -->
+<section id="process" class="services">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">How it works</div>
+        <h2>Our Montréal leasing<br/>process, step by step.</h2>
+      </div>
+      <p>One transparent workflow for landlords and renters alike.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="num">Step 1</div>
+        <h3>Tell us what you need</h3>
+        <p>A unit to fill or an apartment to find. We capture the details — budget, neighbourhood, move dates, pets, parking.</p>
+      </div>
+      <div class="service-card">
+        <div class="num">Step 2</div>
+        <h3>We list or match</h3>
+        <p>Landlords get a marketed listing with photos and a map pin. Renters get matched to vetted, available units that fit.</p>
+      </div>
+      <div class="service-card">
+        <div class="num">Step 3</div>
+        <h3>Screening &amp; showings</h3>
+        <p>Credit and reference checks, scheduled showings, and honest answers about every unit and building.</p>
+      </div>
+      <div class="service-card">
+        <div class="num">Step 4</div>
+        <h3>Lease &amp; move in</h3>
+        <p>We prepare the Québec lease (bail), coordinate signing, and hand over the keys.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -107,7 +227,7 @@
     <div class="section-head">
       <div>
         <div class="eyebrow">Available units</div>
-        <h2>Move-in ready.</h2>
+        <h2>Move-in ready in Montréal.</h2>
       </div>
       <a href="units.html" class="btn btn-ghost">View all units &rarr;</a>
     </div>
@@ -118,16 +238,54 @@
   </div>
 </section>
 
+<!-- FAQ (content section — no FAQPage schema, per Google's narrowed eligibility) -->
+<section id="faq" class="services">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">FAQ</div>
+        <h2>Montréal leasing agency,<br/>answered.</h2>
+      </div>
+    </div>
+    <div class="faq">
+      <div class="faq-item">
+        <h3>What does a leasing agency in Montréal do?</h3>
+        <p>A leasing agency markets rental units, screens and places tenants, and prepares the Québec lease — saving landlords time and helping renters find vetted apartments faster than searching alone.</p>
+      </div>
+      <div class="faq-item">
+        <h3>How much does Rentalium charge?</h3>
+        <p>Landlords pay a placement fee only when we successfully lease the unit. Browsing and applying to our available listings is free for renters.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Which neighbourhoods do you cover?</h3>
+        <p>We lease island-wide — including the Plateau, Downtown/Ville-Marie, Griffintown, the Sud-Ouest, Mile End, Rosemont, Verdun, NDG and Old Montréal.</p>
+      </div>
+      <div class="faq-item">
+        <h3>How fast can you lease my unit?</h3>
+        <p>Our average time to lease is about 14 days, depending on price, condition and neighbourhood. We'll give you a realistic timeline up front.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Do you handle Québec leases and credit checks?</h3>
+        <p>Yes. We prepare the standard Québec lease (bail), run credit and reference checks, and follow TAL (Tribunal administratif du logement) rules.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Do you work in French and English?</h3>
+        <p>Both. Our agents serve landlords and renters bilingually across Montréal.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="cta-band" id="contact">
   <div class="container">
     <div class="section-head" style="margin-bottom: 24px;">
       <div>
         <div class="eyebrow" style="color: rgba(255,255,255,0.6);">Get in touch</div>
-        <h2>Got a unit to fill,<br/>or an account to recover?</h2>
-        <p>Tell us what you need. We'll respond within one business day.</p>
+        <h2>Talk to a Montréal<br/>leasing agent.</h2>
+        <p>Got a unit to fill or an apartment to find? Tell us what you need — we respond within one business day.</p>
       </div>
       <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-        <a href="mailto:hello@rentalium.example" class="btn btn-primary">hello@rentalium.example</a>
+        <a href="mailto:hello@rentalium.ca" class="btn btn-primary">hello@rentalium.ca</a>
         <a href="tel:+15145550100" class="btn btn-ghost">+1 (514) 555-0100</a>
       </div>
     </div>
@@ -140,7 +298,12 @@
       <span class="brand-mark"></span>
       Rentalium
     </div>
-    <small>&copy; 2026 Rentalium. All rights reserved. · <a href="/admin" style="color: inherit;">Staff</a></small>
+    <small>
+      Rentalium &middot; Leasing agency in Montréal, QC &middot;
+      <a href="tel:+15145550100" style="color: inherit;">+1 (514) 555-0100</a> &middot;
+      <a href="mailto:hello@rentalium.ca" style="color: inherit;">hello@rentalium.ca</a><br/>
+      &copy; 2026 Rentalium. All rights reserved. · <a href="/admin" style="color: inherit;">Staff</a>
+    </small>
   </div>
 </footer>
 
@@ -180,7 +343,7 @@
       }).join('');
       // Also update the hero badge count
       const badge = document.querySelector('.hero-badge .v');
-      if (badge) badge.textContent = `${all.length} unit${all.length === 1 ? '' : 's'} available`;
+      if (badge) badge.textContent = `${all.length} unit${all.length === 1 ? '' : 's'} available in Montréal`;
     } catch (e) {}
   })();
 </script>
