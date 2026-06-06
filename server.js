@@ -5,7 +5,14 @@ const path = require('path');
 const crypto = require('crypto');
 const archiver = require('archiver');
 const { parse: parseCsv } = require('csv-parse/sync');
-const { marked } = require('marked');
+// `marked` v18 is ESM-only — load it lazily via dynamic import so this
+// CommonJS module works on every Node runtime (incl. Vercel's), not just
+// versions that allow require() of ES modules.
+let _marked = null;
+async function renderMarkdown(src) {
+  if (!_marked) ({ marked: _marked } = await import('marked'));
+  return _marked.parse(src || '');
+}
 
 const config = require('./config');
 const repo = require('./lib/repo');
@@ -58,6 +65,7 @@ const can = {
   calendar:    (r) => r === 'master' || r === 'agent',
   importCsv:   (r) => r === 'master' || r === 'agent',
   blog:        (r) => r === 'master' || r === 'agent',
+  manageTasks: (r) => r === 'master', // only the master assigns tasks
 };
 const requireAuth = wrap(async (req, res, next) => {
   const u = await currentUser(req);
@@ -153,6 +161,17 @@ const app = express();
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// ───────────────────────────────────────────────────────────────
+// Once-per-process init (schema bootstrap + master seed). On a
+// long-lived server this resolves at boot; on serverless (Vercel)
+// each cold start awaits it before handling the first request.
+// ───────────────────────────────────────────────────────────────
+const ready = (async () => {
+  if (repo.ready) await repo.ready;
+  await seedMaster();
+})();
+app.use(wrap(async (req, res, next) => { await ready; next(); }));
+
 // Block direct access to sensitive files / source before static serving.
 app.use((req, res, next) => {
   const blocked = /(^\/server\.js$|^\/config\.js$|^\/lib\/|^\/admin-app\/|^\/package(-lock)?\.json$|\.sql$|\.db($|-)|^\/node_modules\/|^\/private\/|^\/\.)/i;
@@ -172,6 +191,12 @@ app.get(/^\/admin(\/.*)?$/, (req, res) => {
       '<h1>Admin app not built</h1><p>Run <code>npm run build:admin</code>, then reload.</p>');
   }
   res.sendFile(ADMIN_INDEX);
+});
+
+// Homepage. Served explicitly so it works on serverless hosts (e.g. Vercel)
+// that don't auto-map "/" to index.html. Falls through to static if missing.
+app.get('/', (req, res, next) => {
+  res.sendFile(path.join(__dirname, 'index.html'), (err) => err && next());
 });
 
 // Static: public site files. Local photo uploads are served from disk;
@@ -589,6 +614,64 @@ app.post('/api/showing-requests', wrap(async (req, res) => {
 }));
 
 // ───────────────────────────────────────────────────────────────
+// Tasks — master assigns work to a specific agent; each agent sees
+// only their own tasks. (e.g. "post these units on Facebook Marketplace")
+// ───────────────────────────────────────────────────────────────
+const TASK_STATUSES = ['todo', 'in_progress', 'done'];
+function parseTaskBody(b) {
+  const num = (v) => { if (v === '' || v === undefined || v === null) return null; const n = Number(v); return Number.isFinite(n) ? n : null; };
+  let due_at = null;
+  if (b.due_at) { const d = new Date(b.due_at); if (!isNaN(d.getTime())) due_at = d.toISOString(); }
+  return {
+    title: (b.title || '').trim(),
+    description: (b.description || '').trim() || null,
+    unit_id: num(b.unit_id),
+    agent_id: num(b.agent_id),
+    due_at,
+    status: TASK_STATUSES.includes(b.status) ? b.status : 'todo',
+  };
+}
+
+app.get('/api/tasks', requireAuth, wrap(async (req, res) => {
+  const opts = { from: req.query.from, to: req.query.to };
+  if (req.user.role === 'master') {
+    if (req.query.agent_id) opts.agentId = Number(req.query.agent_id);
+  } else {
+    opts.agentId = req.user.id; // agents/viewers only ever see their own tasks
+  }
+  res.json(await repo.listTasks(opts));
+}));
+
+app.post('/api/tasks', requireCap(can.manageTasks), wrap(async (req, res) => {
+  const t = parseTaskBody(req.body);
+  if (!t.title) return res.status(400).json({ error: 'A task title is required.' });
+  if (!t.agent_id) return res.status(400).json({ error: 'Assign the task to an agent.' });
+  if (!(await repo.getUserById(t.agent_id))) return res.status(400).json({ error: 'Assigned agent not found.' });
+  if (t.unit_id && !(await repo.getUnit(t.unit_id))) return res.status(400).json({ error: 'Unit not found.' });
+  res.status(201).json(await repo.createTask({ ...t, created_by: req.user.id }));
+}));
+
+app.put('/api/tasks/:id', requireAuth, wrap(async (req, res) => {
+  const existing = await repo.getTask(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  if (req.user.role === 'master') {
+    const t = parseTaskBody(req.body);
+    if (!t.title) return res.status(400).json({ error: 'A task title is required.' });
+    if (!t.agent_id) return res.status(400).json({ error: 'Assign the task to an agent.' });
+    return res.json(await repo.updateTask(existing.id, t));
+  }
+  // Agents may only change the status of a task assigned to them.
+  if (existing.agent_id !== req.user.id) return res.status(403).json({ error: 'This task is not assigned to you.' });
+  if (!TASK_STATUSES.includes(req.body.status)) return res.status(400).json({ error: 'Invalid status.' });
+  res.json(await repo.setTaskStatus(existing.id, req.body.status));
+}));
+
+app.delete('/api/tasks/:id', requireCap(can.manageTasks), wrap(async (req, res) => {
+  await repo.deleteTask(req.params.id);
+  res.json({ ok: true });
+}));
+
+// ───────────────────────────────────────────────────────────────
 // Blog
 // ───────────────────────────────────────────────────────────────
 function slugify(s) {
@@ -765,7 +848,7 @@ app.get('/blog/:slug', wrap(async (req, res) => {
       body: `<section class="page-header"><div class="container"><div class="eyebrow">Blog</div><h1>Post not found</h1><p><a href="/blog">&larr; Back to the blog</a></p></div></section>`,
     }));
   }
-  const articleHtml = marked.parse(post.body || '');
+  const articleHtml = await renderMarkdown(post.body || '');
   const desc = post.excerpt || String(post.body || '').replace(/[#>*_`\[\]\-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 155);
   const ld = {
     '@context': 'https://schema.org', '@type': 'BlogPosting',
@@ -972,15 +1055,20 @@ app.use((err, req, res, next) => {
   res.status(400).json({ error: err.message || 'Request failed' });
 });
 
-(async () => {
-  if (repo.ready) await repo.ready; // ensure schema/seed (e.g. Postgres) is in place
-  await seedMaster();
-  app.listen(config.port, () => {
-    console.log(`\nRentalium running.`);
-    console.log(`  Storage driver: ${storage.driver}   ·   DB driver: ${repo.driver}`);
-    console.log(`  Public site:  http://localhost:${config.port}/`);
-    console.log(`  Staff login:  http://localhost:${config.port}/login`);
-    console.log(`  Admin panel:  http://localhost:${config.port}/admin\n`);
-    kickGeocode();
-  });
-})();
+// Long-lived server (local / `node server.js`): listen once init completes.
+// On Vercel the app is imported by api/index.js and invoked per request, so
+// we skip listen() there and just export the configured Express app.
+if (require.main === module) {
+  ready.then(() => {
+    app.listen(config.port, () => {
+      console.log(`\nRentalium running.`);
+      console.log(`  Storage driver: ${storage.driver}   ·   DB driver: ${repo.driver}`);
+      console.log(`  Public site:  http://localhost:${config.port}/`);
+      console.log(`  Staff login:  http://localhost:${config.port}/login`);
+      console.log(`  Admin panel:  http://localhost:${config.port}/admin\n`);
+      kickGeocode();
+    });
+  }).catch((err) => { console.error('Boot failed:', err); process.exit(1); });
+}
+
+module.exports = app;

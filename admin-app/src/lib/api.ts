@@ -58,6 +58,21 @@ export interface Appointment {
 
 export interface CsvResult { imported: number; skipped: number; total: number; errors: { row: number; error: string }[] }
 
+export interface Task {
+  id: number
+  title: string
+  description: string | null
+  unit_id: number | null
+  agent_id: number | null
+  due_at: string | null
+  status: 'todo' | 'in_progress' | 'done'
+  created_by: number | null
+  created_at: string
+  updated_at: string
+  unit: { id: number; title: string; unit_code: string | null; address: string } | null
+  agent: { id: number; name: string | null; email: string } | null
+}
+
 export interface Post {
   id: number
   slug: string
@@ -113,4 +128,5 @@ export const cap = {
   manageUsers: (r?: Role) => r === 'master',
   calendar: (r?: Role) => r === 'master' || r === 'agent',
   blog: (r?: Role) => r === 'master' || r === 'agent',
+  manageTasks: (r?: Role) => r === 'master',
 }

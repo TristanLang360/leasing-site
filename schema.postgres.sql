@@ -88,3 +88,17 @@ CREATE TABLE IF NOT EXISTS posts (
   published_at TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status, published_at);
+
+CREATE TABLE IF NOT EXISTS tasks (
+  id          SERIAL PRIMARY KEY,
+  title       TEXT NOT NULL,
+  description TEXT,
+  unit_id     INTEGER REFERENCES units(id) ON DELETE SET NULL,
+  agent_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,  -- assigned agent
+  due_at      TIMESTAMPTZ,
+  status      TEXT NOT NULL DEFAULT 'todo',
+  created_by  INTEGER,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_tasks_agent ON tasks(agent_id, due_at);
