@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Staff login — Rentalium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-card">
+    <a href="index.html" class="brand" style="justify-content:center; margin-bottom: 22px;">
+      <span class="brand-mark"></span>
+      Rentalium <span class="admin-tag">staff</span>
+    </a>
+    <h2 style="text-align:center;">Sign in</h2>
+    <p style="text-align:center;">Lease agents &amp; managers only.</p>
+
+    <form id="login-form">
+      <label class="field">
+        <span>Email</span>
+        <input name="email" type="email" autocomplete="username" required placeholder="you@rentalium.com" />
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input name="password" type="password" autocomplete="current-password" required placeholder="••••••••" />
+      </label>
+      <div class="login-error" id="login-error" hidden></div>
+      <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Sign in</button>
+    </form>
+
+    <p class="muted small" style="text-align:center; margin-top:18px;">
+      <a href="index.html" style="color:var(--accent);">← Back to public site</a>
+    </p>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById('login-form');
+  const errBox = document.getElementById('login-error');
+  // If already logged in, go straight to admin.
+  fetch('/api/me').then((r) => { if (r.ok) location.href = '/admin'; }).catch(() => {});
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errBox.hidden = true;
+    const fd = new FormData(form);
+    try {
+      const r = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') }),
+      });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        throw new Error(j.error || 'Login failed');
+      }
+      location.href = '/admin';
+    } catch (err) {
+      errBox.textContent = err.message;
+      errBox.hidden = false;
+    }
+  });
+</script>
+
+</body>
+</html>

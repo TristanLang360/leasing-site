@@ -53,7 +53,7 @@ function unitCardHTML(u, idx) {
     : '';
 
   return `
-    <article class="unit-card">
+    <article class="unit-card" id="unit-card-${u.id}">
       ${photo}
         <span class="unit-tag">Avail ${fmtAvail(u.available_date)}</span>
         <span class="unit-price">${fmtPrice(u.price)}</span>
@@ -89,6 +89,63 @@ function renderUnits(list) {
   empty.style.display = 'none';
   meta.textContent = `Showing ${list.length} unit${list.length > 1 ? 's' : ''}`;
   grid.innerHTML = list.map(unitCardHTML).join('');
+  renderMap(list);
+}
+
+// ── Map (Leaflet + OpenStreetMap, no API key) ──────────────────
+let map = null;
+let markerLayer = null;
+
+function initMap() {
+  const el = document.getElementById('units-map');
+  if (!el || typeof L === 'undefined') return;
+  map = L.map(el, { scrollWheelZoom: false }).setView([45.5019, -73.5674], 12); // Montréal
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors',
+  }).addTo(map);
+  markerLayer = L.layerGroup().addTo(map);
+
+  const toggle = document.getElementById('toggle-map');
+  if (toggle) toggle.addEventListener('click', () => {
+    const wrap = document.getElementById('units-map');
+    const hint = document.getElementById('map-hint');
+    const hidden = wrap.classList.toggle('hidden');
+    toggle.textContent = hidden ? 'Show map' : 'Hide map';
+    toggle.setAttribute('aria-expanded', String(!hidden));
+    if (hint) hint.style.visibility = hidden ? 'hidden' : 'visible';
+    if (!hidden) setTimeout(() => map.invalidateSize(), 50);
+  });
+}
+
+function renderMap(list) {
+  if (!map || !markerLayer) return;
+  markerLayer.clearLayers();
+  const pts = [];
+  list.forEach((u) => {
+    if (u.lat == null || u.lng == null) return;
+    const m = L.marker([u.lat, u.lng]);
+    m.bindPopup(
+      `<strong>${escapeHtml(u.title)}</strong><br>${escapeHtml(u.address)}<br>` +
+      `${fmtBeds(u.beds)} · ${fmtPrice(u.price)}<br>` +
+      `<a href="#unit-card-${u.id}" class="map-popup-link">View listing →</a>`
+    );
+    m.on('popupopen', () => {
+      const link = document.querySelector('.leaflet-popup .map-popup-link');
+      if (link) link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const card = document.getElementById(`unit-card-${u.id}`);
+        if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          card.classList.add('flash'); setTimeout(() => card.classList.remove('flash'), 1600); }
+      });
+    });
+    m.addTo(markerLayer);
+    pts.push([u.lat, u.lng]);
+  });
+  const toolbar = document.querySelector('.map-toolbar');
+  if (toolbar) toolbar.style.display = pts.length ? '' : 'none';
+  document.getElementById('units-map').style.display = pts.length ? '' : 'none';
+  if (pts.length) map.fitBounds(pts, { padding: [40, 40], maxZoom: 15 });
 }
 
 function applyFilters() {
@@ -119,6 +176,7 @@ function applyFilters() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initMap();
   ['f-search', 'f-beds', 'f-price', 'f-sort'].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;

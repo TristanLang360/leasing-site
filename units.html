@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -62,6 +64,12 @@
       <button class="btn btn-ghost" id="f-reset">Reset</button>
     </div>
 
+    <div class="map-toolbar">
+      <button class="btn btn-ghost btn-sm" id="toggle-map" aria-expanded="true">Hide map</button>
+      <span class="muted small" id="map-hint">Click a pin to jump to that listing.</span>
+    </div>
+    <div id="units-map" class="units-map"></div>
+
     <div class="results-meta">
       <span id="result-count">Showing all units</span>
       <span>Updated daily</span>
@@ -103,6 +111,8 @@
   </div>
 </footer>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="units.js"></script>
 </body>
 </html>

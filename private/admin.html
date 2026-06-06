@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -20,7 +22,8 @@
     <nav class="nav-links">
       <a href="index.html">Public site</a>
       <a href="units.html">Available units</a>
-      <a href="#" id="new-unit-btn" class="btn btn-primary btn-sm">+ New unit</a>
+      <span class="user-badge" id="user-badge"></span>
+      <a href="#" id="logout-btn" class="btn btn-ghost btn-sm">Log out</a>
     </nav>
   </div>
 </header>
@@ -28,27 +31,86 @@
 <section class="page-header">
   <div class="container">
     <div class="eyebrow">Admin</div>
-    <h1>Manage units &amp; photos.</h1>
-    <p>Add new listings, upload photos, mark units as hidden when they're no longer available. Changes are live immediately.</p>
+    <h1>Leasing dashboard.</h1>
+    <p>Manage units, photos, showings, and your team. Changes are live immediately.</p>
+    <div class="tabs" id="tabs">
+      <button class="tab is-active" data-tab="units">Units</button>
+      <button class="tab" data-tab="calendar">Calendar</button>
+      <button class="tab" data-tab="agents" data-cap="manageUsers" hidden>Agents</button>
+      <button class="tab" data-tab="account">My account</button>
+    </div>
   </div>
 </section>
 
-<section style="padding-top: 0;">
+<!-- ── UNITS TAB ─────────────────────────────────────────────── -->
+<section class="tab-panel is-active" id="panel-units" style="padding-top: 0;">
   <div class="container">
     <div class="results-meta">
       <span id="result-count">Loading…</span>
-      <span>
-        <label style="font-size: 0.9rem; color: var(--ink-muted); display: inline-flex; align-items: center; gap: 8px;">
+      <span style="display:flex; gap:14px; align-items:center;">
+        <label class="inline-check">
           <input type="checkbox" id="show-hidden" /> Show hidden units
         </label>
+        <button class="btn btn-ghost btn-sm" id="import-csv-btn" data-cap="editUnits">Import CSV</button>
+        <button class="btn btn-primary btn-sm" id="new-unit-btn" data-cap="editUnits">+ New unit</button>
       </span>
     </div>
-
     <div id="admin-grid" class="admin-grid"></div>
   </div>
 </section>
 
-<!-- Unit editor drawer -->
+<!-- ── CALENDAR TAB ──────────────────────────────────────────── -->
+<section class="tab-panel" id="panel-calendar" style="padding-top: 0;">
+  <div class="container">
+    <div class="results-meta">
+      <span class="cal-nav">
+        <button class="btn btn-ghost btn-sm" id="cal-prev">←</button>
+        <strong id="cal-label" style="min-width: 180px; text-align:center;">—</strong>
+        <button class="btn btn-ghost btn-sm" id="cal-next">→</button>
+        <button class="btn btn-ghost btn-sm" id="cal-today">Today</button>
+      </span>
+      <button class="btn btn-primary btn-sm" id="new-appt-btn" data-cap="calendar">+ New showing</button>
+    </div>
+    <div class="calendar" id="calendar"></div>
+    <h3 style="margin-top: 28px;">Upcoming showings</h3>
+    <div class="appt-list" id="appt-list"></div>
+  </div>
+</section>
+
+<!-- ── AGENTS TAB (master only) ──────────────────────────────── -->
+<section class="tab-panel" id="panel-agents" style="padding-top: 0;">
+  <div class="container">
+    <div class="results-meta">
+      <span id="users-count">Team members</span>
+      <button class="btn btn-primary btn-sm" id="new-user-btn">+ Add agent</button>
+    </div>
+    <div class="role-key">
+      <span><strong>Master</strong> — full control, manages the team</span>
+      <span><strong>Agent</strong> — units, photos &amp; calendar (no delete / no team)</span>
+      <span><strong>Viewer</strong> — read-only, can download photos</span>
+    </div>
+    <div id="users-grid" class="users-grid"></div>
+  </div>
+</section>
+
+<!-- ── ACCOUNT TAB ───────────────────────────────────────────── -->
+<section class="tab-panel" id="panel-account" style="padding-top: 0;">
+  <div class="container">
+    <div class="account-card">
+      <h3>Change my password</h3>
+      <form id="password-form">
+        <label class="field"><span>Current password</span>
+          <input name="current" type="password" autocomplete="current-password" required /></label>
+        <label class="field"><span>New password</span>
+          <input name="password" type="password" autocomplete="new-password" minlength="6" required /></label>
+        <div class="login-error" id="pw-msg" hidden></div>
+        <button type="submit" class="btn btn-primary">Update password</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ── UNIT EDITOR DRAWER ────────────────────────────────────── -->
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
 <aside class="drawer" id="drawer" aria-hidden="true">
   <div class="drawer-head">
@@ -59,124 +121,224 @@
     <input type="hidden" name="id" />
 
     <div class="grid-2">
-      <label class="field">
-        <span>Unit code</span>
-        <input name="unit_code" placeholder="e.g. A-304" />
-      </label>
-      <label class="field">
-        <span>Status</span>
+      <label class="field"><span>Unit code</span>
+        <input name="unit_code" placeholder="e.g. A-304" /></label>
+      <label class="field"><span>Status</span>
         <select name="status">
           <option value="available">Available</option>
           <option value="hidden">Hidden</option>
-        </select>
-      </label>
+        </select></label>
     </div>
 
-    <label class="field">
-      <span>Title *</span>
-      <input name="title" required placeholder="Suite 304 — Loft" />
-    </label>
-
-    <label class="field">
-      <span>Address *</span>
-      <input name="address" required placeholder="1420 Saint-Laurent, Montréal" />
-    </label>
-
-    <label class="field">
-      <span>Neighborhood</span>
-      <input name="neighborhood" placeholder="Plateau" />
-    </label>
+    <label class="field"><span>Title *</span>
+      <input name="title" required placeholder="Suite 304 — Loft" /></label>
+    <label class="field"><span>Address *</span>
+      <input name="address" required placeholder="1420 Saint-Laurent, Montréal" /></label>
+    <label class="field"><span>Neighborhood</span>
+      <input name="neighborhood" placeholder="Plateau" /></label>
 
     <div class="grid-3">
-      <label class="field">
-        <span>Bedrooms</span>
-        <input name="beds" type="number" min="0" step="1" value="1" />
-      </label>
-      <label class="field">
-        <span>Bathrooms</span>
-        <input name="baths" type="number" min="0" step="1" value="1" />
-      </label>
-      <label class="field">
-        <span>Sq ft</span>
-        <input name="sqft" type="number" min="0" step="10" />
-      </label>
+      <label class="field"><span>Bedrooms</span>
+        <input name="beds" type="number" min="0" step="1" value="1" /></label>
+      <label class="field"><span>Bathrooms</span>
+        <input name="baths" type="number" min="0" step="1" value="1" /></label>
+      <label class="field"><span>Sq ft</span>
+        <input name="sqft" type="number" min="0" step="10" /></label>
     </div>
 
     <div class="grid-2">
-      <label class="field">
-        <span>Price ($ / month)</span>
-        <input name="price" type="number" min="0" step="50" value="1800" />
-      </label>
-      <label class="field">
-        <span>Available date</span>
-        <input name="available_date" type="date" />
-      </label>
+      <label class="field"><span>Price ($ / month)</span>
+        <input name="price" type="number" min="0" step="50" value="1800" /></label>
+      <label class="field"><span>Available date</span>
+        <input name="available_date" type="date" /></label>
     </div>
 
-    <label class="field">
-      <span>⚡︎ Appliances</span>
-      <input name="appliances" placeholder="Fridge, stove, dishwasher, in-unit laundry" />
-    </label>
+    <!-- Location -->
+    <fieldset class="field location-field" id="location-field" hidden>
+      <legend>Location</legend>
+      <div id="drawer-map" class="drawer-map"></div>
+      <div class="grid-2">
+        <label class="field"><span>Latitude</span>
+          <input name="lat" type="number" step="any" placeholder="auto" /></label>
+        <label class="field"><span>Longitude</span>
+          <input name="lng" type="number" step="any" placeholder="auto" /></label>
+      </div>
+      <div class="loc-actions">
+        <button type="button" class="btn btn-ghost btn-sm" id="regeocode-btn" data-cap="editUnits">↻ Re-locate from address</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="directions-btn">🧭 Directions</button>
+      </div>
+      <p class="muted small" id="geo-status" style="margin:8px 0 0;"></p>
+    </fieldset>
+
+    <label class="field"><span>⚡︎ Appliances</span>
+      <input name="appliances" placeholder="Fridge, stove, dishwasher, in-unit laundry" /></label>
 
     <div class="grid-2">
-      <label class="field">
-        <span>Parking available</span>
+      <label class="field"><span>Parking available</span>
         <select name="parking_available" id="parking-available">
-          <option value="no">No</option>
-          <option value="yes">Yes</option>
-        </select>
-      </label>
-      <label class="field" id="parking-cost-field" hidden>
-        <span>Parking cost ($ / month)</span>
-        <input name="parking_cost" type="number" min="0" step="5" placeholder="150" />
-      </label>
+          <option value="no">No</option><option value="yes">Yes</option>
+        </select></label>
+      <label class="field" id="parking-cost-field" hidden><span>Parking cost ($ / month)</span>
+        <input name="parking_cost" type="number" min="0" step="5" placeholder="150" /></label>
     </div>
 
     <div class="grid-2">
-      <label class="field">
-        <span>Locker available</span>
+      <label class="field"><span>Locker available</span>
         <select name="locker_available" id="locker-available">
-          <option value="no">No</option>
-          <option value="yes">Yes</option>
-        </select>
-      </label>
-      <label class="field" id="locker-cost-field" hidden>
-        <span>Locker cost ($ / month)</span>
-        <input name="locker_cost" type="number" min="0" step="5" placeholder="50" />
-      </label>
+          <option value="no">No</option><option value="yes">Yes</option>
+        </select></label>
+      <label class="field" id="locker-cost-field" hidden><span>Locker cost ($ / month)</span>
+        <input name="locker_cost" type="number" min="0" step="5" placeholder="50" /></label>
     </div>
 
-    <label class="field">
-      <span>Dogs</span>
+    <label class="field"><span>Dogs</span>
       <select name="dogs_policy">
         <option value="no">No dogs</option>
         <option value="yes">Dogs welcome</option>
         <option value="contact">Contact us to see if your dog is accepted</option>
-      </select>
-    </label>
+      </select></label>
 
-    <label class="field">
-      <span>Description</span>
-      <textarea name="description" rows="3" placeholder="Bright corner unit with…"></textarea>
-    </label>
+    <label class="field"><span>Description</span>
+      <textarea name="description" rows="3" placeholder="Bright corner unit with…"></textarea></label>
 
+    <!-- Photos -->
     <fieldset class="field photos-field" id="photos-field" hidden>
-      <legend>Photos</legend>
+      <legend>Photos
+        <a href="#" class="photos-dl" id="download-all-btn">⬇ Download all (.zip)</a>
+      </legend>
       <div class="photo-list" id="photo-list"></div>
-      <label class="dropzone" id="dropzone">
+      <label class="dropzone" id="dropzone" data-cap="editUnits">
         <input type="file" id="photo-input" accept="image/*" multiple hidden />
         <span><strong>Click to upload</strong> or drag images here</span>
         <span class="hint">JPG, PNG, WEBP, HEIC — up to 15 MB each</span>
       </label>
     </fieldset>
 
+    <!-- Nearby units -->
+    <fieldset class="field nearby-field" id="nearby-field" hidden>
+      <legend>Nearby units</legend>
+      <div id="nearby-list" class="nearby-list"></div>
+    </fieldset>
+
     <div class="drawer-foot">
       <button type="button" class="btn btn-ghost" id="drawer-cancel">Cancel</button>
-      <button type="submit" class="btn btn-primary" id="save-btn">Save unit</button>
+      <button type="submit" class="btn btn-primary" id="save-btn" data-cap="editUnits">Save unit</button>
     </div>
   </form>
 </aside>
 
+<!-- ── CSV IMPORT MODAL ──────────────────────────────────────── -->
+<div class="modal-backdrop" id="csv-backdrop"></div>
+<div class="modal" id="csv-modal" aria-hidden="true">
+  <div class="drawer-head">
+    <h2>Import units from CSV</h2>
+    <button class="icon-btn" id="csv-close" aria-label="Close">×</button>
+  </div>
+  <div class="modal-body">
+    <p class="muted small">
+      Upload a <code>.csv</code> with a header row. Recognized columns (any order, case-insensitive):
+      <code>title</code>, <code>address</code>, <code>unit_code</code>, <code>neighborhood</code>,
+      <code>beds</code>, <code>baths</code>, <code>sqft</code>, <code>price</code>,
+      <code>available_date</code>, <code>description</code>, <code>parking</code>, <code>locker</code>,
+      <code>dogs</code>, <code>lat</code>, <code>lng</code>.
+      <strong>title</strong> and <strong>address</strong> are required. Addresses are auto-located on the map.
+    </p>
+    <p><a href="#" id="csv-sample">↓ Download a sample CSV</a></p>
+    <label class="dropzone" id="csv-dropzone">
+      <input type="file" id="csv-input" accept=".csv,text/csv" hidden />
+      <span><strong>Click to choose</strong> a CSV file</span>
+      <span class="hint" id="csv-filename">No file selected</span>
+    </label>
+    <div id="csv-result" class="csv-result" hidden></div>
+    <div class="drawer-foot">
+      <button type="button" class="btn btn-ghost" id="csv-cancel">Close</button>
+      <button type="button" class="btn btn-primary" id="csv-submit" disabled>Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── APPOINTMENT MODAL ─────────────────────────────────────── -->
+<div class="modal-backdrop" id="appt-backdrop"></div>
+<div class="modal" id="appt-modal" aria-hidden="true">
+  <div class="drawer-head">
+    <h2 id="appt-title">New showing</h2>
+    <button class="icon-btn" id="appt-close" aria-label="Close">×</button>
+  </div>
+  <form id="appt-form" class="modal-body">
+    <input type="hidden" name="id" />
+    <label class="field"><span>Title</span>
+      <input name="title" placeholder="Showing — Suite 304" /></label>
+    <label class="field"><span>Unit</span>
+      <select name="unit_id" id="appt-unit"><option value="">— No unit —</option></select></label>
+    <div class="grid-2">
+      <label class="field"><span>Start *</span>
+        <input name="start_at" type="datetime-local" required /></label>
+      <label class="field"><span>End</span>
+        <input name="end_at" type="datetime-local" /></label>
+    </div>
+    <div class="grid-2">
+      <label class="field"><span>Client name</span>
+        <input name="client_name" placeholder="Jane Doe" /></label>
+      <label class="field"><span>Client phone</span>
+        <input name="client_phone" placeholder="(514) 555-0100" /></label>
+    </div>
+    <div class="grid-2">
+      <label class="field"><span>Client email</span>
+        <input name="client_email" type="email" placeholder="jane@example.com" /></label>
+      <label class="field"><span>Assigned agent</span>
+        <select name="agent_id" id="appt-agent"><option value="">— Unassigned —</option></select></label>
+    </div>
+    <label class="field"><span>Status</span>
+      <select name="status">
+        <option value="scheduled">Scheduled</option>
+        <option value="done">Done</option>
+        <option value="canceled">Canceled</option>
+      </select></label>
+    <label class="field"><span>Notes</span>
+      <textarea name="notes" rows="2"></textarea></label>
+    <div class="drawer-foot">
+      <button type="button" class="btn btn-danger" id="appt-delete" hidden>Delete</button>
+      <span style="flex:1;"></span>
+      <button type="button" class="btn btn-ghost" id="appt-cancel">Cancel</button>
+      <button type="submit" class="btn btn-primary">Save showing</button>
+    </div>
+  </form>
+</div>
+
+<!-- ── USER MODAL (master only) ──────────────────────────────── -->
+<div class="modal-backdrop" id="user-backdrop"></div>
+<div class="modal" id="user-modal" aria-hidden="true">
+  <div class="drawer-head">
+    <h2 id="user-modal-title">Add agent</h2>
+    <button class="icon-btn" id="user-close" aria-label="Close">×</button>
+  </div>
+  <form id="user-form" class="modal-body">
+    <input type="hidden" name="id" />
+    <label class="field"><span>Email *</span>
+      <input name="email" type="email" required placeholder="agent@rentalium.com" /></label>
+    <label class="field"><span>Name</span>
+      <input name="name" placeholder="Full name" /></label>
+    <label class="field"><span>Role</span>
+      <select name="role">
+        <option value="agent">Agent</option>
+        <option value="viewer">Viewer</option>
+        <option value="master">Master</option>
+      </select></label>
+    <label class="field"><span id="user-pw-label">Password *</span>
+      <input name="password" type="password" autocomplete="new-password" placeholder="At least 6 characters" /></label>
+    <label class="inline-check" id="user-active-wrap" hidden>
+      <input type="checkbox" name="active" id="user-active" checked /> Account active
+    </label>
+    <div class="login-error" id="user-msg" hidden></div>
+    <div class="drawer-foot">
+      <button type="button" class="btn btn-ghost" id="user-cancel">Cancel</button>
+      <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+  </form>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="admin.js"></script>
 </body>
 </html>
