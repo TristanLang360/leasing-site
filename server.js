@@ -5,6 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const archiver = require('archiver');
 const { parse: parseCsv } = require('csv-parse/sync');
+const { marked } = require('marked');
 
 const config = require('./config');
 const repo = require('./lib/repo');
@@ -56,6 +57,7 @@ const can = {
   manageUsers: (r) => r === 'master',
   calendar:    (r) => r === 'master' || r === 'agent',
   importCsv:   (r) => r === 'master' || r === 'agent',
+  blog:        (r) => r === 'master' || r === 'agent',
 };
 const requireAuth = wrap(async (req, res, next) => {
   const u = await currentUser(req);
@@ -547,6 +549,212 @@ app.put('/api/appointments/:id', requireCap(can.calendar), wrap(async (req, res)
 app.delete('/api/appointments/:id', requireCap(can.calendar), wrap(async (req, res) => {
   await repo.deleteAppointment(req.params.id);
   res.json({ ok: true });
+}));
+
+// ───────────────────────────────────────────────────────────────
+// Blog
+// ───────────────────────────────────────────────────────────────
+function slugify(s) {
+  return String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+}
+async function uniqueSlug(base, exceptId = null) {
+  const root = slugify(base) || 'post';
+  let slug = root, i = 2;
+  while (await repo.slugExists(slug, exceptId)) slug = `${root}-${i++}`;
+  return slug;
+}
+function parsePostBody(b) {
+  return {
+    title: (b.title || '').trim(),
+    slug: (b.slug || '').trim(),
+    excerpt: (b.excerpt || '').trim() || null,
+    body: (b.body || '').trim() || null,
+    status: ['draft', 'published'].includes(b.status) ? b.status : 'draft',
+  };
+}
+function presentPost(p) {
+  if (!p) return null;
+  return { ...p, cover_url: p.cover_image ? storage.publicUrl(p.cover_image) : null };
+}
+const escHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtPostDate = (p) => {
+  const d = new Date(p.published_at || p.created_at);
+  return isNaN(d) ? '' : d.toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+};
+
+// ── Blog JSON API ──────────────────────────────────────────────
+app.get('/api/posts', wrap(async (req, res) => {
+  const wantAll = req.query.all === '1';
+  if (wantAll) {
+    if (!(await currentUser(req))) return res.status(401).json({ error: 'Not authenticated' });
+    return res.json((await repo.listPosts({})).map(presentPost));
+  }
+  res.json((await repo.listPosts({ publishedOnly: true })).map(presentPost));
+}));
+
+app.get('/api/posts/:slug', wrap(async (req, res) => {
+  const post = await repo.getPostBySlug(req.params.slug, { publishedOnly: !(await currentUser(req)) });
+  if (!post) return res.status(404).json({ error: 'Not found' });
+  res.json(presentPost(post));
+}));
+
+app.post('/api/posts', requireCap(can.blog), wrap(async (req, res) => {
+  const p = parsePostBody(req.body);
+  if (!p.title) return res.status(400).json({ error: 'Title is required' });
+  const slug = await uniqueSlug(p.slug || p.title);
+  const published_at = p.status === 'published' ? new Date().toISOString() : null;
+  const created = await repo.createPost({ ...p, slug, cover_image: null, author_id: req.user.id, published_at });
+  res.status(201).json(presentPost(created));
+}));
+
+app.put('/api/posts/:id', requireCap(can.blog), wrap(async (req, res) => {
+  const existing = await repo.getPostById(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  const p = parsePostBody(req.body);
+  if (!p.title) return res.status(400).json({ error: 'Title is required' });
+  const slug = p.slug ? await uniqueSlug(p.slug, existing.id) : existing.slug;
+  // First time it goes live, stamp published_at; keep the original date afterwards.
+  const published_at = (p.status === 'published' && !existing.published_at)
+    ? new Date().toISOString() : existing.published_at;
+  const updated = await repo.updatePost(existing.id, { ...p, slug, cover_image: existing.cover_image, published_at });
+  res.json(presentPost(updated));
+}));
+
+app.delete('/api/posts/:id', requireCap(can.blog), wrap(async (req, res) => {
+  const key = await repo.deletePost(req.params.id);
+  if (key) await storage.remove(key);
+  res.json({ ok: true });
+}));
+
+app.post('/api/posts/:id/cover', requireCap(can.blog), upload.single('cover'), wrap(async (req, res) => {
+  const post = await repo.getPostById(req.params.id);
+  if (!post) return res.status(404).json({ error: 'Not found' });
+  if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
+  const key = await storage.save({ buffer: req.file.buffer, originalname: req.file.originalname, mimetype: req.file.mimetype });
+  if (post.cover_image) await storage.remove(post.cover_image);
+  const updated = await repo.updatePost(post.id, {
+    slug: post.slug, title: post.title, excerpt: post.excerpt, body: post.body,
+    status: post.status, published_at: post.published_at, cover_image: key,
+  });
+  res.json({ cover_url: storage.publicUrl(key), post: presentPost(updated) });
+}));
+
+app.delete('/api/posts/:id/cover', requireCap(can.blog), wrap(async (req, res) => {
+  const post = await repo.getPostById(req.params.id);
+  if (!post) return res.status(404).json({ error: 'Not found' });
+  if (post.cover_image) await storage.remove(post.cover_image);
+  await repo.updatePost(post.id, {
+    slug: post.slug, title: post.title, excerpt: post.excerpt, body: post.body,
+    status: post.status, published_at: post.published_at, cover_image: null,
+  });
+  res.json({ ok: true });
+}));
+
+// ── Server-rendered public blog (SEO-friendly) ─────────────────
+function renderShell({ title, description, canonical, head = '', body }) {
+  return `<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>${escHtml(title)}</title>
+<meta name="description" content="${escHtml(description)}" />
+${canonical ? `<link rel="canonical" href="${escHtml(canonical)}" />` : ''}
+<meta name="geo.region" content="CA-QC" /><meta name="geo.placename" content="Montréal" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/styles.css" />
+${head}
+</head>
+<body>
+<header class="nav"><div class="container nav-inner">
+  <a href="/index.html" class="brand"><span class="brand-mark"></span> Rentalium</a>
+  <nav class="nav-links">
+    <a href="/index.html#services">Services</a>
+    <a href="/index.html#neighbourhoods">Neighbourhoods</a>
+    <a href="/units.html">Available units</a>
+    <a href="/blog" class="active">Blog</a>
+    <a href="/units.html" class="btn btn-primary btn-sm">Browse rentals</a>
+  </nav>
+</div></header>
+${body}
+<footer><div class="container footer-grid">
+  <div class="brand"><span class="brand-mark"></span> Rentalium</div>
+  <small>Rentalium &middot; Leasing agency in Montréal, QC &middot;
+  <a href="mailto:hello@rentalium.ca" style="color:inherit;">hello@rentalium.ca</a><br/>
+  &copy; 2026 Rentalium. All rights reserved. · <a href="/admin" style="color:inherit;">Staff</a></small>
+</div></footer>
+</body>
+</html>`;
+}
+
+app.get('/blog', wrap(async (req, res) => {
+  const posts = await repo.listPosts({ publishedOnly: true });
+  const cards = posts.length ? posts.map((p) => `
+    <article class="post-card">
+      ${p.cover_image ? `<a href="/blog/${escHtml(p.slug)}" class="post-cover" style="background-image:url('${escHtml(storage.publicUrl(p.cover_image))}')"></a>` : ''}
+      <div class="post-card-body">
+        <div class="post-meta">${escHtml(fmtPostDate(p))}${p.author ? ' · ' + escHtml(p.author.name || 'Rentalium') : ''}</div>
+        <h2><a href="/blog/${escHtml(p.slug)}">${escHtml(p.title)}</a></h2>
+        ${p.excerpt ? `<p>${escHtml(p.excerpt)}</p>` : ''}
+        <a class="post-readmore" href="/blog/${escHtml(p.slug)}">Read more &rarr;</a>
+      </div>
+    </article>`).join('') : `<p class="muted">No posts yet — check back soon.</p>`;
+  const body = `
+  <section class="page-header"><div class="container">
+    <div class="eyebrow">Blog</div>
+    <h1>Montréal renting &amp; leasing insights.</h1>
+    <p>Guides and updates from Rentalium's Montréal leasing team — for landlords and renters alike.</p>
+  </div></section>
+  <section style="padding-top:0;"><div class="container"><div class="post-grid">${cards}</div></div></section>`;
+  res.type('html').send(renderShell({
+    title: 'Blog | Rentalium — Montréal Leasing Agency',
+    description: "Renting and leasing guides for Montréal landlords and renters, from Rentalium's leasing team.",
+    canonical: 'https://rentalium.ca/blog',
+    body,
+  }));
+}));
+
+app.get('/blog/:slug', wrap(async (req, res) => {
+  const post = await repo.getPostBySlug(req.params.slug, { publishedOnly: true });
+  if (!post) {
+    return res.status(404).type('html').send(renderShell({
+      title: 'Post not found | Rentalium', description: 'This post could not be found.',
+      body: `<section class="page-header"><div class="container"><div class="eyebrow">Blog</div><h1>Post not found</h1><p><a href="/blog">&larr; Back to the blog</a></p></div></section>`,
+    }));
+  }
+  const articleHtml = marked.parse(post.body || '');
+  const desc = post.excerpt || String(post.body || '').replace(/[#>*_`\[\]\-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 155);
+  const ld = {
+    '@context': 'https://schema.org', '@type': 'BlogPosting',
+    headline: post.title, datePublished: post.published_at || post.created_at, dateModified: post.updated_at,
+    author: { '@type': 'Organization', name: 'Rentalium' },
+    publisher: { '@type': 'Organization', name: 'Rentalium' },
+    mainEntityOfPage: `https://rentalium.ca/blog/${post.slug}`,
+    ...(post.excerpt ? { description: post.excerpt } : {}),
+    ...(post.cover_image ? { image: storage.publicUrl(post.cover_image) } : {}),
+  };
+  const body = `
+  <section class="page-header"><div class="container" style="max-width:760px;">
+    <div class="eyebrow"><a href="/blog" style="color:inherit;">Blog</a></div>
+    <h1>${escHtml(post.title)}</h1>
+    <p class="post-meta">${escHtml(fmtPostDate(post))}${post.author ? ' · ' + escHtml(post.author.name || 'Rentalium') : ''}</p>
+  </div></section>
+  <section style="padding-top:0;"><div class="container" style="max-width:760px;">
+    ${post.cover_image ? `<img class="article-cover" src="${escHtml(storage.publicUrl(post.cover_image))}" alt="${escHtml(post.title)}" />` : ''}
+    <div class="article-body">${articleHtml}</div>
+    <p style="margin-top:32px;"><a class="btn btn-ghost" href="/blog">&larr; All posts</a></p>
+  </div></section>`;
+  res.type('html').send(renderShell({
+    title: `${post.title} | Rentalium`,
+    description: desc,
+    canonical: `https://rentalium.ca/blog/${post.slug}`,
+    head: `<meta property="og:type" content="article" />\n<script type="application/ld+json">${JSON.stringify(ld)}</script>`,
+    body,
+  }));
 }));
 
 // ───────────────────────────────────────────────────────────────

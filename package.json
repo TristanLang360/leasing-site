@@ -15,6 +15,7 @@
     "better-sqlite3": "^11.3.0",
     "csv-parse": "^6.2.1",
     "express": "^4.19.2",
+    "marked": "^18.0.5",
     "multer": "^1.4.5-lts.1"
   },
   "comment:supabase": "To flip to Supabase: 'npm install @supabase/supabase-js' for STORAGE_DRIVER=supabase, and 'npm install pg' for DB_DRIVER=postgres. See README."

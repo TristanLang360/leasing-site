@@ -841,9 +841,53 @@ footer {
 .faq-item h3 { font-size: 1.05rem; margin-bottom: 8px; }
 .faq-item p { margin: 0; }
 
+/* ---------- Blog ---------- */
+.post-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+}
+.post-card {
+  display: flex; flex-direction: column; background: var(--bg);
+  border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+  transition: box-shadow var(--t), border-color var(--t);
+}
+.post-card:hover { box-shadow: var(--shadow-md); border-color: #ddd6c8; }
+.post-cover {
+  display: block; aspect-ratio: 16 / 9; background-size: cover; background-position: center;
+  background-color: var(--surface-2);
+}
+.post-card-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.post-meta { font-size: 0.82rem; color: var(--ink-muted); }
+.post-card-body h2 { font-size: 1.25rem; margin: 0; }
+.post-card-body h2 a:hover { color: var(--accent); }
+.post-card-body p { margin: 0; color: var(--ink-muted); font-size: 0.95rem; }
+.post-readmore { margin-top: auto; color: var(--accent); font-weight: 500; font-size: 0.9rem; }
+
+/* Article body (server-rendered markdown) */
+.article-cover {
+  width: 100%; border-radius: var(--radius); border: 1px solid var(--line); margin-bottom: 28px;
+}
+.article-body { font-size: 1.075rem; line-height: 1.7; color: #2a2a28; }
+.article-body h2 { font-size: 1.6rem; margin: 1.6em 0 0.5em; }
+.article-body h3 { font-size: 1.25rem; margin: 1.4em 0 0.4em; }
+.article-body p { margin: 0 0 1.1em; color: inherit; }
+.article-body ul, .article-body ol { margin: 0 0 1.1em; padding-left: 1.3em; }
+.article-body li { margin: 0.3em 0; }
+.article-body a { color: var(--accent); text-decoration: underline; }
+.article-body blockquote {
+  margin: 1.2em 0; padding: 4px 18px; border-left: 3px solid var(--accent-soft); color: var(--ink-muted);
+}
+.article-body img { border-radius: var(--radius-sm); margin: 1em 0; }
+.article-body code {
+  background: var(--surface); padding: 2px 6px; border-radius: 5px; font-size: 0.9em;
+}
+
+/* Homepage "From the blog" teaser */
+.blog-teaser-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 960px) {
   .faq { grid-template-columns: 1fr; }
+  .post-grid, .blog-teaser-grid { grid-template-columns: 1fr; }
   .hero-grid { grid-template-columns: 1fr; }
   .hero-visual { aspect-ratio: 16 / 10; max-width: 560px; }
   .services-grid { grid-template-columns: 1fr; }

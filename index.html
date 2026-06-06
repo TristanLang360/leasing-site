@@ -61,6 +61,7 @@
       <a href="#services">Services</a>
       <a href="#neighbourhoods">Neighbourhoods</a>
       <a href="units.html">Available units</a>
+      <a href="/blog">Blog</a>
       <a href="#contact">Contact</a>
       <a href="units.html" class="btn btn-primary btn-sm">Browse rentals</a>
     </nav>
@@ -276,6 +277,20 @@
   </div>
 </section>
 
+<!-- From the blog (populated from /api/posts; hidden when empty) -->
+<section id="blog-teaser" style="display:none;">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">From the blog</div>
+        <h2>Montréal renting,<br/>explained.</h2>
+      </div>
+      <a href="/blog" class="btn btn-ghost">Read the blog &rarr;</a>
+    </div>
+    <div class="blog-teaser-grid" id="blog-teaser-grid"></div>
+  </div>
+</section>
+
 <section class="cta-band" id="contact">
   <div class="container">
     <div class="section-head" style="margin-bottom: 24px;">
@@ -344,6 +359,29 @@
       // Also update the hero badge count
       const badge = document.querySelector('.hero-badge .v');
       if (badge) badge.textContent = `${all.length} unit${all.length === 1 ? '' : 's'} available in Montréal`;
+    } catch (e) {}
+  })();
+
+  // "From the blog" teaser — latest 3 published posts.
+  (async () => {
+    try {
+      const r = await fetch('/api/posts');
+      if (!r.ok) return;
+      const posts = await r.json();
+      if (!posts.length) return;
+      const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;" }[c]));
+      const fmtDate = (p) => { const d = new Date(p.published_at || p.created_at); return isNaN(d) ? '' : d.toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' }); };
+      document.getElementById('blog-teaser-grid').innerHTML = posts.slice(0, 3).map((p) => `
+        <article class="post-card">
+          ${p.cover_url ? `<a href="/blog/${esc(p.slug)}" class="post-cover" style="background-image:url('${esc(p.cover_url)}')"></a>` : ''}
+          <div class="post-card-body">
+            <div class="post-meta">${esc(fmtDate(p))}</div>
+            <h2><a href="/blog/${esc(p.slug)}">${esc(p.title)}</a></h2>
+            ${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ''}
+            <a class="post-readmore" href="/blog/${esc(p.slug)}">Read more &rarr;</a>
+          </div>
+        </article>`).join('');
+      document.getElementById('blog-teaser').style.display = '';
     } catch (e) {}
   })();
 </script>

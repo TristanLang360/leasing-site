@@ -73,3 +73,18 @@ CREATE TABLE IF NOT EXISTS appointments (
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_appts_start ON appointments(start_at);
+
+CREATE TABLE IF NOT EXISTS posts (
+  id           SERIAL PRIMARY KEY,
+  slug         TEXT UNIQUE NOT NULL,
+  title        TEXT NOT NULL,
+  excerpt      TEXT,
+  body         TEXT,
+  cover_image  TEXT,                       -- storage key (Supabase object path)
+  status       TEXT NOT NULL DEFAULT 'draft',
+  author_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  published_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status, published_at);

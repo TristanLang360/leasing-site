@@ -3,6 +3,7 @@ import { api, cap, type Me } from '@/lib/api'
 import { Login } from '@/components/login'
 import { UnitsTab } from '@/components/units-tab'
 import { CalendarTab } from '@/components/calendar-tab'
+import { BlogTab } from '@/components/blog-tab'
 import { AgentsTab } from '@/components/agents-tab'
 import { AccountTab } from '@/components/account-tab'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -61,12 +62,16 @@ export default function App() {
           <TabsList>
             <TabsTrigger value="units">Units</TabsTrigger>
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            {cap.blog(me.role) && <TabsTrigger value="blog">Blog</TabsTrigger>}
             {cap.manageUsers(me.role) && <TabsTrigger value="agents">Agents</TabsTrigger>}
             <TabsTrigger value="account">My account</TabsTrigger>
           </TabsList>
 
           <TabsContent value="units" className="mt-6"><UnitsTab me={me} /></TabsContent>
           <TabsContent value="calendar" className="mt-6"><CalendarTab me={me} /></TabsContent>
+          {cap.blog(me.role) && (
+            <TabsContent value="blog" className="mt-6"><BlogTab me={me} /></TabsContent>
+          )}
           {cap.manageUsers(me.role) && (
             <TabsContent value="agents" className="mt-6"><AgentsTab me={me} /></TabsContent>
           )}

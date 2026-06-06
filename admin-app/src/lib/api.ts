@@ -58,6 +58,22 @@ export interface Appointment {
 
 export interface CsvResult { imported: number; skipped: number; total: number; errors: { row: number; error: string }[] }
 
+export interface Post {
+  id: number
+  slug: string
+  title: string
+  excerpt: string | null
+  body: string | null
+  cover_image: string | null
+  cover_url: string | null
+  status: 'draft' | 'published'
+  author_id: number | null
+  created_at: string
+  updated_at: string
+  published_at: string | null
+  author?: { id: number; name: string | null; email: string } | null
+}
+
 export class ApiError extends Error {
   status: number
   constructor(message: string, status: number) { super(message); this.status = status }
@@ -96,4 +112,5 @@ export const cap = {
   deleteUnits: (r?: Role) => r === 'master',
   manageUsers: (r?: Role) => r === 'master',
   calendar: (r?: Role) => r === 'master' || r === 'agent',
+  blog: (r?: Role) => r === 'master' || r === 'agent',
 }
