@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { api, cap, type Me, type Unit } from '@/lib/api'
 import { fmtBeds, fmtPrice } from '@/lib/format'
 import { UnitDialog } from '@/components/unit-dialog'
+import { UnitDetails } from '@/components/unit-details'
 import { CsvImportDialog } from '@/components/csv-import-dialog'
 import { UnitFilters, applyFilters, defaultFilter, type UnitFilter } from '@/components/unit-filters'
 import { UnitsMap } from '@/components/units-map'
@@ -15,6 +16,7 @@ export function UnitsTab({ me }: { me: Me }) {
   const [filter, setFilter] = useState<UnitFilter>(defaultFilter)
   const [showMap, setShowMap] = useState(true)
   const [editing, setEditing] = useState<Unit | null | undefined>(undefined) // undefined=closed, null=new
+  const [viewing, setViewing] = useState<Unit | undefined>(undefined)        // details view
   const [csvOpen, setCsvOpen] = useState(false)
   const canEdit = cap.editUnits(me.role)
   const canDelete = cap.deleteUnits(me.role)
@@ -55,7 +57,7 @@ export function UnitsTab({ me }: { me: Me }) {
 
       <UnitFilters filter={filter} setFilter={setFilter} units={units} />
 
-      {showMap && <UnitsMap units={filtered} onSelect={(u) => setEditing(u)} />}
+      {showMap && <UnitsMap units={filtered} onSelect={(u) => setViewing(u)} />}
 
       {filtered.length === 0 && !loading ? (
         <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
@@ -67,6 +69,8 @@ export function UnitsTab({ me }: { me: Me }) {
         <div className="grid gap-2">
           {filtered.map((u) => (
             <div key={u.id} className="flex items-center gap-4 rounded-lg border bg-card p-3">
+              <button type="button" onClick={() => setViewing(u)}
+                className="flex min-w-0 flex-1 items-center gap-4 text-left">
               <div className="size-16 shrink-0 overflow-hidden rounded-md bg-muted">
                 {u.photos[0]
                   ? <img src={u.photos[0].url} alt="" className="h-full w-full object-cover" />
@@ -89,8 +93,10 @@ export function UnitsTab({ me }: { me: Me }) {
                   {` · ${u.photos.length} photo${u.photos.length === 1 ? '' : 's'}`}
                 </div>
               </div>
+              </button>
               <div className="flex shrink-0 gap-2">
-                <Button variant="outline" size="sm" onClick={() => setEditing(u)}>{canEdit ? 'Edit' : 'View'}</Button>
+                <Button variant="outline" size="sm" onClick={() => setViewing(u)}>Details</Button>
+                {canEdit && <Button variant="outline" size="sm" onClick={() => setEditing(u)}>Edit</Button>}
                 {canDelete && <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => remove(u)}>Delete</Button>}
               </div>
             </div>
@@ -105,6 +111,13 @@ export function UnitsTab({ me }: { me: Me }) {
         onOpenChange={(o) => { if (!o) setEditing(undefined) }}
         onSaved={(saved) => { setEditing(saved); load() }}
         onChanged={load}
+      />
+      <UnitDetails
+        me={me}
+        unit={viewing ?? null}
+        open={viewing !== undefined}
+        onOpenChange={(o) => { if (!o) setViewing(undefined) }}
+        onEdit={(u) => setEditing(u)}
       />
       <CsvImportDialog open={csvOpen} onOpenChange={setCsvOpen} onImported={load} />
     </div>
