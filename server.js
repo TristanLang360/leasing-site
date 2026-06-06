@@ -94,15 +94,19 @@ function geocodeQuery(address) {
   if (!/montr|qu[ée]bec|,\s*qc\b|canada/i.test(s)) s += ', Montréal, QC, Canada';
   return s;
 }
+// Greater Montréal bounding box — reject geocodes that land elsewhere
+// (bare street names often match a city on another continent).
+const inMontreal = (lat, lng) => lat >= 45.0 && lat <= 46.0 && lng >= -74.6 && lng <= -73.0;
+
 async function geocode(address) {
   try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(geocodeQuery(address))}`;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ca&q=${encodeURIComponent(geocodeQuery(address))}`;
     const r = await fetch(url, { headers: { 'User-Agent': config.geocode.userAgent } });
     if (!r.ok) return null;
     const j = await r.json();
     if (Array.isArray(j) && j[0]) {
       const lat = parseFloat(j[0].lat), lng = parseFloat(j[0].lon);
-      if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
+      if (Number.isFinite(lat) && Number.isFinite(lng) && inMontreal(lat, lng)) return { lat, lng };
     }
   } catch { /* offline — try again later */ }
   return null;
