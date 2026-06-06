@@ -128,3 +128,9 @@
     @apply font-sans;
     }
 }
+
+/* Leaflet gives its panes/controls very high internal z-indexes (up to
+   1000), which would otherwise paint over dialogs (z-50) — most visibly on
+   mobile where the map sits behind the unit-details modal. Isolating the map
+   container contains those z-indexes in their own stacking context. */
+.leaflet-container { isolation: isolate; }

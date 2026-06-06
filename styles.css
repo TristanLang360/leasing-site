@@ -701,7 +701,9 @@ footer {
   height: 220px; width: 100%; border-radius: var(--radius-sm); overflow: hidden;
   border: 1px solid var(--line); margin-bottom: 12px; z-index: 0;
 }
-.leaflet-container { font: inherit; }
+/* Contain Leaflet's high internal z-indexes so the map never paints over
+   modals (e.g. the booking form on listing pages). */
+.leaflet-container { font: inherit; isolation: isolate; }
 .map-popup-link { color: var(--accent); font-weight: 500; }
 .unit-card.flash { outline: 3px solid var(--accent-soft); outline-offset: 3px; transition: outline-color .4s; }
 
