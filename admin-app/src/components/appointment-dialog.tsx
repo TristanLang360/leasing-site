@@ -136,6 +136,7 @@ export function AppointmentDialog({
             <Select value={form.status} onValueChange={(v) => set('status', v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
+                <SelectItem value="requested">Requested</SelectItem>
                 <SelectItem value="scheduled">Scheduled</SelectItem>
                 <SelectItem value="done">Done</SelectItem>
                 <SelectItem value="canceled">Canceled</SelectItem>

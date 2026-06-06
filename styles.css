@@ -926,6 +926,12 @@ footer {
 .listing-cta-price span { font-family: 'Inter', sans-serif; font-size: 0.95rem; color: var(--ink-muted); }
 .listing-cta .btn { justify-content: center; }
 .listing-dir { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.dir-btn { display: inline-flex; align-items: center; gap: 6px; }
+.dir-btn svg { display: block; flex: none; }
+.listing-disclaimer {
+  margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line);
+  font-size: 0.78rem; line-height: 1.55; color: var(--ink-muted); max-width: 760px;
+}
 
 /* Homepage "From the blog" teaser */
 

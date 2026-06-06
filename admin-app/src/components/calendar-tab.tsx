@@ -128,11 +128,13 @@ function localValue(d: Date) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 function chip(status: string) {
+  if (status === 'requested') return 'bg-amber-100 text-amber-800'
   if (status === 'done') return 'bg-emerald-100 text-emerald-800'
   if (status === 'canceled') return 'bg-rose-100 text-rose-800 line-through'
   return 'bg-sky-100 text-sky-800'
 }
 function chipText(status: string) {
+  if (status === 'requested') return 'text-amber-700'
   if (status === 'done') return 'text-emerald-700'
   if (status === 'canceled') return 'text-rose-700'
   return 'text-sky-700'

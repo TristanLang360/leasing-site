@@ -524,7 +524,7 @@ function parseApptBody(b) {
     client_email: (b.client_email || '').trim() || null,
     notes: (b.notes || '').trim() || null,
     agent_id: num(b.agent_id),
-    status: ['scheduled', 'done', 'canceled'].includes(b.status) ? b.status : 'scheduled',
+    status: ['requested', 'scheduled', 'done', 'canceled'].includes(b.status) ? b.status : 'scheduled',
   };
 }
 
@@ -549,6 +549,30 @@ app.put('/api/appointments/:id', requireCap(can.calendar), wrap(async (req, res)
 app.delete('/api/appointments/:id', requireCap(can.calendar), wrap(async (req, res) => {
   await repo.deleteAppointment(req.params.id);
   res.json({ ok: true });
+}));
+
+// Public "Book a showing" form — creates a pending (requested) appointment
+// that staff see in the admin calendar. No auth (it's a public lead form).
+app.post('/api/showing-requests', wrap(async (req, res) => {
+  const b = req.body || {};
+  const name = String(b.client_name || '').trim();
+  const email = String(b.client_email || '').trim();
+  if (!name || !email) return res.status(400).json({ error: 'Name and email are required.' });
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return res.status(400).json({ error: 'A valid email is required.' });
+  const unitId = Number(b.unit_id) || null;
+  let title = 'Showing request';
+  if (unitId) {
+    const unit = await repo.getUnit(unitId);
+    if (!unit) return res.status(404).json({ error: 'Unit not found.' });
+    title = `Showing request — ${unit.title}`;
+  }
+  const start_at = b.preferred ? new Date(b.preferred).toISOString() : new Date(Date.now() + 864e5).toISOString();
+  await repo.createAppointment({
+    unit_id: unitId, title, start_at, end_at: null,
+    client_name: name, client_phone: String(b.client_phone || '').trim() || null, client_email: email,
+    notes: String(b.message || '').trim() || null, agent_id: null, status: 'requested', created_by: null,
+  });
+  res.status(201).json({ ok: true });
 }));
 
 // ───────────────────────────────────────────────────────────────
@@ -781,6 +805,9 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
   const located = u.lat != null && u.lng != null;
   const dest = located ? `${u.lat},${u.lng}` : encodeURIComponent(u.address);
 
+  const gmapsSvg = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335"/><circle cx="12" cy="9" r="2.6" fill="#fff"/></svg>';
+  const amapsSvg = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><defs><linearGradient id="am-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#46c0f5"/><stop offset="1" stop-color="#1aa657"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" fill="url(#am-grad)"/><path d="M12 6.4l3.6 9.6L12 14l-3.6 2z" fill="#fff"/></svg>';
+
   const gallery = u.photos.length
     ? `<div class="listing-gallery">${u.photos.map((p, i) =>
         `<a href="${escHtml(p.url)}" target="_blank" rel="noopener" class="listing-shot${i === 0 ? ' lead' : ''}" style="background-image:url('${escHtml(p.url)}')" aria-label="Photo ${i + 1}"></a>`).join('')}</div>`
@@ -838,18 +865,67 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
       <aside class="listing-aside">
         <div class="listing-cta">
           <div class="listing-cta-price">${money(u.price)} <span>/ mo</span></div>
-          <a class="btn btn-primary" href="mailto:hello@rentalium.ca?subject=${encodeURIComponent('Inquiry: ' + u.title)}">Book a showing</a>
+          <button type="button" class="btn btn-primary" id="book-btn">Book a showing</button>
           <a class="btn btn-ghost" href="tel:+15145550100">+1 (514) 555-0100</a>
           <div class="listing-dir">
             <span class="muted small">Directions:</span>
-            <a class="btn btn-ghost btn-sm" href="https://www.google.com/maps/dir/?api=1&destination=${dest}" target="_blank" rel="noopener">Google</a>
-            <a class="btn btn-ghost btn-sm" href="https://maps.apple.com/?daddr=${dest}&dirflg=d" target="_blank" rel="noopener">Apple</a>
+            <a class="btn btn-ghost btn-sm dir-btn" href="https://www.google.com/maps/dir/?api=1&destination=${dest}" target="_blank" rel="noopener" aria-label="Get directions in Google Maps">${gmapsSvg}<span>Google Maps</span></a>
+            <a class="btn btn-ghost btn-sm dir-btn" href="https://maps.apple.com/?daddr=${dest}&dirflg=d" target="_blank" rel="noopener" aria-label="Get directions in Apple Maps">${amapsSvg}<span>Apple Maps</span></a>
           </div>
         </div>
       </aside>
     </div>
     <p style="margin-top:32px;"><a class="btn btn-ghost" href="/units.html">&larr; All available units</a></p>
-  </div></section>`;
+    <p class="listing-disclaimer">Listing information is provided for general informational purposes only and may change without notice. Square footage, availability, pricing, and amenities are approximate and not guaranteed; photos may not reflect the exact unit. Submitting a showing request does not create a lease, reservation, or obligation. Rentalium is an equal-opportunity housing agency.</p>
+  </div></section>
+
+  <div class="modal-backdrop" id="book-backdrop"></div>
+  <div class="modal" id="book-modal" role="dialog" aria-modal="true" aria-labelledby="book-title">
+    <div class="drawer-head">
+      <h2 id="book-title">Book a showing</h2>
+      <button class="icon-btn" id="book-close" aria-label="Close">×</button>
+    </div>
+    <form class="modal-body" id="book-form">
+      <p class="muted small" style="margin:0;">Request a showing for <strong>${escHtml(u.title)}</strong> — we'll confirm by email.</p>
+      <label class="field"><span>Your name *</span><input name="client_name" required /></label>
+      <div class="grid-2">
+        <label class="field"><span>Email *</span><input name="client_email" type="email" required /></label>
+        <label class="field"><span>Phone</span><input name="client_phone" /></label>
+      </div>
+      <label class="field"><span>Preferred date &amp; time</span><input name="preferred" type="datetime-local" /></label>
+      <label class="field"><span>Message</span><textarea name="message" rows="3" placeholder="Anything we should know?"></textarea></label>
+      <div class="login-error" id="book-msg" hidden></div>
+      <div class="drawer-foot">
+        <button type="button" class="btn btn-ghost" id="book-cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="book-submit">Send request</button>
+      </div>
+    </form>
+  </div>`;
+
+  const bookingScript = `
+<script>(function(){
+  var bd=document.getElementById('book-backdrop'),md=document.getElementById('book-modal');
+  function open(){bd.classList.add('open');md.classList.add('open');}
+  function close(){bd.classList.remove('open');md.classList.remove('open');}
+  document.getElementById('book-btn').addEventListener('click',open);
+  document.getElementById('book-close').addEventListener('click',close);
+  document.getElementById('book-cancel').addEventListener('click',close);
+  bd.addEventListener('click',close);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+  document.getElementById('book-form').addEventListener('submit',function(e){
+    e.preventDefault();
+    var f=e.target,msg=document.getElementById('book-msg'),btn=document.getElementById('book-submit');
+    msg.hidden=true;btn.disabled=true;btn.textContent='Sending…';
+    var data={unit_id:${u.id},client_name:f.client_name.value,client_email:f.client_email.value,client_phone:f.client_phone.value,preferred:f.preferred.value,message:f.message.value};
+    fetch('/api/showing-requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+      .then(function(r){if(!r.ok)return r.json().then(function(j){throw new Error(j.error||'Request failed')});return r.json();})
+      .then(function(){
+        md.querySelector('.modal-body').innerHTML='<p style="padding:18px 0;">&#10003; Thanks! Your showing request was sent. A Rentalium agent will reach out shortly.</p><div class="drawer-foot"><button type="button" class="btn btn-primary" id="book-done">Done</button></div>';
+        document.getElementById('book-done').addEventListener('click',close);
+      })
+      .catch(function(err){msg.textContent=err.message;msg.hidden=false;btn.disabled=false;btn.textContent='Send request';});
+  });
+})();</script>`;
 
   res.type('html').send(renderShell({
     title: `${u.title} — ${u.neighborhood || 'Montréal'} | ${money(u.price)}/mo | Rentalium`,
@@ -858,7 +934,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
     canonical: `https://rentalium.ca/units/${u.id}/${slug}`,
     active: 'units',
     head: `${mapHead}\n<meta property="og:type" content="website" />\n<script type="application/ld+json">${JSON.stringify(ld)}</script>`,
-    body: body + mapScript,
+    body: body + bookingScript + mapScript,
   }));
 }));
 
