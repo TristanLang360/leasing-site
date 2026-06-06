@@ -13,6 +13,11 @@ const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
 }[c]));
 
+// SEO-friendly listing URL: /units/:id/:slug
+const slugify = (s) => String(s ?? '').toLowerCase().normalize('NFKD')
+  .replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+const unitHref = (u) => `/units/${u.id}/${slugify(u.title) || 'listing'}`;
+
 let UNITS = [];
 
 async function loadUnits() {
@@ -53,6 +58,7 @@ function unitCardHTML(u, idx) {
     : '';
 
   return `
+    <a class="unit-card-link" href="${unitHref(u)}">
     <article class="unit-card" id="unit-card-${u.id}">
       ${photo}
         <span class="unit-tag">Avail ${fmtAvail(u.available_date)}</span>
@@ -69,6 +75,7 @@ function unitCardHTML(u, idx) {
         ${amenitiesHTML}
       </div>
     </article>
+    </a>
   `;
 }
 
@@ -128,17 +135,8 @@ function renderMap(list) {
     m.bindPopup(
       `<strong>${escapeHtml(u.title)}</strong><br>${escapeHtml(u.address)}<br>` +
       `${fmtBeds(u.beds)} · ${fmtPrice(u.price)}<br>` +
-      `<a href="#unit-card-${u.id}" class="map-popup-link">View listing →</a>`
+      `<a href="${unitHref(u)}" class="map-popup-link">View listing →</a>`
     );
-    m.on('popupopen', () => {
-      const link = document.querySelector('.leaflet-popup .map-popup-link');
-      if (link) link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const card = document.getElementById(`unit-card-${u.id}`);
-        if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          card.classList.add('flash'); setTimeout(() => card.classList.remove('flash'), 1600); }
-      });
-    });
     m.addTo(markerLayer);
     pts.push([u.lat, u.lng]);
   });

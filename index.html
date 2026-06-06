@@ -333,12 +333,15 @@
       const fmtPrice = (n) => '$' + (n || 0).toLocaleString('en-US') + ' / mo';
       const fmtBeds = (n) => n === 0 ? 'Studio' : `${n} bed${n > 1 ? 's' : ''}`;
       const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;" }[c]));
+      const slugify = (s) => String(s ?? '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+      const unitHref = (u) => `/units/${u.id}/${slugify(u.title) || 'listing'}`;
       grid.innerHTML = all.slice(0, 3).map((u, i) => {
         const variant = (i % 6) + 1;
         const photo = u.photos && u.photos[0]
           ? `<div class="unit-photo has-image" style="background-image:url('${u.photos[0].url}')">`
           : `<div class="unit-photo v${variant}">`;
         return `
+          <a class="unit-card-link" href="${unitHref(u)}">
           <article class="unit-card">
             ${photo}
               <span class="unit-tag">Available</span>
@@ -354,6 +357,7 @@
               </div>
             </div>
           </article>
+          </a>
         `;
       }).join('');
       // Also update the hero badge count

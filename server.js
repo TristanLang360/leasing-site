@@ -653,7 +653,8 @@ app.delete('/api/posts/:id/cover', requireCap(can.blog), wrap(async (req, res) =
 }));
 
 // ── Server-rendered public blog (SEO-friendly) ─────────────────
-function renderShell({ title, description, canonical, head = '', body }) {
+function renderShell({ title, description, canonical, head = '', body, active = '' }) {
+  const navActive = (k) => (active === k ? ' class="active"' : '');
   return `<!DOCTYPE html>
 <html lang="en-CA">
 <head>
@@ -675,8 +676,8 @@ ${head}
   <nav class="nav-links">
     <a href="/index.html#services">Services</a>
     <a href="/index.html#neighbourhoods">Neighbourhoods</a>
-    <a href="/units.html">Available units</a>
-    <a href="/blog" class="active">Blog</a>
+    <a href="/units.html"${navActive('units')}>Available units</a>
+    <a href="/blog"${navActive('blog')}>Blog</a>
     <a href="/units.html" class="btn btn-primary btn-sm">Browse rentals</a>
   </nav>
 </div></header>
@@ -714,6 +715,7 @@ app.get('/blog', wrap(async (req, res) => {
     title: 'Blog | Rentalium — Montréal Leasing Agency',
     description: "Renting and leasing guides for Montréal landlords and renters, from Rentalium's leasing team.",
     canonical: 'https://rentalium.ca/blog',
+    active: 'blog',
     body,
   }));
 }));
@@ -752,8 +754,111 @@ app.get('/blog/:slug', wrap(async (req, res) => {
     title: `${post.title} | Rentalium`,
     description: desc,
     canonical: `https://rentalium.ca/blog/${post.slug}`,
+    active: 'blog',
     head: `<meta property="og:type" content="article" />\n<script type="application/ld+json">${JSON.stringify(ld)}</script>`,
     body,
+  }));
+}));
+
+// ───────────────────────────────────────────────────────────────
+// Server-rendered public unit listing page (SEO-friendly)
+// ───────────────────────────────────────────────────────────────
+app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
+  const raw = await repo.getUnit(req.params.id);
+  if (!raw) {
+    return res.status(404).type('html').send(renderShell({
+      title: 'Listing not found | Rentalium', description: 'This listing could not be found.', active: 'units',
+      body: `<section class="page-header"><div class="container"><div class="eyebrow">Available units</div><h1>Listing not found</h1><p><a href="/units.html">&larr; Back to all units</a></p></div></section>`,
+    }));
+  }
+  const u = present(raw);
+  const slug = slugify(u.title) || 'listing';
+  const money = (n) => '$' + Number(n || 0).toLocaleString('en-US');
+  const beds = u.beds === 0 ? 'Studio' : `${u.beds} bed${u.beds > 1 ? 's' : ''}`;
+  const avail = u.available_date
+    ? new Date(u.available_date + 'T00:00:00').toLocaleDateString('en-CA', { month: 'long', day: 'numeric', year: 'numeric' })
+    : 'Now';
+  const located = u.lat != null && u.lng != null;
+  const dest = located ? `${u.lat},${u.lng}` : encodeURIComponent(u.address);
+
+  const gallery = u.photos.length
+    ? `<div class="listing-gallery">${u.photos.map((p, i) =>
+        `<a href="${escHtml(p.url)}" target="_blank" rel="noopener" class="listing-shot${i === 0 ? ' lead' : ''}" style="background-image:url('${escHtml(p.url)}')" aria-label="Photo ${i + 1}"></a>`).join('')}</div>`
+    : `<div class="listing-noimg">No photos yet — contact us for more details.</div>`;
+
+  const facts = [beds, `${u.baths} bath${u.baths > 1 ? 's' : ''}`]
+    .concat(u.sqft ? [`${u.sqft.toLocaleString()} sqft`] : [])
+    .concat([`Available ${avail}`]);
+
+  const specs = [
+    ...(u.appliances ? [['Appliances', u.appliances]] : []),
+    ['Parking', u.parking_available === 'yes' ? `Yes${u.parking_cost ? ` · ${money(u.parking_cost)}/mo` : ''}` : 'No'],
+    ['Locker', u.locker_available === 'yes' ? `Yes${u.locker_cost ? ` · ${money(u.locker_cost)}/mo` : ''}` : 'No'],
+    ['Dogs', u.dogs_policy === 'yes' ? 'Dogs welcome' : u.dogs_policy === 'contact' ? 'Contact us' : 'No dogs'],
+    ...(u.unit_code ? [['Unit code', u.unit_code]] : []),
+  ];
+
+  const ld = {
+    '@context': 'https://schema.org', '@type': 'Apartment', name: u.title,
+    ...(u.description ? { description: u.description } : {}),
+    numberOfBedrooms: u.beds, numberOfBathroomsTotal: u.baths,
+    ...(u.sqft ? { floorSize: { '@type': 'QuantitativeValue', value: u.sqft, unitCode: 'FTK' } } : {}),
+    ...(u.photos.length ? { image: u.photos.map((p) => (p.url.startsWith('http') ? p.url : `https://rentalium.ca${p.url}`)) } : {}),
+    address: { '@type': 'PostalAddress', streetAddress: u.address, addressLocality: 'Montréal', addressRegion: 'QC', addressCountry: 'CA' },
+    ...(located ? { geo: { '@type': 'GeoCoordinates', latitude: u.lat, longitude: u.lng } } : {}),
+  };
+
+  const mapHead = located
+    ? `<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />`
+    : '';
+  const mapScript = located
+    ? `<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>(function(){var m=L.map('listing-map',{scrollWheelZoom:false}).setView([${u.lat},${u.lng}],15);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(m);L.marker([${u.lat},${u.lng}]).addTo(m);})();</script>`
+    : '';
+
+  const body = `
+  <section class="page-header"><div class="container">
+    <div class="eyebrow"><a href="/units.html" style="color:inherit;">Available units</a></div>
+    <h1>${escHtml(u.title)}</h1>
+    <p class="listing-sub">${escHtml(u.address)}${u.neighborhood ? ' · ' + escHtml(u.neighborhood) : ''}</p>
+    <div class="listing-priceline">
+      <span class="listing-price">${money(u.price)} / mo</span>
+      <span class="listing-facts">${facts.map((f) => `<span>${escHtml(f)}</span>`).join('')}</span>
+    </div>
+  </div></section>
+  <section style="padding-top:0;"><div class="container">
+    ${gallery}
+    <div class="listing-grid">
+      <div class="listing-main">
+        ${u.description ? `<h2>About this unit</h2><p>${escHtml(u.description)}</p>` : ''}
+        <h2>Details</h2>
+        <dl class="listing-specs">${specs.map(([k, v]) => `<div><dt>${escHtml(k)}</dt><dd>${escHtml(v)}</dd></div>`).join('')}</dl>
+        ${located ? `<h2>Location</h2><div id="listing-map" class="listing-map"></div>` : ''}
+      </div>
+      <aside class="listing-aside">
+        <div class="listing-cta">
+          <div class="listing-cta-price">${money(u.price)} <span>/ mo</span></div>
+          <a class="btn btn-primary" href="mailto:hello@rentalium.ca?subject=${encodeURIComponent('Inquiry: ' + u.title)}">Book a showing</a>
+          <a class="btn btn-ghost" href="tel:+15145550100">+1 (514) 555-0100</a>
+          <div class="listing-dir">
+            <span class="muted small">Directions:</span>
+            <a class="btn btn-ghost btn-sm" href="https://www.google.com/maps/dir/?api=1&destination=${dest}" target="_blank" rel="noopener">Google</a>
+            <a class="btn btn-ghost btn-sm" href="https://maps.apple.com/?daddr=${dest}&dirflg=d" target="_blank" rel="noopener">Apple</a>
+          </div>
+        </div>
+      </aside>
+    </div>
+    <p style="margin-top:32px;"><a class="btn btn-ghost" href="/units.html">&larr; All available units</a></p>
+  </div></section>`;
+
+  res.type('html').send(renderShell({
+    title: `${u.title} — ${u.neighborhood || 'Montréal'} | ${money(u.price)}/mo | Rentalium`,
+    description: u.description
+      || `${beds}, ${u.baths} bath rental at ${u.address}, Montréal — ${money(u.price)}/mo. Available ${avail}. Book a showing with Rentalium.`,
+    canonical: `https://rentalium.ca/units/${u.id}/${slug}`,
+    active: 'units',
+    head: `${mapHead}\n<meta property="og:type" content="website" />\n<script type="application/ld+json">${JSON.stringify(ld)}</script>`,
+    body: body + mapScript,
   }));
 }));
 
