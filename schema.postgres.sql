@@ -1,0 +1,75 @@
+-- ───────────────────────────────────────────────────────────────
+-- Postgres / Supabase schema for Rentalium.
+-- Apply in the Supabase SQL editor, or:
+--   psql "$DATABASE_URL" -f schema.postgres.sql
+-- Mirrors lib/repo.sqlite.js so the Postgres driver can be a drop-in.
+-- ───────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS units (
+  id                SERIAL PRIMARY KEY,
+  unit_code         TEXT,
+  title             TEXT NOT NULL,
+  address           TEXT NOT NULL,
+  neighborhood      TEXT,
+  beds              INTEGER NOT NULL DEFAULT 1,
+  baths             INTEGER NOT NULL DEFAULT 1,
+  sqft              INTEGER,
+  price             INTEGER NOT NULL DEFAULT 0,
+  available_date    TEXT,
+  description       TEXT,
+  appliances        TEXT,
+  parking_available TEXT NOT NULL DEFAULT 'no',
+  parking_cost      INTEGER,
+  locker_available  TEXT NOT NULL DEFAULT 'no',
+  locker_cost       INTEGER,
+  dogs_policy       TEXT NOT NULL DEFAULT 'no',
+  status            TEXT NOT NULL DEFAULT 'available',
+  lat               DOUBLE PRECISION,
+  lng               DOUBLE PRECISION,
+  geocode_attempted INTEGER NOT NULL DEFAULT 0,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS photos (
+  id         SERIAL PRIMARY KEY,
+  unit_id    INTEGER NOT NULL REFERENCES units(id) ON DELETE CASCADE,
+  filename   TEXT NOT NULL,              -- storage key (Supabase object path)
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_photos_unit ON photos(unit_id);
+
+CREATE TABLE IF NOT EXISTS users (
+  id         SERIAL PRIMARY KEY,
+  email      TEXT UNIQUE NOT NULL,
+  name       TEXT,
+  role       TEXT NOT NULL DEFAULT 'agent',
+  salt       TEXT NOT NULL,
+  hash       TEXT NOT NULL,
+  active     INTEGER NOT NULL DEFAULT 1,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+  token      TEXT PRIMARY KEY,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS appointments (
+  id           SERIAL PRIMARY KEY,
+  unit_id      INTEGER REFERENCES units(id) ON DELETE SET NULL,
+  title        TEXT NOT NULL,
+  start_at     TIMESTAMPTZ NOT NULL,
+  end_at       TIMESTAMPTZ,
+  client_name  TEXT,
+  client_phone TEXT,
+  client_email TEXT,
+  notes        TEXT,
+  agent_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  status       TEXT NOT NULL DEFAULT 'scheduled',
+  created_by   INTEGER,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_appts_start ON appointments(start_at);

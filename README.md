@@ -68,9 +68,58 @@ Address, neighborhood, price, size (sq ft), beds/baths, appliances, parking
 (availability + monthly cost), locker (availability + monthly cost), a dog policy,
 map coordinates, and photos.
 
+## Storage & database (local now, Supabase-ready)
+
+The app runs fully locally by default (photos on disk, data in SQLite), but
+storage and the database are behind a config-flag **adapter layer** so you can
+point them at Supabase later **without touching any route code**. Copy
+`.env.example` to `.env` to configure.
+
+### Photo storage — `STORAGE_DRIVER`
+
+| Value | Where photos go |
+|-------|-----------------|
+| `local` *(default)* | `./uploads` on disk, served at `/uploads` |
+| `supabase` | a Supabase Storage bucket |
+
+To switch photos to Supabase:
+
+```bash
+npm install @supabase/supabase-js
+# in .env:
+STORAGE_DRIVER=supabase
+SUPABASE_URL=https://YOURPROJECT.supabase.co
+SUPABASE_SERVICE_KEY=your-service-role-key
+SUPABASE_BUCKET=unit-photos     # create this bucket (public) in Supabase first
+```
+
+Uploads, the per-photo download, and the "download all (.zip)" all keep working —
+they just read/write the bucket instead of disk. The implementation lives in
+`lib/storage.js`.
+
+### Database — `DB_DRIVER`
+
+| Value | Backing store |
+|-------|---------------|
+| `sqlite` *(default)* | `./rentalium.db` (fully working) |
+| `postgres` | Supabase/Postgres — **seam in place, not yet wired** |
+
+Every data call goes through `lib/repo.js`, and every method is already `async`
+and `await`ed by the handlers — so finishing the Postgres move is a single,
+self-contained file. Steps:
+
+1. `npm install pg`
+2. Apply `schema.postgres.sql` to your Supabase database
+3. Implement the methods in `lib/repo.postgres.js` (same signatures as
+   `lib/repo.sqlite.js`) using `pg` against `DATABASE_URL`
+4. Run with `DB_DRIVER=postgres DATABASE_URL=postgres://… npm start`
+
+Until step 3 is done, selecting `DB_DRIVER=postgres` fails fast with a reminder
+rather than silently doing nothing.
+
 ## Notes
 
-- `rentalium.db` and `uploads/` are git-ignored; the database is recreated and
-  seeded locally on first run.
+- `rentalium.db`, `uploads/`, and `.env` are git-ignored; the database is
+  recreated and seeded locally on first run.
 - Geocoding uses the free OpenStreetMap Nominatim service (~1 request/second),
   so bulk imports fill in their map pins gradually in the background.
