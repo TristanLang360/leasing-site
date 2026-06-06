@@ -82,7 +82,9 @@ export default function App() {
           {cap.manageUsers(me.role) && (
             <TabsContent value="agents" className="mt-6"><AgentsTab me={me} /></TabsContent>
           )}
-          <TabsContent value="account" className="mt-6"><AccountTab /></TabsContent>
+          <TabsContent value="account" className="mt-6">
+            <AccountTab me={me} onChanged={() => api.get<Me>('/api/me').then(setMe).catch(() => {})} />
+          </TabsContent>
         </Tabs>
       </main>
 

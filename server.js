@@ -293,6 +293,23 @@ app.put('/api/me/password', requireAuth, wrap(async (req, res) => {
   res.json({ ok: true });
 }));
 
+// Change your own login email (requires your current password).
+app.put('/api/me/email', requireAuth, wrap(async (req, res) => {
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const password = String(req.body.password || '');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return res.status(400).json({ error: 'A valid email is required.' });
+  const user = await repo.getUserById(req.user.id);
+  if (!verifyPassword(password, user.salt, user.hash)) {
+    return res.status(403).json({ error: 'Password is incorrect.' });
+  }
+  if (email !== user.email) {
+    const existing = await repo.getUserByEmail(email);
+    if (existing && existing.id !== user.id) return res.status(409).json({ error: 'That email is already in use.' });
+    await repo.setUserEmail(user.id, email);
+  }
+  res.json({ id: user.id, email, name: user.name, role: user.role });
+}));
+
 // ───────────────────────────────────────────────────────────────
 // User management API (master only)
 // ───────────────────────────────────────────────────────────────
