@@ -26,7 +26,7 @@ export function UnitsMap({ units, onSelect }: { units: Unit[]; onSelect: (u: Uni
 
   return (
     <div className="overflow-hidden rounded-lg border">
-      <MapContainer center={points[0] ?? MONTREAL} zoom={12} scrollWheelZoom={false} className="h-80 w-full">
+      <MapContainer center={points[0] ?? MONTREAL} zoom={12} scrollWheelZoom={false} className="h-80 w-full lg:h-[36rem]">
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
         <FitBounds points={points} />
         {located.map((u) => (

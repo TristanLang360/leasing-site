@@ -57,8 +57,13 @@ export function UnitsTab({ me }: { me: Me }) {
 
       <UnitFilters filter={filter} setFilter={setFilter} units={units} />
 
-      {showMap && <UnitsMap units={filtered} onSelect={(u) => setViewing(u)} />}
-
+      <div className={showMap ? 'grid items-start gap-4 lg:grid-cols-2' : undefined}>
+        {showMap && (
+          <div className="lg:sticky lg:top-24">
+            <UnitsMap units={filtered} onSelect={(u) => setViewing(u)} />
+          </div>
+        )}
+        <div className="min-w-0">
       {filtered.length === 0 && !loading ? (
         <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
           {units.length === 0
@@ -68,7 +73,7 @@ export function UnitsTab({ me }: { me: Me }) {
       ) : (
         <div className="grid gap-2">
           {filtered.map((u) => (
-            <div key={u.id} className="flex items-center gap-4 rounded-lg border bg-card p-3">
+            <div key={u.id} className="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-3">
               <button type="button" onClick={() => setViewing(u)}
                 className="flex min-w-0 flex-1 items-center gap-4 text-left">
               <div className="size-16 shrink-0 overflow-hidden rounded-md bg-muted">
@@ -103,6 +108,8 @@ export function UnitsTab({ me }: { me: Me }) {
           ))}
         </div>
       )}
+        </div>
+      </div>
 
       <UnitDialog
         me={me}
