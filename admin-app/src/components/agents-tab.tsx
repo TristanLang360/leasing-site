@@ -116,7 +116,7 @@ function UserDialog({
           <div className="grid gap-1.5">
             <Label className="text-xs text-muted-foreground">Role</Label>
             <Select value={role} onValueChange={(v) => v && setRole(v as Role)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger><SelectValue>{(v: any) => (({ master: 'Master', agent: 'Agent', viewer: 'Viewer' } as Record<string, string>)[String(v)] ?? String(v))}</SelectValue></SelectTrigger>
               <SelectContent>
                 <SelectItem value="agent">Agent</SelectItem>
                 <SelectItem value="viewer">Viewer</SelectItem>

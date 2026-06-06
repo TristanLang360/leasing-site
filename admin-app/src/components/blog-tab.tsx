@@ -172,7 +172,7 @@ function BlogEditor({
             <div className="grid gap-1.5">
               <Label className="text-xs text-muted-foreground">Status</Label>
               <Select value={status} onValueChange={(v) => v && setStatus(v as 'draft' | 'published')}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger><SelectValue>{(v: any) => (v === 'published' ? 'Published (live)' : 'Draft (hidden)')}</SelectValue></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="draft">Draft (hidden)</SelectItem>
                   <SelectItem value="published">Published (live)</SelectItem>

@@ -808,6 +808,14 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
   const gmapsSvg = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335"/><circle cx="12" cy="9" r="2.6" fill="#fff"/></svg>';
   const amapsSvg = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><defs><linearGradient id="am-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#46c0f5"/><stop offset="1" stop-color="#1aa657"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" fill="url(#am-grad)"/><path d="M12 6.4l3.6 9.6L12 14l-3.6 2z" fill="#fff"/></svg>';
 
+  // Time-slot options for the booking form (30-min, 7am–9pm, 12-hour labels).
+  let timeOpts = '<option value="">Any time</option>';
+  for (let h = 7; h <= 21; h++) for (let m = 0; m < 60; m += 30) {
+    const val = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    const label = new Date(2000, 0, 1, h, m).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    timeOpts += `<option value="${val}">${label}</option>`;
+  }
+
   const gallery = u.photos.length
     ? `<div class="listing-gallery">${u.photos.map((p, i) =>
         `<a href="${escHtml(p.url)}" target="_blank" rel="noopener" class="listing-shot${i === 0 ? ' lead' : ''}" style="background-image:url('${escHtml(p.url)}')" aria-label="Photo ${i + 1}"></a>`).join('')}</div>`
@@ -892,7 +900,10 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
         <label class="field"><span>Email *</span><input name="client_email" type="email" required /></label>
         <label class="field"><span>Phone</span><input name="client_phone" /></label>
       </div>
-      <label class="field"><span>Preferred date &amp; time</span><input name="preferred" type="datetime-local" /></label>
+      <div class="grid-2">
+        <label class="field"><span>Preferred date</span><input name="pref_date" type="date" /></label>
+        <label class="field"><span>Preferred time</span><select name="pref_time">${timeOpts}</select></label>
+      </div>
       <label class="field"><span>Message</span><textarea name="message" rows="3" placeholder="Anything we should know?"></textarea></label>
       <div class="login-error" id="book-msg" hidden></div>
       <div class="drawer-foot">
@@ -916,7 +927,9 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
     e.preventDefault();
     var f=e.target,msg=document.getElementById('book-msg'),btn=document.getElementById('book-submit');
     msg.hidden=true;btn.disabled=true;btn.textContent='Sending…';
-    var data={unit_id:${u.id},client_name:f.client_name.value,client_email:f.client_email.value,client_phone:f.client_phone.value,preferred:f.preferred.value,message:f.message.value};
+    var pd=f.pref_date.value,pt=f.pref_time.value;
+    var preferred=pd?(pd+'T'+(pt||'10:00')):'';
+    var data={unit_id:${u.id},client_name:f.client_name.value,client_email:f.client_email.value,client_phone:f.client_phone.value,preferred:preferred,message:f.message.value};
     fetch('/api/showing-requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
       .then(function(r){if(!r.ok)return r.json().then(function(j){throw new Error(j.error||'Request failed')});return r.json();})
       .then(function(){

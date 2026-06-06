@@ -159,7 +159,7 @@ function FilterSelect({
     <div className="grid gap-1.5">
       <Label className="text-xs text-muted-foreground">{label}</Label>
       <Select value={value} onValueChange={(v) => v && onChange(v)}>
-        <SelectTrigger><SelectValue /></SelectTrigger>
+        <SelectTrigger><SelectValue>{(v: any) => options.find(([ov]) => ov === String(v))?.[1] ?? String(v)}</SelectValue></SelectTrigger>
         <SelectContent>
           {options.map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
         </SelectContent>

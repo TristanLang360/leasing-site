@@ -57,6 +57,8 @@ export function UnitDialog({
   }, [open, unit?.id])
 
   const set = (k: string, v: string | null) => setForm((f) => ({ ...f, [k]: v ?? '' }))
+  const lbl = (map: Record<string, string>) => (v: any) => map[String(v)] ?? String(v)
+  const yesNo = { no: 'No', yes: 'Yes' }
 
   async function loadNearby(id: number) {
     try {
@@ -149,7 +151,7 @@ export function UnitDialog({
               <Field label="Unit code"><Input value={form.unit_code} onChange={(e) => set('unit_code', e.target.value)} placeholder="A-304" /></Field>
               <Field label="Status">
                 <Select value={form.status} onValueChange={(v) => set('status', v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger><SelectValue>{lbl({ available: 'Available', hidden: 'Hidden' })}</SelectValue></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="available">Available</SelectItem>
                     <SelectItem value="hidden">Hidden</SelectItem>
@@ -176,7 +178,7 @@ export function UnitDialog({
             <div className="grid grid-cols-2 gap-3">
               <Field label="Parking">
                 <Select value={form.parking_available} onValueChange={(v) => set('parking_available', v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger><SelectValue>{lbl(yesNo)}</SelectValue></SelectTrigger>
                   <SelectContent><SelectItem value="no">No</SelectItem><SelectItem value="yes">Yes</SelectItem></SelectContent>
                 </Select>
               </Field>
@@ -187,7 +189,7 @@ export function UnitDialog({
             <div className="grid grid-cols-2 gap-3">
               <Field label="Locker">
                 <Select value={form.locker_available} onValueChange={(v) => set('locker_available', v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger><SelectValue>{lbl(yesNo)}</SelectValue></SelectTrigger>
                   <SelectContent><SelectItem value="no">No</SelectItem><SelectItem value="yes">Yes</SelectItem></SelectContent>
                 </Select>
               </Field>
@@ -197,7 +199,7 @@ export function UnitDialog({
             </div>
             <Field label="Dogs">
               <Select value={form.dogs_policy} onValueChange={(v) => set('dogs_policy', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger><SelectValue>{lbl({ no: 'No dogs', yes: 'Dogs welcome', contact: 'Contact us to see if your dog is accepted' })}</SelectValue></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="no">No dogs</SelectItem>
                   <SelectItem value="yes">Dogs welcome</SelectItem>
