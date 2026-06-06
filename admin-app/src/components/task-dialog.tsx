@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { api, cap, type Me, type Task, type Unit, type User } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { celebrate } from '@/lib/confetti'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -60,6 +61,7 @@ export function TaskDialog({
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
+    const becameDone = status === 'done' && task?.status !== 'done'
     setBusy(true)
     try {
       if (isMaster) {
@@ -74,7 +76,7 @@ export function TaskDialog({
         // agent: only the status changes
         if (task) await api.put(`/api/tasks/${task.id}`, { status })
       }
-      toast.success('Task saved')
+      if (becameDone) { celebrate(); toast.success('🎉 Task complete!') } else { toast.success('Task saved') }
       onOpenChange(false); onSaved()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Save failed')

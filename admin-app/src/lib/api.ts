@@ -58,6 +58,15 @@ export interface Appointment {
 
 export interface CsvResult { imported: number; skipped: number; total: number; errors: { row: number; error: string }[] }
 
+export interface AppNotification {
+  id: number
+  user_id: number
+  message: string
+  link: string | null
+  read: number
+  created_at: string
+}
+
 export interface Task {
   id: number
   title: string

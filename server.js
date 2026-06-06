@@ -654,20 +654,52 @@ app.post('/api/tasks', requireCap(can.manageTasks), wrap(async (req, res) => {
 app.put('/api/tasks/:id', requireAuth, wrap(async (req, res) => {
   const existing = await repo.getTask(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Not found' });
+  let saved, newStatus;
   if (req.user.role === 'master') {
     const t = parseTaskBody(req.body);
     if (!t.title) return res.status(400).json({ error: 'A task title is required.' });
     if (!t.agent_id) return res.status(400).json({ error: 'Assign the task to an agent.' });
-    return res.json(await repo.updateTask(existing.id, t));
+    saved = await repo.updateTask(existing.id, t);
+    newStatus = t.status;
+  } else {
+    // Agents may only change the status of a task assigned to them.
+    if (existing.agent_id !== req.user.id) return res.status(403).json({ error: 'This task is not assigned to you.' });
+    if (!TASK_STATUSES.includes(req.body.status)) return res.status(400).json({ error: 'Invalid status.' });
+    saved = await repo.setTaskStatus(existing.id, req.body.status);
+    newStatus = req.body.status;
   }
-  // Agents may only change the status of a task assigned to them.
-  if (existing.agent_id !== req.user.id) return res.status(403).json({ error: 'This task is not assigned to you.' });
-  if (!TASK_STATUSES.includes(req.body.status)) return res.status(400).json({ error: 'Invalid status.' });
-  res.json(await repo.setTaskStatus(existing.id, req.body.status));
+  if (newStatus === 'done' && existing.status !== 'done') await notifyTaskDone(saved, req.user);
+  res.json(saved);
 }));
 
 app.delete('/api/tasks/:id', requireCap(can.manageTasks), wrap(async (req, res) => {
   await repo.deleteTask(req.params.id);
+  res.json({ ok: true });
+}));
+
+// Notify every master (except the actor) when a task is marked done.
+async function notifyTaskDone(task, actor) {
+  const masters = (await repo.listUsers()).filter((u) => u.role === 'master' && u.active && u.id !== actor.id);
+  const who = actor.name || actor.email;
+  const msg = `${who} completed “${task.title}”${task.unit ? ` · ${task.unit.title}` : ''}`;
+  for (const m of masters) await repo.createNotification(m.id, msg, task.id ? `task:${task.id}` : null);
+}
+
+// ───────────────────────────────────────────────────────────────
+// Notifications (per-user; masters get task-completion alerts)
+// ───────────────────────────────────────────────────────────────
+app.get('/api/notifications', requireAuth, wrap(async (req, res) => {
+  res.json({
+    items: await repo.listNotifications(req.user.id),
+    unread: await repo.countUnreadNotifications(req.user.id),
+  });
+}));
+app.post('/api/notifications/read-all', requireAuth, wrap(async (req, res) => {
+  await repo.markAllNotificationsRead(req.user.id);
+  res.json({ ok: true });
+}));
+app.post('/api/notifications/:id/read', requireAuth, wrap(async (req, res) => {
+  await repo.markNotificationRead(req.params.id, req.user.id);
   res.json({ ok: true });
 }));
 

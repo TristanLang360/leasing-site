@@ -3,7 +3,9 @@ import { api, cap, type Me } from '@/lib/api'
 import { Login } from '@/components/login'
 import { UnitsTab } from '@/components/units-tab'
 import { CalendarTab } from '@/components/calendar-tab'
+import { TasksTab } from '@/components/tasks-tab'
 import { BlogTab } from '@/components/blog-tab'
+import { NotificationBell } from '@/components/notification-bell'
 import { AgentsTab } from '@/components/agents-tab'
 import { AccountTab } from '@/components/account-tab'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -43,6 +45,7 @@ export default function App() {
           </div>
           <div className="flex items-center gap-3">
             <a href="/" className="text-sm text-muted-foreground hover:text-foreground">Public site</a>
+            <NotificationBell />
             <span className="hidden text-sm text-muted-foreground sm:inline">
               {me.name || me.email} · <span className="capitalize">{me.role}</span>
             </span>
@@ -62,6 +65,7 @@ export default function App() {
           <TabsList>
             <TabsTrigger value="units">Units</TabsTrigger>
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            {cap.calendar(me.role) && <TabsTrigger value="tasks">{cap.manageTasks(me.role) ? 'Tasks' : 'My tasks'}</TabsTrigger>}
             {cap.blog(me.role) && <TabsTrigger value="blog">Blog</TabsTrigger>}
             {cap.manageUsers(me.role) && <TabsTrigger value="agents">Agents</TabsTrigger>}
             <TabsTrigger value="account">My account</TabsTrigger>
@@ -69,6 +73,9 @@ export default function App() {
 
           <TabsContent value="units" className="mt-6"><UnitsTab me={me} /></TabsContent>
           <TabsContent value="calendar" className="mt-6"><CalendarTab me={me} /></TabsContent>
+          {cap.calendar(me.role) && (
+            <TabsContent value="tasks" className="mt-6"><TasksTab me={me} /></TabsContent>
+          )}
           {cap.blog(me.role) && (
             <TabsContent value="blog" className="mt-6"><BlogTab me={me} /></TabsContent>
           )}
