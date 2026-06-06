@@ -24,7 +24,7 @@ const dateLabel = (d: Date) => d.toLocaleDateString('en-CA', { weekday: 'short',
 const STATUS_LABEL: Record<string, string> = { todo: 'To do', in_progress: 'In progress', done: 'Done' }
 
 export function TaskDialog({
-  me, task, open, onOpenChange, units, agents, onSaved,
+  me, task, open, onOpenChange, units, agents, onSaved, presetAgentId,
 }: {
   me: Me
   task: Task | null
@@ -33,6 +33,7 @@ export function TaskDialog({
   units: Unit[]
   agents: User[]
   onSaved: () => void
+  presetAgentId?: number
 }) {
   const isMaster = cap.manageTasks(me.role)
   const [title, setTitle] = useState('')
@@ -50,7 +51,7 @@ export function TaskDialog({
     setTitle(task?.title ?? '')
     setDescription(task?.description ?? '')
     setUnitId(task?.unit_id ? String(task.unit_id) : NONE)
-    setAgentId(task?.agent_id ? String(task.agent_id) : NONE)
+    setAgentId(task?.agent_id ? String(task.agent_id) : (presetAgentId ? String(presetAgentId) : NONE))
     setStatus(task?.status ?? 'todo')
     if (task?.due_at) { const d = new Date(task.due_at); setDate(d); setTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`) }
     else { setDate(undefined); setTime('10:00') }
