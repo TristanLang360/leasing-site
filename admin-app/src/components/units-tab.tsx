@@ -1,17 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { api, cap, type Me, type Unit } from '@/lib/api'
 import { fmtBeds, fmtPrice } from '@/lib/format'
 import { UnitDialog } from '@/components/unit-dialog'
 import { CsvImportDialog } from '@/components/csv-import-dialog'
+import { UnitFilters, applyFilters, defaultFilter, type UnitFilter } from '@/components/unit-filters'
+import { UnitsMap } from '@/components/units-map'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
 
 export function UnitsTab({ me }: { me: Me }) {
   const [units, setUnits] = useState<Unit[]>([])
-  const [showHidden, setShowHidden] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState<UnitFilter>(defaultFilter)
+  const [showMap, setShowMap] = useState(true)
   const [editing, setEditing] = useState<Unit | null | undefined>(undefined) // undefined=closed, null=new
   const [csvOpen, setCsvOpen] = useState(false)
   const canEdit = cap.editUnits(me.role)
@@ -20,14 +22,17 @@ export function UnitsTab({ me }: { me: Me }) {
   async function load() {
     setLoading(true)
     try {
-      setUnits(await api.get<Unit[]>(`/api/units${showHidden ? '?all=1' : ''}`))
+      // Load every unit (incl. hidden) so the filters can work over the full set.
+      setUnits(await api.get<Unit[]>('/api/units?all=1'))
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to load units')
     } finally {
       setLoading(false)
     }
   }
-  useEffect(() => { load() /* eslint-disable-next-line */ }, [showHidden])
+  useEffect(() => { load() }, [])
+
+  const filtered = useMemo(() => applyFilters(units, filter), [units, filter])
 
   async function remove(u: Unit) {
     if (!confirm(`Delete "${u.title}"? This also removes its photos.`)) return
@@ -39,24 +44,28 @@ export function UnitsTab({ me }: { me: Me }) {
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="text-sm text-muted-foreground">
-          {loading ? 'Loading…' : `${units.length} unit${units.length === 1 ? '' : 's'}`}
+          {loading ? 'Loading…' : `Showing ${filtered.length} of ${units.length} unit${units.length === 1 ? '' : 's'}`}
         </span>
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Checkbox checked={showHidden} onCheckedChange={(v) => setShowHidden(!!v)} /> Show hidden
-          </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowMap((v) => !v)}>{showMap ? 'Hide map' : 'Show map'}</Button>
           {canEdit && <Button variant="outline" size="sm" onClick={() => setCsvOpen(true)}>Import CSV</Button>}
           {canEdit && <Button size="sm" onClick={() => setEditing(null)}>+ New unit</Button>}
         </div>
       </div>
 
-      {units.length === 0 && !loading ? (
+      <UnitFilters filter={filter} setFilter={setFilter} units={units} />
+
+      {showMap && <UnitsMap units={filtered} onSelect={(u) => setEditing(u)} />}
+
+      {filtered.length === 0 && !loading ? (
         <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
-          No units yet.{canEdit && ' Click “+ New unit” to add your first listing.'}
+          {units.length === 0
+            ? <>No units yet.{canEdit && ' Click “+ New unit” to add your first listing.'}</>
+            : 'No units match these filters.'}
         </div>
       ) : (
         <div className="grid gap-2">
-          {units.map((u) => (
+          {filtered.map((u) => (
             <div key={u.id} className="flex items-center gap-4 rounded-lg border bg-card p-3">
               <div className="size-16 shrink-0 overflow-hidden rounded-md bg-muted">
                 {u.photos[0]
@@ -74,7 +83,10 @@ export function UnitsTab({ me }: { me: Me }) {
                 </div>
                 <div className="truncate text-sm text-muted-foreground">{u.address}{u.neighborhood ? ` · ${u.neighborhood}` : ''}</div>
                 <div className="text-sm text-muted-foreground">
-                  {fmtBeds(u.beds)} · {u.baths} bath · {u.sqft ? `${u.sqft.toLocaleString()} sqft · ` : ''}{fmtPrice(u.price)} · {u.photos.length} photo{u.photos.length === 1 ? '' : 's'}
+                  {fmtBeds(u.beds)} · {u.baths} bath · {u.sqft ? `${u.sqft.toLocaleString()} sqft · ` : ''}{fmtPrice(u.price)}
+                  {u.dogs_policy === 'yes' ? ' · 🐾 dogs' : u.dogs_policy === 'contact' ? ' · 🐾 ask' : ''}
+                  {u.parking_available === 'yes' ? ' · 🅿︎' : ''}{u.locker_available === 'yes' ? ' · 🔒' : ''}
+                  {` · ${u.photos.length} photo${u.photos.length === 1 ? '' : 's'}`}
                 </div>
               </div>
               <div className="flex shrink-0 gap-2">
