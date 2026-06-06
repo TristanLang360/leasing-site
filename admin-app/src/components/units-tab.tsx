@@ -125,6 +125,7 @@ export function UnitsTab({ me }: { me: Me }) {
         open={viewing !== undefined}
         onOpenChange={(o) => { if (!o) setViewing(undefined) }}
         onEdit={(u) => setEditing(u)}
+        onOpenUnit={(u) => setViewing(u)}
       />
       <CsvImportDialog open={csvOpen} onOpenChange={setCsvOpen} onImported={load} />
     </div>

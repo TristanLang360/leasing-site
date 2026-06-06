@@ -1,4 +1,5 @@
-import { cap, type Me, type Unit } from '@/lib/api'
+import { useEffect, useState } from 'react'
+import { api, cap, type Me, type NearbyUnit, type Unit } from '@/lib/api'
 import { fmtBeds, fmtPrice } from '@/lib/format'
 import { LocationMap } from '@/components/location-map'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -24,19 +25,51 @@ function fmtDate(iso: string | null) {
   return isNaN(d.getTime()) ? iso : d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 }
 
+// Rank nearby units by similarity to the base unit (close beds + price),
+// then by distance. Falls back to plain nearest if nothing is "similar".
+function pickSimilar(base: Unit, nearby: NearbyUnit[]): NearbyUnit[] {
+  const candidates = nearby.filter((u) => u.status === 'available')
+  const isSimilar = (u: NearbyUnit) => {
+    const bedDiff = Math.abs((u.beds || 0) - (base.beds || 0))
+    const priceRatio = base.price ? Math.abs(u.price - base.price) / base.price : 1
+    return bedDiff <= 1 && priceRatio <= 0.35
+  }
+  const similar = candidates.filter(isSimilar).sort((a, b) => a.distance_km - b.distance_km)
+  if (similar.length >= 3) return similar.slice(0, 5)
+  // top up with the next-nearest available units so the section isn't bare
+  const extra = candidates.filter((u) => !similar.includes(u)).sort((a, b) => a.distance_km - b.distance_km)
+  return [...similar, ...extra].slice(0, 5)
+}
+
 export function UnitDetails({
-  me, unit, open, onOpenChange, onEdit,
+  me, unit, open, onOpenChange, onEdit, onOpenUnit,
 }: {
   me: Me
   unit: Unit | null
   open: boolean
   onOpenChange: (o: boolean) => void
   onEdit: (u: Unit) => void
+  onOpenUnit: (u: Unit) => void
 }) {
+  const [similar, setSimilar] = useState<NearbyUnit[]>([])
+  const [loadingSimilar, setLoadingSimilar] = useState(false)
+
+  const located = unit != null && unit.lat != null && unit.lng != null
+
+  useEffect(() => {
+    if (!open || !unit?.id) return
+    if (!located) { setSimilar([]); return }
+    setLoadingSimilar(true)
+    api.get<{ nearby: NearbyUnit[] }>(`/api/units/${unit.id}/nearby?limit=24`)
+      .then((r) => setSimilar(pickSimilar(unit, r.nearby)))
+      .catch(() => setSimilar([]))
+      .finally(() => setLoadingSimilar(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, unit?.id])
+
   if (!unit) return null
   const canEdit = cap.editUnits(me.role)
   const hasPhotos = unit.photos.length > 0
-  const located = unit.lat != null && unit.lng != null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -106,6 +139,40 @@ export function UnitDetails({
             <p className="rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
               This unit isn't located on the map yet. Directions will use the street address.
             </p>
+          )}
+        </div>
+
+        <Separator />
+
+        {/* Similar units nearby */}
+        <div className="grid gap-2">
+          <h3 className="text-sm font-medium">Similar units nearby</h3>
+          {!located ? (
+            <p className="text-sm text-muted-foreground">Locate this unit on the map to find nearby ones.</p>
+          ) : loadingSimilar ? (
+            <p className="text-sm text-muted-foreground">Finding similar units nearby…</p>
+          ) : similar.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No similar units nearby.</p>
+          ) : (
+            similar.map((n) => (
+              <button key={n.id} type="button" onClick={() => onOpenUnit(n)}
+                className="flex items-center gap-3 rounded-md border px-3 py-2 text-left hover:bg-muted/40">
+                <div className="size-12 shrink-0 overflow-hidden rounded bg-muted">
+                  {n.photos[0]
+                    ? <img src={n.photos[0].url} alt="" className="h-full w-full object-cover" />
+                    : <div className="grid h-full w-full place-items-center text-sm text-muted-foreground">{(n.title || '?').slice(0, 1)}</div>}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-medium">{n.title}</div>
+                  <div className="truncate text-xs text-muted-foreground">
+                    {fmtBeds(n.beds)} · {n.baths} bath · {fmtPrice(n.price)}{n.neighborhood ? ` · ${n.neighborhood}` : ''}
+                  </div>
+                </div>
+                <span className="shrink-0 rounded-full border bg-background px-2 py-0.5 text-xs font-medium text-primary">
+                  {n.distance_km} km away
+                </span>
+              </button>
+            ))
           )}
         </div>
 
