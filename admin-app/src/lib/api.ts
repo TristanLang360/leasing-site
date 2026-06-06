@@ -1,0 +1,99 @@
+// Typed client for the Rentalium Express API. Same-origin in production
+// (served under /admin); proxied to :3030 during `npm run dev`.
+
+export type Role = 'master' | 'agent' | 'viewer'
+
+export interface Me { id: number; email: string; name: string | null; role: Role }
+
+export interface Photo { id: number; url: string; filename: string; sortOrder?: number }
+
+export interface Unit {
+  id: number
+  unit_code: string | null
+  title: string
+  address: string
+  neighborhood: string | null
+  beds: number
+  baths: number
+  sqft: number | null
+  price: number
+  available_date: string | null
+  description: string | null
+  appliances: string | null
+  parking_available: 'yes' | 'no'
+  parking_cost: number | null
+  locker_available: 'yes' | 'no'
+  locker_cost: number | null
+  dogs_policy: 'yes' | 'no' | 'contact'
+  status: 'available' | 'hidden'
+  lat: number | null
+  lng: number | null
+  geocode_attempted: number
+  created_at: string
+  photos: Photo[]
+}
+
+export interface NearbyUnit extends Unit { distance_km: number }
+export interface NearbyResponse { origin: { id: number; lat: number | null; lng: number | null }; nearby: NearbyUnit[]; reason?: string }
+
+export interface User { id: number; email: string; name: string | null; role: Role; active: number; created_at: string }
+
+export interface Appointment {
+  id: number
+  unit_id: number | null
+  title: string
+  start_at: string
+  end_at: string | null
+  client_name: string | null
+  client_phone: string | null
+  client_email: string | null
+  notes: string | null
+  agent_id: number | null
+  status: 'scheduled' | 'done' | 'canceled'
+  created_by: number | null
+  created_at: string
+  unit: { id: number; title: string; unit_code: string | null; address: string } | null
+  agent: { id: number; name: string | null; email: string } | null
+}
+
+export interface CsvResult { imported: number; skipped: number; total: number; errors: { row: number; error: string }[] }
+
+export class ApiError extends Error {
+  status: number
+  constructor(message: string, status: number) { super(message); this.status = status }
+}
+
+async function request<T>(method: string, url: string, body?: unknown, isForm = false): Promise<T> {
+  const opts: RequestInit = { method, credentials: 'same-origin' }
+  if (body && !isForm) {
+    opts.headers = { 'Content-Type': 'application/json' }
+    opts.body = JSON.stringify(body)
+  } else if (body && isForm) {
+    opts.body = body as FormData
+  }
+  const r = await fetch(url, opts)
+  if (!r.ok) {
+    let msg = `${r.status} ${r.statusText}`
+    try { const j = await r.json(); if (j.error) msg = j.error } catch { /* non-JSON */ }
+    throw new ApiError(msg, r.status)
+  }
+  if (r.status === 204) return null as T
+  const ct = r.headers.get('content-type') || ''
+  return (ct.includes('application/json') ? await r.json() : (null as T)) as T
+}
+
+export const api = {
+  get: <T>(url: string) => request<T>('GET', url),
+  post: <T>(url: string, body?: unknown) => request<T>('POST', url, body),
+  put: <T>(url: string, body?: unknown) => request<T>('PUT', url, body),
+  del: <T>(url: string) => request<T>('DELETE', url),
+  form: <T>(url: string, fd: FormData, method = 'POST') => request<T>(method, url, fd, true),
+}
+
+// ── Capabilities (mirror server.js) ────────────────────────────
+export const cap = {
+  editUnits: (r?: Role) => r === 'master' || r === 'agent',
+  deleteUnits: (r?: Role) => r === 'master',
+  manageUsers: (r?: Role) => r === 'master',
+  calendar: (r?: Role) => r === 'master' || r === 'agent',
+}

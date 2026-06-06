@@ -2,7 +2,12 @@
 
 A leasing site — a public listings page with an interactive map, plus a private
 staff dashboard for managing units, photos, showings, and your team.
-Node + Express + SQLite, no build step.
+
+- **Backend:** Node + Express + SQLite JSON API (no build step).
+- **Public site:** plain HTML/CSS/JS served by Express.
+- **Admin dashboard:** a React + Vite + Tailwind + **shadcn/ui** single-page app
+  (in `admin-app/`) that consumes the same API. The built output ships in
+  `admin-dist/` so the server runs it without a build step.
 
 ## Run it
 
@@ -15,10 +20,29 @@ Then open:
 
 - **Public site:** http://localhost:3030/
 - **Available units (with map):** http://localhost:3030/units.html
-- **Staff login:** http://localhost:3030/login
-- **Admin dashboard:** http://localhost:3030/admin
+- **Admin dashboard:** http://localhost:3030/admin  (sign in here)
 
 The database is created and seeded with a few demo units on first run.
+
+## Admin app (shadcn/ui)
+
+The dashboard lives in `admin-app/` and is pre-built into `admin-dist/`, so
+`npm start` serves it as-is. You only need the steps below if you change the
+admin UI.
+
+```bash
+# rebuild after editing admin-app/ (regenerates admin-dist/)
+npm run build:admin
+
+# hot-reload dev server (proxies the API to :3030 — run `npm start` too)
+npm run dev:admin     # http://localhost:5173/admin
+```
+
+Add more shadcn components from inside `admin-app/`:
+
+```bash
+cd admin-app && npx shadcn@latest add <component>
+```
 
 ## Logging in
 
@@ -30,6 +54,7 @@ MASTER_EMAIL=you@yourcompany.com MASTER_PASS=a-strong-password npm start
 ```
 
 Defaults if you don't set them: `admin@rentalium.local` / `rentalium`.
+The admin app shows a sign-in screen at `/admin` when you're not logged in.
 
 ### Roles & access levels
 

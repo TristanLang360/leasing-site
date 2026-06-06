@@ -6,7 +6,9 @@
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "build:admin": "npm --prefix admin-app install && npm --prefix admin-app run build",
+    "dev:admin": "npm --prefix admin-app run dev"
   },
   "dependencies": {
     "archiver": "^7.0.1",

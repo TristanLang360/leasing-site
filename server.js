@@ -1,5 +1,6 @@
 const express = require('express');
 const multer = require('multer');
+const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const archiver = require('archiver');
@@ -137,11 +138,25 @@ const app = express();
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Block direct access to sensitive files before static serving.
+// Block direct access to sensitive files / source before static serving.
 app.use((req, res, next) => {
-  const blocked = /(^\/server\.js$|^\/config\.js$|^\/lib\/|^\/package(-lock)?\.json$|\.sql$|\.db($|-)|^\/node_modules\/|^\/private\/|^\/\.)/i;
+  const blocked = /(^\/server\.js$|^\/config\.js$|^\/lib\/|^\/admin-app\/|^\/package(-lock)?\.json$|\.sql$|\.db($|-)|^\/node_modules\/|^\/private\/|^\/\.)/i;
   if (blocked.test(req.path)) return res.status(404).send('Not found');
   next();
+});
+
+// Admin SPA (Vite + React + shadcn build) served under /admin.
+// The app handles login itself (shows the sign-in screen when /api/me is 401),
+// so the HTML is open while every /api write stays protected server-side.
+const ADMIN_DIST = path.join(__dirname, 'admin-dist');
+const ADMIN_INDEX = path.join(ADMIN_DIST, 'index.html');
+app.use('/admin', express.static(ADMIN_DIST));
+app.get(/^\/admin(\/.*)?$/, (req, res) => {
+  if (!fs.existsSync(ADMIN_INDEX)) {
+    return res.status(503).type('html').send(
+      '<h1>Admin app not built</h1><p>Run <code>npm run build:admin</code>, then reload.</p>');
+  }
+  res.sendFile(ADMIN_INDEX);
 });
 
 // Static: public site files. Local photo uploads are served from disk;
@@ -320,18 +335,6 @@ app.get('/api/units/:id/nearby', requireAuth, wrap(async (req, res) => {
     .slice(0, limit)
     .map(({ unit, km }) => ({ ...present(unit), distance_km: Math.round(km * 10) / 10 }));
   res.json({ origin: { id: origin.id, lat: origin.lat, lng: origin.lng }, nearby });
-}));
-
-// ───────────────────────────────────────────────────────────────
-// Admin page (any authenticated staff) + login page
-// ───────────────────────────────────────────────────────────────
-app.get('/admin', wrap(async (req, res) => {
-  if (!(await currentUser(req))) return res.redirect('/login');
-  res.sendFile(path.join(__dirname, 'private', 'admin.html'));
-}));
-app.get('/admin.js', wrap(async (req, res) => {
-  if (!(await currentUser(req))) return res.status(401).send('Not authenticated');
-  res.type('application/javascript').sendFile(path.join(__dirname, 'private', 'admin.js'));
 }));
 
 // ───────────────────────────────────────────────────────────────
