@@ -766,6 +766,7 @@ app.use((err, req, res, next) => {
 });
 
 (async () => {
+  if (repo.ready) await repo.ready; // ensure schema/seed (e.g. Postgres) is in place
   await seedMaster();
   app.listen(config.port, () => {
     console.log(`\nRentalium running.`);

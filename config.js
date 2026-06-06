@@ -17,6 +17,14 @@
 //   DB_DRIVER=postgres DATABASE_URL=postgres://... npm start
 // ───────────────────────────────────────────────────────────────
 const path = require('path');
+const fs = require('fs');
+
+// Load .env (git-ignored) into process.env if present, using Node's built-in
+// loader — no dependency. Real environment variables always win over the file.
+const envFile = path.join(__dirname, '.env');
+if (typeof process.loadEnvFile === 'function' && fs.existsSync(envFile)) {
+  try { process.loadEnvFile(envFile); } catch { /* malformed .env — ignore, fall back to process.env */ }
+}
 
 module.exports = {
   port: process.env.PORT || 3030,

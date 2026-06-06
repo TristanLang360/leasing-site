@@ -11,12 +11,14 @@
     "dev:admin": "npm --prefix admin-app run dev"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.107.0",
     "archiver": "^7.0.1",
     "better-sqlite3": "^11.3.0",
     "csv-parse": "^6.2.1",
     "express": "^4.19.2",
     "marked": "^18.0.5",
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.21.0"
   },
   "comment:supabase": "To flip to Supabase: 'npm install @supabase/supabase-js' for STORAGE_DRIVER=supabase, and 'npm install pg' for DB_DRIVER=postgres. See README."
 }
