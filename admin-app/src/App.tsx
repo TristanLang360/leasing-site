@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api, cap, type Me } from '@/lib/api'
+import { applyTheme, getTheme, type Theme } from '@/lib/theme'
 import { Login } from '@/components/login'
 import { UnitsTab } from '@/components/units-tab'
 import { CalendarTab } from '@/components/calendar-tab'
@@ -19,6 +20,9 @@ export default function App() {
   const [me, setMe] = useState<Me | null>(null)
   const [loading, setLoading] = useState(true)
   const [tourOpen, setTourOpen] = useState(false)
+  const [theme, setTheme] = useState<Theme>(() => getTheme())
+
+  useEffect(() => { applyTheme(theme) }, [theme])
 
   useEffect(() => {
     api.get<Me>('/api/me')
@@ -62,6 +66,10 @@ export default function App() {
           </div>
           <div className="flex items-center gap-3">
             <a href="/" className="text-sm text-muted-foreground hover:text-foreground">Public site</a>
+            <Button variant="ghost" size="icon" className="size-8" aria-label="Toggle dark mode" title="Toggle dark mode"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </Button>
             {me.role === 'agent' && (
               <Button variant="ghost" size="sm" onClick={() => setTourOpen(true)}>Guide</Button>
             )}
