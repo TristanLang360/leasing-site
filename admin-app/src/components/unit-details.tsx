@@ -110,12 +110,17 @@ export function UnitDetails({
           )}
         </div>
 
-        {/* Photos */}
+        {/* Photos & videos */}
         {hasPhotos ? (
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
             {unit.photos.map((p) => (
-              <div key={p.id} className="group relative aspect-square overflow-hidden rounded-md border">
-                <img src={p.url} alt="" className="h-full w-full object-cover" loading="lazy" />
+              <div key={p.id} className="group relative aspect-square overflow-hidden rounded-md border bg-black/5">
+                {p.kind === 'video'
+                  ? <video src={p.url} className="h-full w-full object-cover" controls preload="metadata" playsInline />
+                  : <img src={p.url} alt="" className="h-full w-full object-cover" loading="lazy" />}
+                {p.kind === 'video' && (
+                  <span className="pointer-events-none absolute left-1 top-1 rounded bg-black/60 px-1 text-[10px] font-medium text-white">▶ video</span>
+                )}
                 <a href={`/api/photos/${p.id}/download`} download
                   className="absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-center text-xs text-white opacity-0 transition group-hover:opacity-100">
                   ⬇ Download

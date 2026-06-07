@@ -907,6 +907,7 @@ footer {
 }
 .listing-shot:hover { opacity: 0.92; }
 .listing-shot.lead { grid-column: span 2; grid-row: span 2; border-radius: var(--radius); }
+video.listing-shot { width: 100%; height: 100%; object-fit: cover; background-color: #000; }
 .listing-noimg {
   background: var(--surface); border: 1px dashed var(--line); border-radius: var(--radius);
   padding: 48px; text-align: center; color: var(--ink-muted); margin-bottom: 32px;

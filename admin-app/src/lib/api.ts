@@ -5,7 +5,7 @@ export type Role = 'master' | 'agent' | 'viewer'
 
 export interface Me { id: number; email: string; name: string | null; role: Role; onboarded?: number }
 
-export interface Photo { id: number; url: string; filename: string; sortOrder?: number }
+export interface Photo { id: number; url: string; filename: string; kind?: 'image' | 'video'; sortOrder?: number }
 
 export interface Unit {
   id: number

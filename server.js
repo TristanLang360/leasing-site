@@ -149,7 +149,7 @@ function haversineKm(lat1, lng1, lat2, lng2) {
 function present(unit) {
   if (!unit) return null;
   const photos = (unit.photos || []).map((p) => ({
-    id: p.id, url: storage.publicUrl(p.key), filename: p.key, sortOrder: p.sort_order,
+    id: p.id, url: storage.publicUrl(p.key), filename: p.key, kind: p.kind || 'image', sortOrder: p.sort_order,
   }));
   return { ...unit, photos };
 }
@@ -216,6 +216,16 @@ const upload = multer({
   },
 });
 const csvUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+// Unit media — images and videos. Videos can be large, so a bigger cap.
+const mediaUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 200 * 1024 * 1024, files: 20 },
+  fileFilter: (req, file, cb) => {
+    if (/^image\/(jpe?g|png|webp|gif|heic|heif)$/i.test(file.mimetype)) return cb(null, true);
+    if (/^video\/(mp4|webm|ogg|quicktime|x-m4v)$/i.test(file.mimetype)) return cb(null, true);
+    cb(new Error('Only image or video uploads are allowed.'));
+  },
+});
 
 // ───────────────────────────────────────────────────────────────
 // Unit body parsing
@@ -512,15 +522,16 @@ app.post('/api/units/import', requireCap(can.importCsv), csvUpload.single('file'
 // ───────────────────────────────────────────────────────────────
 // Photos
 // ───────────────────────────────────────────────────────────────
-app.post('/api/units/:id/photos', requireCap(can.editUnits), upload.array('photos', 20), wrap(async (req, res) => {
+app.post('/api/units/:id/photos', requireCap(can.editUnits), mediaUpload.array('photos', 20), wrap(async (req, res) => {
   const unit = await repo.getUnit(req.params.id);
   if (!unit) return res.status(404).json({ error: 'Unit not found' });
-  const keys = [];
+  const items = [];
   for (const f of req.files || []) {
-    keys.push(await storage.save({ buffer: f.buffer, originalname: f.originalname, mimetype: f.mimetype }));
+    const key = await storage.save({ buffer: f.buffer, originalname: f.originalname, mimetype: f.mimetype });
+    items.push({ key, kind: /^video\//i.test(f.mimetype) ? 'video' : 'image' });
   }
-  const added = await repo.addPhotos(unit.id, keys);
-  res.status(201).json({ photos: added.map((p) => ({ id: p.id, url: storage.publicUrl(p.key), filename: p.key })) });
+  const added = await repo.addPhotos(unit.id, items);
+  res.status(201).json({ photos: added.map((p) => ({ id: p.id, url: storage.publicUrl(p.key), filename: p.key, kind: p.kind })) });
 }));
 
 app.delete('/api/photos/:id', requireCap(can.editUnits), wrap(async (req, res) => {
@@ -1097,7 +1108,9 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
 
   const gallery = u.photos.length
     ? `<div class="listing-gallery">${u.photos.map((p, i) =>
-        `<a href="${escHtml(p.url)}" target="_blank" rel="noopener" class="listing-shot${i === 0 ? ' lead' : ''}" style="background-image:url('${escHtml(p.url)}')" aria-label="Photo ${i + 1}"></a>`).join('')}</div>`
+        p.kind === 'video'
+          ? `<video class="listing-shot${i === 0 ? ' lead' : ''}" src="${escHtml(p.url)}" controls preload="metadata" playsinline aria-label="Video ${i + 1}"></video>`
+          : `<a href="${escHtml(p.url)}" target="_blank" rel="noopener" class="listing-shot${i === 0 ? ' lead' : ''}" style="background-image:url('${escHtml(p.url)}')" aria-label="Photo ${i + 1}"></a>`).join('')}</div>`
     : `<div class="listing-noimg">No photos yet — contact us for more details.</div>`;
 
   const facts = [beds, `${u.baths} bath${u.baths > 1 ? 's' : ''}`]
@@ -1112,12 +1125,16 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
     ...(u.unit_code ? [['Unit code', u.unit_code]] : []),
   ];
 
+  const absUrl = (url) => (url.startsWith('http') ? url : `https://rentalium.ca${url}`);
+  const ldImages = u.photos.filter((p) => p.kind !== 'video').map((p) => absUrl(p.url));
+  const ldVideos = u.photos.filter((p) => p.kind === 'video').map((p) => absUrl(p.url));
   const ld = {
     '@context': 'https://schema.org', '@type': 'Apartment', name: u.title,
     ...(u.description ? { description: u.description } : {}),
     numberOfBedrooms: u.beds, numberOfBathroomsTotal: u.baths,
     ...(u.sqft ? { floorSize: { '@type': 'QuantitativeValue', value: u.sqft, unitCode: 'FTK' } } : {}),
-    ...(u.photos.length ? { image: u.photos.map((p) => (p.url.startsWith('http') ? p.url : `https://rentalium.ca${p.url}`)) } : {}),
+    ...(ldImages.length ? { image: ldImages } : {}),
+    ...(ldVideos.length ? { video: ldVideos.map((v) => ({ '@type': 'VideoObject', name: u.title, contentUrl: v })) } : {}),
     address: { '@type': 'PostalAddress', streetAddress: u.address, addressLocality: 'Montréal', addressRegion: 'QC', addressCountry: 'CA' },
     ...(located ? { geo: { '@type': 'GeoCoordinates', latitude: u.lat, longitude: u.lng } } : {}),
   };

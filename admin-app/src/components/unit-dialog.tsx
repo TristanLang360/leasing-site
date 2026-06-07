@@ -88,13 +88,16 @@ export function UnitDialog({
   async function uploadFiles(files: FileList | null) {
     if (!unit?.id || !files?.length) return
     const fd = new FormData()
+    const hasVideo = Array.from(files).some((f) => f.type.startsWith('video/'))
     Array.from(files).forEach((f) => fd.append('photos', f))
+    const tid = toast.loading(hasVideo ? 'Uploading… videos can take a moment.' : 'Uploading…')
     try {
       const { photos: added } = await api.form<{ photos: Photo[] }>(`/api/units/${unit.id}/photos`, fd)
       setPhotos((p) => [...p, ...added])
       onChanged()
+      toast.success(`Added ${added.length} file${added.length === 1 ? '' : 's'}`, { id: tid })
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Upload failed')
+      toast.error(err instanceof Error ? err.message : 'Upload failed', { id: tid })
     }
   }
 
@@ -239,16 +242,21 @@ export function UnitDialog({
               <Separator />
               <div className="grid grid-cols-1 gap-2">
                 <div className="flex items-center justify-between">
-                  <Label>Photos</Label>
+                  <Label>Photos & videos</Label>
                   {photos.length > 0 && (
                     <a className="text-sm text-primary hover:underline" href={`/api/units/${unit.id}/photos.zip`}>⬇ Download all (.zip)</a>
                   )}
                 </div>
-                {photos.length === 0 && <p className="text-sm text-muted-foreground">No photos yet.</p>}
+                {photos.length === 0 && <p className="text-sm text-muted-foreground">No photos or videos yet.</p>}
                 <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                   {photos.map((p) => (
-                    <div key={p.id} className="group relative aspect-square overflow-hidden rounded-md border">
-                      <img src={p.url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    <div key={p.id} className="group relative aspect-square overflow-hidden rounded-md border bg-black/5">
+                      {p.kind === 'video'
+                        ? <video src={p.url} className="h-full w-full object-cover" muted playsInline preload="metadata" controls />
+                        : <img src={p.url} alt="" className="h-full w-full object-cover" loading="lazy" />}
+                      {p.kind === 'video' && (
+                        <span className="pointer-events-none absolute left-1 top-1 rounded bg-black/60 px-1 text-[10px] font-medium text-white">▶ video</span>
+                      )}
                       <a href={`/api/photos/${p.id}/download`} download
                         className="absolute bottom-1 left-1 grid size-6 place-items-center rounded bg-black/55 text-xs text-white opacity-0 transition group-hover:opacity-100">⬇</a>
                       {editable && (
@@ -260,8 +268,9 @@ export function UnitDialog({
                 </div>
                 {editable && (
                   <>
-                    <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => uploadFiles(e.target.files)} />
-                    <Button type="button" variant="outline" size="sm" className="w-fit" onClick={() => fileRef.current?.click()}>+ Upload photos</Button>
+                    <input ref={fileRef} type="file" accept="image/*,video/mp4,video/webm,video/quicktime" multiple hidden onChange={(e) => uploadFiles(e.target.files)} />
+                    <Button type="button" variant="outline" size="sm" className="w-fit" onClick={() => fileRef.current?.click()}>+ Upload photos or videos</Button>
+                    <p className="text-xs text-muted-foreground">Images (JPG, PNG, WebP) or videos (MP4, WebM, MOV), up to 200&nbsp;MB each.</p>
                   </>
                 )}
               </div>
