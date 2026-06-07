@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { api, cap, type Building, type Me } from '@/lib/api'
 import { useT } from '@/lib/i18n'
@@ -24,7 +24,9 @@ export function BuildingDialog({
   const [neighborhood, setNeighborhood] = useState('')
   const [lat, setLat] = useState('')
   const [lng, setLng] = useState('')
+  const [coverUrl, setCoverUrl] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!open) return
@@ -33,7 +35,23 @@ export function BuildingDialog({
     setNeighborhood(building?.neighborhood ?? '')
     setLat(building?.lat != null ? String(building.lat) : '')
     setLng(building?.lng != null ? String(building.lng) : '')
+    setCoverUrl(building?.cover_url ?? null)
   }, [open, building])
+
+  async function uploadCover(file: File | null) {
+    if (!building?.id || !file) return
+    const fd = new FormData(); fd.append('cover', file)
+    try {
+      const { cover_url } = await api.form<{ cover_url: string }>(`/api/buildings/${building.id}/cover`, fd)
+      setCoverUrl(cover_url); onSaved({ ...building, cover_url })
+      toast.success(t('Cover updated'))
+    } catch (err) { toast.error(err instanceof Error ? err.message : t('Upload failed')) }
+  }
+  async function removeCover() {
+    if (!building?.id) return
+    try { await api.del(`/api/buildings/${building.id}/cover`); setCoverUrl(null); onSaved({ ...building, cover_url: null }) }
+    catch (err) { toast.error(err instanceof Error ? err.message : t('Remove failed')) }
+  }
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
@@ -87,6 +105,25 @@ export function BuildingDialog({
               <Input value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} placeholder="Côte-des-Neiges" />
             </div>
           </fieldset>
+
+          {/* Cover image — only once the building exists */}
+          <div className="grid gap-1.5">
+            <Label className="text-xs text-muted-foreground">{t('Cover image')}</Label>
+            {building?.id ? (
+              <div className="flex items-center gap-3">
+                <div className="h-20 w-32 shrink-0 overflow-hidden rounded-md border bg-muted">
+                  {coverUrl
+                    ? <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+                    : <div className="grid h-full w-full place-items-center text-xs text-muted-foreground">{t('No cover')}</div>}
+                </div>
+                {editable && <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => uploadCover(e.target.files?.[0] ?? null)} />}
+                {editable && <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>{coverUrl ? t('Replace') : t('Upload')}</Button>}
+                {editable && coverUrl && <Button type="button" variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={removeCover}>{t('Remove')}</Button>}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">{t('Save the building first, then add a cover image.')}</p>
+            )}
+          </div>
 
           {building && (
             <div className="grid grid-cols-1 gap-2">

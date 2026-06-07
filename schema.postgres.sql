@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS buildings (
   name              TEXT NOT NULL,
   address           TEXT NOT NULL,
   neighborhood      TEXT,
+  cover_image       TEXT,                    -- storage key (Supabase object path)
   lat               DOUBLE PRECISION,
   lng               DOUBLE PRECISION,
   geocode_attempted INTEGER NOT NULL DEFAULT 0,

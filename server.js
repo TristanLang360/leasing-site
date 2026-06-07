@@ -470,15 +470,20 @@ function parseBuildingBody(b) {
   };
 }
 
+function presentBuilding(b) {
+  if (!b) return null;
+  return { ...b, cover_url: b.cover_image ? storage.publicUrl(b.cover_image) : null };
+}
+
 app.get('/api/buildings', requireAuth, wrap(async (req, res) => {
-  res.json(await repo.listBuildings());
+  res.json((await repo.listBuildings()).map(presentBuilding));
 }));
 
 app.get('/api/buildings/:id', requireAuth, wrap(async (req, res) => {
   const building = await repo.getBuilding(req.params.id);
   if (!building) return res.status(404).json({ error: 'Not found' });
   const units = (await repo.unitsForBuilding(building.id)).map(present);
-  res.json({ building, units });
+  res.json({ building: presentBuilding(building), units });
 }));
 
 app.post('/api/buildings', requireCap(can.editUnits), wrap(async (req, res) => {
@@ -486,7 +491,7 @@ app.post('/api/buildings', requireCap(can.editUnits), wrap(async (req, res) => {
   if (!b.name || !b.address) return res.status(400).json({ error: 'Name and address are required.' });
   let { lat, lng } = b, geocode_attempted = (lat != null && lng != null) ? 1 : 0;
   if (lat == null || lng == null) { const g = await geocode(b.address); if (g) { lat = g.lat; lng = g.lng; } geocode_attempted = 1; }
-  res.status(201).json(await repo.createBuilding({ ...b, lat, lng, geocode_attempted }));
+  res.status(201).json(presentBuilding(await repo.createBuilding({ ...b, lat, lng, geocode_attempted })));
 }));
 
 app.put('/api/buildings/:id', requireCap(can.editUnits), wrap(async (req, res) => {
@@ -497,10 +502,12 @@ app.put('/api/buildings/:id', requireCap(can.editUnits), wrap(async (req, res) =
   let lat = existing.lat, lng = existing.lng, geocode_attempted = existing.geocode_attempted;
   if (b.lat != null && b.lng != null) { lat = b.lat; lng = b.lng; geocode_attempted = 1; }
   else if (b.address !== existing.address) { const g = await geocode(b.address); lat = g ? g.lat : null; lng = g ? g.lng : null; geocode_attempted = 1; }
-  res.json(await repo.updateBuilding(existing.id, { ...b, lat, lng, geocode_attempted }));
+  res.json(presentBuilding(await repo.updateBuilding(existing.id, { ...b, lat, lng, geocode_attempted })));
 }));
 
 app.delete('/api/buildings/:id', requireCap(can.deleteUnits), wrap(async (req, res) => {
+  const building = await repo.getBuilding(req.params.id);
+  if (building && building.cover_image) await storage.remove(building.cover_image);
   await repo.deleteBuilding(req.params.id);
   res.json({ ok: true });
 }));
@@ -513,7 +520,26 @@ app.post('/api/buildings/:id/geocode', requireCap(can.editUnits), wrap(async (re
     name: building.name, address: building.address, neighborhood: building.neighborhood,
     lat: g ? g.lat : null, lng: g ? g.lng : null, geocode_attempted: 1,
   });
-  res.json({ ok: !!g, building: saved });
+  res.json({ ok: !!g, building: presentBuilding(saved) });
+}));
+
+// Building cover image (separate from the form, like blog covers).
+app.post('/api/buildings/:id/cover', requireCap(can.editUnits), upload.single('cover'), wrap(async (req, res) => {
+  const building = await repo.getBuilding(req.params.id);
+  if (!building) return res.status(404).json({ error: 'Not found' });
+  if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
+  const key = await storage.save({ buffer: req.file.buffer, originalname: req.file.originalname, mimetype: req.file.mimetype });
+  if (building.cover_image) await storage.remove(building.cover_image);
+  await repo.setBuildingCover(building.id, key);
+  res.json({ cover_url: storage.publicUrl(key) });
+}));
+
+app.delete('/api/buildings/:id/cover', requireCap(can.editUnits), wrap(async (req, res) => {
+  const building = await repo.getBuilding(req.params.id);
+  if (!building) return res.status(404).json({ error: 'Not found' });
+  if (building.cover_image) await storage.remove(building.cover_image);
+  await repo.setBuildingCover(building.id, null);
+  res.json({ ok: true });
 }));
 
 // Move a unit into a building (or pass building_id="" to unassign).

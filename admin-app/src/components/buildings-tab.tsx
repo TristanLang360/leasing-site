@@ -82,7 +82,9 @@ export function BuildingsTab({ me }: { me: Me }) {
               {filtered.map((b) => (
                 <button key={b.id} type="button" onClick={() => setSelectedId(b.id)}
                   className="flex items-center gap-4 rounded-lg border bg-card p-3 text-left hover:bg-muted/40">
-                  <div className="grid size-12 shrink-0 place-items-center rounded-md bg-muted text-lg">🏢</div>
+                  <div className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-md bg-muted text-lg">
+                    {b.cover_url ? <img src={b.cover_url} alt="" className="h-full w-full object-cover" /> : '🏢'}
+                  </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium">{b.name}</span>
@@ -158,6 +160,11 @@ function BuildingDetail({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <Button variant="ghost" size="sm" onClick={onBack}>{t('← All buildings')}</Button>
+          {building?.cover_url && (
+            <div className="hidden size-11 shrink-0 overflow-hidden rounded-md border sm:block">
+              <img src={building.cover_url} alt="" className="h-full w-full object-cover" />
+            </div>
+          )}
           <div className="min-w-0">
             <div className="truncate text-lg font-semibold">{building?.name ?? '…'}</div>
             <div className="truncate text-sm text-muted-foreground">{building?.address}{building?.neighborhood ? ` · ${building.neighborhood}` : ''}</div>

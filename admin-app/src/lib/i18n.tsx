@@ -484,6 +484,7 @@ const FR: Record<string, string> = {
   '← All buildings': '← Tous les immeubles',
   'No units in this building yet.': 'Aucune unité dans cet immeuble pour l’instant.',
   '— No building —': '— Aucun immeuble —',
+  'Save the building first, then add a cover image.': 'Enregistrez d’abord l’immeuble, puis ajoutez une image de couverture.',
   // END_FR
 }
 

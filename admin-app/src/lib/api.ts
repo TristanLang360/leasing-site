@@ -12,6 +12,8 @@ export interface Building {
   name: string
   address: string
   neighborhood: string | null
+  cover_image?: string | null
+  cover_url?: string | null
   lat: number | null
   lng: number | null
   geocode_attempted: number
