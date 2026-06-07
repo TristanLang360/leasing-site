@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api, cap, type Appointment, type Me, type Task, type Unit, type User } from '@/lib/api'
+import { useT, locale } from '@/lib/i18n'
 import { AppointmentDialog } from '@/components/appointment-dialog'
 import { TaskDialog } from '@/components/task-dialog'
 import { Button } from '@/components/ui/button'
@@ -7,8 +8,10 @@ import { Badge } from '@/components/ui/badge'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const TASK_LABEL: Record<string, string> = { todo: 'To do', in_progress: 'In progress', done: 'Done' }
+const APPT_LABEL: Record<string, string> = { requested: 'Requested', scheduled: 'Scheduled', done: 'Done', canceled: 'Canceled' }
 
 export function CalendarTab({ me }: { me: Me }) {
+  const { t } = useT()
   // Tasks only appear on the assigned agent's calendar — never the master's.
   const showTasks = !cap.manageTasks(me.role)
   const [cursor, setCursor] = useState(() => { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); return d })
@@ -55,16 +58,16 @@ export function CalendarTab({ me }: { me: Me }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setCursor(new Date(y, m - 1, 1))}>←</Button>
-          <strong className="w-44 text-center">{cursor.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</strong>
+          <strong className="w-44 text-center">{cursor.toLocaleDateString(locale(), { month: 'long', year: 'numeric' })}</strong>
           <Button variant="outline" size="sm" onClick={() => setCursor(new Date(y, m + 1, 1))}>→</Button>
-          <Button variant="ghost" size="sm" onClick={() => { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); setCursor(d) }}>Today</Button>
+          <Button variant="ghost" size="sm" onClick={() => { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); setCursor(d) }}>{t('Today')}</Button>
         </div>
-        {canEditAppts && <Button size="sm" onClick={() => { setPresetStart(undefined); setEditing(null) }}>+ New showing</Button>}
+        {canEditAppts && <Button size="sm" onClick={() => { setPresetStart(undefined); setEditing(null) }}>{t('+ New showing')}</Button>}
       </div>
 
       <div className="overflow-hidden rounded-lg border">
         <div className="grid grid-cols-7 border-b bg-muted/50">
-          {DOW.map((d) => <div key={d} className="px-2 py-1.5 text-center text-xs font-medium uppercase text-muted-foreground">{d}</div>)}
+          {DOW.map((d) => <div key={d} className="px-2 py-1.5 text-center text-xs font-medium uppercase text-muted-foreground">{t(d)}</div>)}
         </div>
         <div className="grid grid-cols-7">
           {Array.from({ length: startDay }).map((_, i) => <div key={`e${i}`} className="min-h-24 border-b border-r bg-muted/20" />)}
@@ -85,7 +88,7 @@ export function CalendarTab({ me }: { me: Me }) {
                   {shownAppts.map((a) => (
                     <button key={'a' + a.id} onClick={(e) => { e.stopPropagation(); setEditing(a) }}
                       className={`truncate rounded px-1 py-0.5 text-left text-[11px] ${apptChip(a.status)}`}>
-                      {new Date(a.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} {a.client_name || a.title}
+                      {new Date(a.start_at).toLocaleTimeString(locale(), { hour: 'numeric', minute: '2-digit' })} {a.client_name || a.title}
                     </button>
                   ))}
                   {shownTasks.map((t) => (
@@ -94,7 +97,7 @@ export function CalendarTab({ me }: { me: Me }) {
                       📋 {t.title}
                     </button>
                   ))}
-                  {more > 0 && <span className="px-1 text-[10px] text-muted-foreground">+{more} more</span>}
+                  {more > 0 && <span className="px-1 text-[10px] text-muted-foreground">+{more} {t('more')}</span>}
                 </div>
               </div>
             )
@@ -105,21 +108,21 @@ export function CalendarTab({ me }: { me: Me }) {
       {/* My tasks (agents only) */}
       {showTasks && (
         <>
-          <h3 className="mt-2 text-lg font-semibold">My tasks</h3>
+          <h3 className="mt-2 text-lg font-semibold">{t('My tasks')}</h3>
           {taskList.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tasks assigned to you this month.</p>
+            <p className="text-sm text-muted-foreground">{t('No tasks assigned to you this month.')}</p>
           ) : (
             <div className="grid grid-cols-1 gap-2">
-              {taskList.map((t) => (
-                <button key={t.id} onClick={() => setTaskEditing(t)} className="flex items-center gap-4 rounded-lg border bg-card p-3 text-left hover:bg-muted/40">
+              {taskList.map((tk) => (
+                <button key={tk.id} onClick={() => setTaskEditing(tk)} className="flex items-center gap-4 rounded-lg border bg-card p-3 text-left hover:bg-muted/40">
                   <span className="w-36 shrink-0 text-sm font-medium">
-                    {t.due_at ? new Date(t.due_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : <span className="text-muted-foreground">No due date</span>}
+                    {tk.due_at ? new Date(tk.due_at).toLocaleString(locale(), { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : <span className="text-muted-foreground">{t('No due date')}</span>}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium">📋 {t.title}</span>
-                    <span className="block truncate text-xs text-muted-foreground">{t.unit ? t.unit.title : 'No unit'}</span>
+                    <span className="block truncate font-medium">📋 {tk.title}</span>
+                    <span className="block truncate text-xs text-muted-foreground">{tk.unit ? tk.unit.title : t('No unit')}</span>
                   </span>
-                  <Badge variant="outline" className={t.status === 'done' ? 'text-emerald-700' : t.status === 'in_progress' ? 'text-violet-700' : 'text-slate-600'}>{TASK_LABEL[t.status] ?? t.status}</Badge>
+                  <Badge variant="outline" className={tk.status === 'done' ? 'text-emerald-700' : tk.status === 'in_progress' ? 'text-violet-700' : 'text-slate-600'}>{t(TASK_LABEL[tk.status] ?? tk.status)}</Badge>
                 </button>
               ))}
             </div>
@@ -128,23 +131,23 @@ export function CalendarTab({ me }: { me: Me }) {
       )}
 
       {/* Showings */}
-      <h3 className="mt-2 text-lg font-semibold">Showings this month</h3>
+      <h3 className="mt-2 text-lg font-semibold">{t('Showings this month')}</h3>
       {upcoming.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No showings this month.</p>
+        <p className="text-sm text-muted-foreground">{t('No showings this month.')}</p>
       ) : (
         <div className="grid grid-cols-1 gap-2">
           {upcoming.map((a) => (
             <button key={a.id} onClick={() => setEditing(a)} className="flex items-center gap-4 rounded-lg border bg-card p-3 text-left hover:bg-muted/40">
               <span className="w-40 shrink-0 text-sm font-medium">
-                {new Date(a.start_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                {new Date(a.start_at).toLocaleString(locale(), { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-medium">{a.title}</span>
                 <span className="block truncate text-xs text-muted-foreground">
-                  {a.unit?.title || 'No unit'}{a.client_name ? ` · ${a.client_name}` : ''}{a.agent ? ` · ${a.agent.name || a.agent.email}` : ''}
+                  {a.unit?.title || t('No unit')}{a.client_name ? ` · ${a.client_name}` : ''}{a.agent ? ` · ${a.agent.name || a.agent.email}` : ''}
                 </span>
               </span>
-              <Badge variant="outline" className={chipText(a.status)}>{a.status}</Badge>
+              <Badge variant="outline" className={chipText(a.status)}>{t(APPT_LABEL[a.status] ?? a.status)}</Badge>
             </button>
           ))}
         </div>

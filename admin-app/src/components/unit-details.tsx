@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, cap, type Me, type NearbyUnit, type Unit } from '@/lib/api'
 import { fmtBeds, fmtPrice } from '@/lib/format'
+import { useT, locale } from '@/lib/i18n'
 import { LocationMap } from '@/components/location-map'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -22,7 +23,7 @@ function dogsLabel(p: Unit['dogs_policy']) {
 function fmtDate(iso: string | null) {
   if (!iso) return 'Available now'
   const d = new Date(iso + 'T00:00:00')
-  return isNaN(d.getTime()) ? iso : d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  return isNaN(d.getTime()) ? iso : d.toLocaleDateString(locale(), { month: 'long', day: 'numeric', year: 'numeric' })
 }
 
 // Rank nearby units by similarity to the base unit (close beds + price),
@@ -51,6 +52,7 @@ export function UnitDetails({
   onEdit?: (u: Unit) => void
   onOpenUnit: (u: Unit) => void
 }) {
+  const { t } = useT()
   const [similar, setSimilar] = useState<NearbyUnit[]>([])
   const [loadingSimilar, setLoadingSimilar] = useState(false)
 
@@ -78,7 +80,7 @@ export function UnitDetails({
           <DialogTitle className="flex flex-wrap items-center gap-2">
             {unit.title}
             <Badge variant={unit.status === 'hidden' ? 'secondary' : 'default'}>
-              {unit.status === 'hidden' ? 'Hidden' : 'Available'}
+              {unit.status === 'hidden' ? t('Hidden') : t('Available')}
             </Badge>
             {unit.unit_code && <span className="text-sm font-normal text-muted-foreground">{unit.unit_code}</span>}
           </DialogTitle>
@@ -89,24 +91,24 @@ export function UnitDetails({
           {hasPhotos && (
             <Button size="sm" variant="outline"
               onClick={() => { window.location.href = `/api/units/${unit.id}/photos.zip` }}>
-              ⬇ Download all photos (.zip)
+              {t('⬇ Download all photos (.zip)')}
             </Button>
           )}
           <DropdownMenu>
             <DropdownMenuTrigger className={cn(buttonVariants({ size: 'sm' }))}>
-              🧭 Get directions
+              🧭 {t('Get directions')}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
               <DropdownMenuItem onClick={() => window.open(directionsUrl('google', unit), '_blank', 'noopener')}>
-                Open in Google Maps
+                {t('Open in Google Maps')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.open(directionsUrl('apple', unit), '_blank', 'noopener')}>
-                Open in Apple Maps
+                {t('Open in Apple Maps')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           {canEdit && onEdit && (
-            <Button size="sm" variant="ghost" onClick={() => { onEdit(unit); onOpenChange(false) }}>Edit</Button>
+            <Button size="sm" variant="ghost" onClick={() => { onEdit(unit); onOpenChange(false) }}>{t('Edit')}</Button>
           )}
         </div>
 
@@ -119,30 +121,30 @@ export function UnitDetails({
                   ? <video src={p.url} className="h-full w-full object-cover" controls preload="metadata" playsInline />
                   : <img src={p.url} alt="" className="h-full w-full object-cover" loading="lazy" />}
                 {p.kind === 'video' && (
-                  <span className="pointer-events-none absolute left-1 top-1 rounded bg-black/60 px-1 text-[10px] font-medium text-white">▶ video</span>
+                  <span className="pointer-events-none absolute left-1 top-1 rounded bg-black/60 px-1 text-[10px] font-medium text-white">▶ {t('video')}</span>
                 )}
                 <a href={`/api/photos/${p.id}/download`} download
                   className="absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-center text-xs text-white opacity-0 transition group-hover:opacity-100">
-                  ⬇ Download
+                  {t('⬇ Download')}
                 </a>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">No photos for this unit yet.</p>
+          <p className="text-sm text-muted-foreground">{t('No photos for this unit yet.')}</p>
         )}
 
         <Separator />
 
         {/* Location / map */}
         <div className="grid grid-cols-1 gap-2">
-          <h3 className="text-sm font-medium">Location</h3>
+          <h3 className="text-sm font-medium">{t('Location')}</h3>
           <p className="text-sm text-muted-foreground">{unit.address}{unit.neighborhood ? ` · ${unit.neighborhood}` : ''}</p>
           {located ? (
             <LocationMap lat={unit.lat} lng={unit.lng} editable={false} />
           ) : (
             <p className="rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-              This unit isn't located on the map yet. Directions will use the street address.
+              {t('This unit isn’t located on the map yet. Directions will use the street address.')}
             </p>
           )}
         </div>
@@ -151,13 +153,13 @@ export function UnitDetails({
 
         {/* Similar units nearby */}
         <div className="grid grid-cols-1 gap-2">
-          <h3 className="text-sm font-medium">Similar units nearby</h3>
+          <h3 className="text-sm font-medium">{t('Similar units nearby')}</h3>
           {!located ? (
-            <p className="text-sm text-muted-foreground">Locate this unit on the map to find nearby ones.</p>
+            <p className="text-sm text-muted-foreground">{t('Locate this unit on the map to find nearby ones.')}</p>
           ) : loadingSimilar ? (
-            <p className="text-sm text-muted-foreground">Finding similar units nearby…</p>
+            <p className="text-sm text-muted-foreground">{t('Finding similar units nearby…')}</p>
           ) : similar.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No similar units nearby.</p>
+            <p className="text-sm text-muted-foreground">{t('No similar units nearby.')}</p>
           ) : (
             similar.map((n) => (
               <button key={n.id} type="button" onClick={() => onOpenUnit(n)}
@@ -172,11 +174,11 @@ export function UnitDetails({
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{n.title}</div>
                   <div className="truncate text-xs text-muted-foreground">
-                    {fmtBeds(n.beds)} · {n.baths} bath · {fmtPrice(n.price)}{n.neighborhood ? ` · ${n.neighborhood}` : ''}
+                    {fmtBeds(n.beds)} · {n.baths} {t('bath')} · {fmtPrice(n.price)}{n.neighborhood ? ` · ${n.neighborhood}` : ''}
                   </div>
                 </div>
                 <span className="shrink-0 rounded-full border bg-background px-2 py-0.5 text-xs font-medium text-primary">
-                  {n.distance_km} km away
+                  {n.distance_km} {t('km away')}
                 </span>
               </button>
             ))
@@ -187,24 +189,24 @@ export function UnitDetails({
 
         {/* All details */}
         <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
-          <Detail label="Price" value={fmtPrice(unit.price)} />
-          <Detail label="Bedrooms" value={fmtBeds(unit.beds)} />
-          <Detail label="Bathrooms" value={`${unit.baths}`} />
-          <Detail label="Size" value={unit.sqft ? `${unit.sqft.toLocaleString()} sqft` : '—'} />
-          <Detail label="Available" value={fmtDate(unit.available_date)} />
-          <Detail label="Neighborhood" value={unit.neighborhood || '—'} />
-          <Detail label="Parking" value={unit.parking_available === 'yes'
-            ? `Yes${unit.parking_cost ? ` · $${unit.parking_cost}/mo` : ''}` : 'No'} />
-          <Detail label="Locker" value={unit.locker_available === 'yes'
-            ? `Yes${unit.locker_cost ? ` · $${unit.locker_cost}/mo` : ''}` : 'No'} />
-          <Detail label="Dogs" value={dogsLabel(unit.dogs_policy)} />
+          <Detail label={t('Price')} value={fmtPrice(unit.price)} />
+          <Detail label={t('Bedrooms')} value={fmtBeds(unit.beds)} />
+          <Detail label={t('Bathrooms')} value={`${unit.baths}`} />
+          <Detail label={t('Size')} value={unit.sqft ? `${unit.sqft.toLocaleString()} ${t('sqft')}` : '—'} />
+          <Detail label={t('Available')} value={fmtDate(unit.available_date) === 'Available now' ? t('Available now') : fmtDate(unit.available_date)} />
+          <Detail label={t('Neighborhood')} value={unit.neighborhood || '—'} />
+          <Detail label={t('Parking')} value={unit.parking_available === 'yes'
+            ? `${t('Yes')}${unit.parking_cost ? ` · $${unit.parking_cost}/${t('mo')}` : ''}` : t('No')} />
+          <Detail label={t('Locker')} value={unit.locker_available === 'yes'
+            ? `${t('Yes')}${unit.locker_cost ? ` · $${unit.locker_cost}/${t('mo')}` : ''}` : t('No')} />
+          <Detail label={t('Dogs')} value={t(dogsLabel(unit.dogs_policy))} />
         </div>
 
         {unit.appliances && (
-          <div className="text-sm"><span className="text-muted-foreground">Appliances: </span>{unit.appliances}</div>
+          <div className="text-sm"><span className="text-muted-foreground">{t('Appliances:')} </span>{unit.appliances}</div>
         )}
         {unit.description && (
-          <div className="text-sm"><span className="text-muted-foreground">Description: </span>{unit.description}</div>
+          <div className="text-sm"><span className="text-muted-foreground">{t('Description:')} </span>{unit.description}</div>
         )}
       </DialogContent>
     </Dialog>

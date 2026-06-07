@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import { defaultIcon } from '@/lib/leaflet-icon'
 import { fmtBeds, fmtPrice } from '@/lib/format'
+import { useT } from '@/lib/i18n'
 import type { Unit } from '@/lib/api'
 
 const MONTREAL: [number, number] = [45.5019, -73.5674]
@@ -21,6 +22,7 @@ function FitBounds({ points }: { points: [number, number][] }) {
 }
 
 export function UnitsMap({ units, onSelect }: { units: Unit[]; onSelect: (u: Unit) => void }) {
+  const { t } = useT()
   const located = units.filter((u) => u.lat != null && u.lng != null)
   const points = located.map((u) => [u.lat as number, u.lng as number] as [number, number])
 
@@ -37,7 +39,7 @@ export function UnitsMap({ units, onSelect }: { units: Unit[]; onSelect: (u: Uni
                 <div>{u.address}</div>
                 <div>{fmtBeds(u.beds)} · {fmtPrice(u.price)}</div>
                 <button className="font-medium text-primary underline" onClick={() => onSelect(u)}>
-                  View / edit →
+                  {t('View / edit →')}
                 </button>
               </div>
             </Popup>
@@ -46,7 +48,7 @@ export function UnitsMap({ units, onSelect }: { units: Unit[]; onSelect: (u: Uni
       </MapContainer>
       {located.length === 0 && (
         <p className="bg-muted/40 px-3 py-2 text-center text-sm text-muted-foreground">
-          None of the matching units have map coordinates yet.
+          {t('None of the matching units have map coordinates yet.')}
         </p>
       )}
     </div>

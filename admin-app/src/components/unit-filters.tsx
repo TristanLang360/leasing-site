@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { Unit } from '@/lib/api'
 import { fmtPrice } from '@/lib/format'
+import { useT } from '@/lib/i18n'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -80,6 +81,7 @@ export function applyFilters(units: Unit[], f: UnitFilter): Unit[] {
 export function UnitFilters({
   filter, setFilter, units,
 }: { filter: UnitFilter; setFilter: (f: UnitFilter) => void; units: Unit[] }) {
+  const { t } = useT()
   const set = <K extends keyof UnitFilter>(k: K, v: UnitFilter[K]) => setFilter({ ...filter, [k]: v })
 
   const { priceBound, sqftBound, neighborhoods } = useMemo(() => {
@@ -97,9 +99,9 @@ export function UnitFilters({
     <Card>
       <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="grid gap-1.5 sm:col-span-2 lg:col-span-2">
-          <Label className="text-xs text-muted-foreground">Search</Label>
+          <Label className="text-xs text-muted-foreground">{t('Search')}</Label>
           <Input value={filter.q} onChange={(e) => set('q', e.target.value)}
-            placeholder="Title, address, neighborhood, code, appliances…" />
+            placeholder={t('Title, address, neighborhood, code, appliances…')} />
         </div>
 
         <FilterSelect label="Status" value={filter.status} onChange={(v) => set('status', v as UnitFilter['status'])}
@@ -128,7 +130,7 @@ export function UnitFilters({
 
         <div className="grid gap-1.5 sm:col-span-2">
           <Label className="text-xs text-muted-foreground">
-            Price · {fmtPrice(priceVal[0]).replace(' / mo', '')} – {fmtPrice(priceVal[1]).replace(' / mo', '')}
+            {t('Price')} · {fmtPrice(priceVal[0]).replace(' / mo', '').replace(' / mois', '')} – {fmtPrice(priceVal[1]).replace(' / mo', '').replace(' / mois', '')}
           </Label>
           <Slider min={0} max={priceBound} step={50} value={priceVal} className="mt-2"
             onValueChange={(v) => { const a = v as number[]; setFilter({ ...filter, priceMin: a[0], priceMax: a[1] }) }} />
@@ -136,7 +138,7 @@ export function UnitFilters({
 
         <div className="grid gap-1.5 sm:col-span-2">
           <Label className="text-xs text-muted-foreground">
-            Size · {sqftVal[0].toLocaleString()} – {sqftVal[1].toLocaleString()} sqft
+            {t('Size')} · {sqftVal[0].toLocaleString()} – {sqftVal[1].toLocaleString()} {t('sqft')}
           </Label>
           <Slider min={0} max={sqftBound} step={10} value={sqftVal} className="mt-2"
             onValueChange={(v) => { const a = v as number[]; setFilter({ ...filter, sqftMin: a[0], sqftMax: a[1] }) }} />
@@ -144,7 +146,7 @@ export function UnitFilters({
 
         <div className="flex items-end sm:col-span-2 lg:col-span-4">
           <Button variant="ghost" size="sm" disabled={active === 0} onClick={() => setFilter(defaultFilter)}>
-            Reset {active > 0 ? `(${active})` : ''} filters
+            {t('Reset filters')} {active > 0 ? `(${active})` : ''}
           </Button>
         </div>
       </CardContent>
@@ -155,13 +157,14 @@ export function UnitFilters({
 function FilterSelect({
   label, value, onChange, options,
 }: { label: string; value: string; onChange: (v: string) => void; options: [string, string][] }) {
+  const { t } = useT()
   return (
     <div className="grid gap-1.5">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <Label className="text-xs text-muted-foreground">{t(label)}</Label>
       <Select value={value} onValueChange={(v) => v && onChange(v)}>
-        <SelectTrigger><SelectValue>{(v: any) => options.find(([ov]) => ov === String(v))?.[1] ?? String(v)}</SelectValue></SelectTrigger>
+        <SelectTrigger><SelectValue>{(v: any) => t(options.find(([ov]) => ov === String(v))?.[1] ?? String(v))}</SelectValue></SelectTrigger>
         <SelectContent>
-          {options.map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+          {options.map(([v, l]) => <SelectItem key={v} value={v}>{t(l)}</SelectItem>)}
         </SelectContent>
       </Select>
     </div>

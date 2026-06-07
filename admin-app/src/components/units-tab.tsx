@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { api, cap, type Me, type Unit } from '@/lib/api'
 import { fmtBeds, fmtPrice } from '@/lib/format'
+import { useT } from '@/lib/i18n'
 import { UnitDialog } from '@/components/unit-dialog'
 import { UnitDetails } from '@/components/unit-details'
 import { CsvImportDialog } from '@/components/csv-import-dialog'
@@ -18,6 +19,7 @@ const STATUS_META: Record<string, { label: string; cls: string }> = {
 }
 
 export function UnitsTab({ me }: { me: Me }) {
+  const { t } = useT()
   const [units, setUnits] = useState<Unit[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<UnitFilter>(defaultFilter)
@@ -34,7 +36,7 @@ export function UnitsTab({ me }: { me: Me }) {
       // Load every unit (incl. hidden) so the filters can work over the full set.
       setUnits(await api.get<Unit[]>('/api/units?all=1'))
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to load units')
+      toast.error(err instanceof Error ? err.message : t('Failed to load units'))
     } finally {
       setLoading(false)
     }
@@ -44,21 +46,21 @@ export function UnitsTab({ me }: { me: Me }) {
   const filtered = useMemo(() => applyFilters(units, filter), [units, filter])
 
   async function remove(u: Unit) {
-    if (!confirm(`Delete "${u.title}"? This also removes its photos.`)) return
-    try { await api.del(`/api/units/${u.id}`); toast.success('Unit deleted'); load() }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Delete failed') }
+    if (!confirm(`${t('Delete')} "${u.title}" ? ${t('This also removes its photos.')}`)) return
+    try { await api.del(`/api/units/${u.id}`); toast.success(t('Unit deleted')); load() }
+    catch (err) { toast.error(err instanceof Error ? err.message : t('Delete failed')) }
   }
 
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="text-sm text-muted-foreground">
-          {loading ? 'Loading…' : `Showing ${filtered.length} of ${units.length} unit${units.length === 1 ? '' : 's'}`}
+          {loading ? t('Loading…') : `${t('Showing')} ${filtered.length} ${t('of')} ${units.length} ${units.length === 1 ? t('unit') : t('units')}`}
         </span>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowMap((v) => !v)}>{showMap ? 'Hide map' : 'Show map'}</Button>
-          {canEdit && <Button variant="outline" size="sm" onClick={() => setCsvOpen(true)}>Import CSV</Button>}
-          {canEdit && <Button size="sm" onClick={() => setEditing(null)}>+ New unit</Button>}
+          <Button variant="outline" size="sm" onClick={() => setShowMap((v) => !v)}>{showMap ? t('Hide map') : t('Show map')}</Button>
+          {canEdit && <Button variant="outline" size="sm" onClick={() => setCsvOpen(true)}>{t('Import CSV')}</Button>}
+          {canEdit && <Button size="sm" onClick={() => setEditing(null)}>{t('+ New unit')}</Button>}
         </div>
       </div>
 
@@ -74,8 +76,8 @@ export function UnitsTab({ me }: { me: Me }) {
       {filtered.length === 0 && !loading ? (
         <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
           {units.length === 0
-            ? <>No units yet.{canEdit && ' Click “+ New unit” to add your first listing.'}</>
-            : 'No units match these filters.'}
+            ? <>{t('No units yet.')}{canEdit && ` ${t('Click “+ New unit” to add your first listing.')}`}</>
+            : t('No units match these filters.')}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-2">
@@ -94,25 +96,25 @@ export function UnitsTab({ me }: { me: Me }) {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{u.title}</span>
                   <Badge variant={u.status === 'available' ? 'default' : 'secondary'}
-                    className={STATUS_META[u.status]?.cls}>{STATUS_META[u.status]?.label ?? u.status}</Badge>
+                    className={STATUS_META[u.status]?.cls}>{t(STATUS_META[u.status]?.label ?? u.status)}</Badge>
                   {u.lat != null
-                    ? <Badge variant="outline" className="text-teal-700">📍 located</Badge>
-                    : <Badge variant="outline" className="text-amber-700">no pin</Badge>}
+                    ? <Badge variant="outline" className="text-teal-700">📍 {t('located')}</Badge>
+                    : <Badge variant="outline" className="text-amber-700">{t('no pin')}</Badge>}
                   {u.unit_code && <span className="text-xs text-muted-foreground">{u.unit_code}</span>}
                 </div>
                 <div className="truncate text-sm text-muted-foreground">{u.address}{u.neighborhood ? ` · ${u.neighborhood}` : ''}</div>
                 <div className="text-sm text-muted-foreground">
-                  {fmtBeds(u.beds)} · {u.baths} bath · {u.sqft ? `${u.sqft.toLocaleString()} sqft · ` : ''}{fmtPrice(u.price)}
-                  {u.dogs_policy === 'yes' ? ' · 🐾 dogs' : u.dogs_policy === 'contact' ? ' · 🐾 ask' : ''}
+                  {fmtBeds(u.beds)} · {u.baths} {t('bath')} · {u.sqft ? `${u.sqft.toLocaleString()} ${t('sqft')} · ` : ''}{fmtPrice(u.price)}
+                  {u.dogs_policy === 'yes' ? ` · 🐾 ${t('dogs')}` : u.dogs_policy === 'contact' ? ` · 🐾 ${t('ask')}` : ''}
                   {u.parking_available === 'yes' ? ' · 🅿︎' : ''}{u.locker_available === 'yes' ? ' · 🔒' : ''}
-                  {` · ${u.photos.length} photo${u.photos.length === 1 ? '' : 's'}`}
+                  {` · ${u.photos.length} ${u.photos.length === 1 ? t('photo') : t('photos')}`}
                 </div>
               </div>
               </button>
               <div className="flex shrink-0 gap-2">
-                <Button variant="outline" size="sm" onClick={() => setViewing(u)}>Details</Button>
-                {canEdit && <Button variant="outline" size="sm" onClick={() => setEditing(u)}>Edit</Button>}
-                {canDelete && <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => remove(u)}>Delete</Button>}
+                <Button variant="outline" size="sm" onClick={() => setViewing(u)}>{t('Details')}</Button>
+                {canEdit && <Button variant="outline" size="sm" onClick={() => setEditing(u)}>{t('Edit')}</Button>}
+                {canDelete && <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => remove(u)}>{t('Delete')}</Button>}
               </div>
             </div>
           ))}

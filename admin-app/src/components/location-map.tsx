@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { MapContainer, TileLayer, Marker, CircleMarker, Popup, useMap, useMapEvents } from 'react-leaflet'
 import { defaultIcon } from '@/lib/leaflet-icon'
+import { useT } from '@/lib/i18n'
 import type { NearbyUnit } from '@/lib/api'
 
 const MONTREAL: [number, number] = [45.5019, -73.5674]
@@ -34,6 +35,7 @@ export function LocationMap({
   onChange?: (lat: number, lng: number) => void
   nearby?: NearbyUnit[]
 }) {
+  const { t } = useT()
   const center = lat != null && lng != null ? ([lat, lng] as [number, number]) : MONTREAL
   return (
     <MapContainer center={center} zoom={lat != null ? 14 : 12} className="h-56 w-full rounded-md border">
@@ -57,7 +59,7 @@ export function LocationMap({
         n.lat != null && n.lng != null ? (
           <CircleMarker key={n.id} center={[n.lat, n.lng]} radius={7}
             pathOptions={{ color: '#0f766e', fillColor: '#14b8a6', fillOpacity: 0.8 }}>
-            <Popup><strong>{n.title}</strong><br />{n.distance_km} km away</Popup>
+            <Popup><strong>{n.title}</strong><br />{n.distance_km} {t('km away')}</Popup>
           </CircleMarker>
         ) : null,
       )}
