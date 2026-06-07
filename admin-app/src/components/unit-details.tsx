@@ -48,7 +48,7 @@ export function UnitDetails({
   unit: Unit | null
   open: boolean
   onOpenChange: (o: boolean) => void
-  onEdit: (u: Unit) => void
+  onEdit?: (u: Unit) => void
   onOpenUnit: (u: Unit) => void
 }) {
   const [similar, setSimilar] = useState<NearbyUnit[]>([])
@@ -105,7 +105,7 @@ export function UnitDetails({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          {canEdit && (
+          {canEdit && onEdit && (
             <Button size="sm" variant="ghost" onClick={() => { onEdit(unit); onOpenChange(false) }}>Edit</Button>
           )}
         </div>

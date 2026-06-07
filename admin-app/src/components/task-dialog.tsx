@@ -12,6 +12,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { UnitDetails } from '@/components/unit-details'
 
 const NONE = 'none'
 const pad = (n: number) => String(n).padStart(2, '0')
@@ -48,6 +49,14 @@ export function TaskDialog({
   const [autoAssign, setAutoAssign] = useState(true)
   const [autoCount, setAutoCount] = useState('10')
   const [busy, setBusy] = useState(false)
+  const [detailUnit, setDetailUnit] = useState<Unit | null>(null)
+
+  function applyPostPreset() {
+    setTitle('Post on Facebook Marketplace')
+    setDescription('Post that day’s unit on Facebook Marketplace.')
+    setAutoAssign(true)
+    setAutoCount('1')
+  }
 
   useEffect(() => {
     if (!open) return
@@ -105,6 +114,9 @@ export function TaskDialog({
   }
 
   return (
+    <>
+    <UnitDetails me={me} unit={detailUnit} open={!!detailUnit} onOpenUnit={setDetailUnit}
+      onOpenChange={(o) => { if (!o) setDetailUnit(null) }} />
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
@@ -113,6 +125,14 @@ export function TaskDialog({
         <form onSubmit={save} className="grid gap-4">
           {isMaster ? (
             <>
+              {!task && (
+                <div className="grid gap-1.5">
+                  <Label className="text-xs text-muted-foreground">Quick start</Label>
+                  <Button type="button" variant="outline" className="justify-start font-normal" onClick={applyPostPreset}>
+                    📢 Post — Facebook Marketplace (1 unit/day, Mon–Fri)
+                  </Button>
+                </div>
+              )}
               <div className="grid gap-1.5">
                 <Label className="text-xs text-muted-foreground">Title *</Label>
                 <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Post on Facebook Marketplace" />
@@ -160,7 +180,7 @@ export function TaskDialog({
               {showBatch && (
                 <div className="grid gap-1.5">
                   <Label className="text-xs text-muted-foreground">Units to post ({batch.length})</Label>
-                  <UnitBatch units={batch} />
+                  <UnitBatch units={batch} onPick={setDetailUnit} />
                 </div>
               )}
               {showUnitPicker && (
@@ -208,7 +228,7 @@ export function TaskDialog({
               {batch.length > 0 ? (
                 <div className="grid gap-1.5">
                   <Label className="text-xs text-muted-foreground">Units to post ({batch.length})</Label>
-                  <UnitBatch units={batch} />
+                  <UnitBatch units={batch} onPick={setDetailUnit} />
                 </div>
               ) : unit ? (
                 <div className="rounded-md border p-3">
@@ -244,27 +264,30 @@ export function TaskDialog({
         </form>
       </DialogContent>
     </Dialog>
+    </>
   )
 }
 
-function UnitBatch({ units }: { units: Unit[] }) {
+function UnitBatch({ units, onPick }: { units: Unit[]; onPick: (u: Unit) => void }) {
   return (
     <div className="grid max-h-72 grid-cols-1 gap-2 overflow-y-auto rounded-md border p-2">
       {units.map((u) => (
         <div key={u.id} className="flex items-center gap-2 rounded-md border bg-card p-2">
-          <div className="size-9 shrink-0 overflow-hidden rounded bg-muted">
-            {u.photos?.[0]
-              ? <img src={u.photos[0].url} alt="" className="h-full w-full object-cover" />
-              : <div className="grid h-full w-full place-items-center text-xs text-muted-foreground">{(u.title || '?').slice(0, 1)}</div>}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-medium">{u.title}</div>
-            <div className="truncate text-xs text-muted-foreground">{u.address}</div>
-          </div>
+          <button type="button" onClick={() => onPick(u)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+            <div className="size-9 shrink-0 overflow-hidden rounded bg-muted">
+              {u.photos?.[0]
+                ? <img src={u.photos[0].url} alt="" className="h-full w-full object-cover" />
+                : <div className="grid h-full w-full place-items-center text-xs text-muted-foreground">{(u.title || '?').slice(0, 1)}</div>}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-medium">{u.title}</div>
+              <div className="truncate text-xs text-muted-foreground">{u.address}</div>
+            </div>
+          </button>
           {u.photos?.length ? (
-            <a className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))} href={`/api/units/${u.id}/photos.zip`} title="Download photos">⬇</a>
+            <a className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))} href={`/api/units/${u.id}/photos.zip`} title="Download all photos">⬇</a>
           ) : null}
-          <button type="button" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))} onClick={() => window.open(`/units/${u.id}`, '_blank')}>Open</button>
+          <button type="button" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))} onClick={() => onPick(u)}>Details</button>
         </div>
       ))}
     </div>
