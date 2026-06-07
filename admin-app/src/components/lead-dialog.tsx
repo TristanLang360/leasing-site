@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { api, cap, LEAD_STAGES, type Lead, type Me, type Unit, type User } from '@/lib/api'
+import { useT } from '@/lib/i18n'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,6 +22,7 @@ export function LeadDialog({
   agents: User[]
   onSaved: () => void
 }) {
+  const { t } = useT()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -47,7 +49,7 @@ export function LeadDialog({
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
-    if (!name.trim()) { toast.error('Give the lead a name'); return }
+    if (!name.trim()) { toast.error(t('Give the lead a name')); return }
     setBusy(true)
     const body = {
       name, email, phone,
@@ -58,17 +60,17 @@ export function LeadDialog({
     try {
       if (lead) await api.put(`/api/leads/${lead.id}`, body)
       else await api.post('/api/leads', body)
-      toast.success('Lead saved')
+      toast.success(t('Lead saved'))
       onOpenChange(false); onSaved()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Save failed')
+      toast.error(err instanceof Error ? err.message : t('Save failed'))
     } finally { setBusy(false) }
   }
 
   async function remove() {
-    if (!lead || !confirm('Delete this lead?')) return
-    try { await api.del(`/api/leads/${lead.id}`); toast.success('Lead deleted'); onOpenChange(false); onSaved() }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Delete failed') }
+    if (!lead || !confirm(t('Delete this lead?'))) return
+    try { await api.del(`/api/leads/${lead.id}`); toast.success(t('Lead deleted')); onOpenChange(false); onSaved() }
+    catch (err) { toast.error(err instanceof Error ? err.message : t('Delete failed')) }
   }
 
   const pickAgents = agents.filter((a) => a.role !== 'master')
@@ -77,41 +79,41 @@ export function LeadDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{lead ? 'Edit lead' : 'New lead'}</DialogTitle>
+          <DialogTitle>{lead ? t('Edit lead') : t('New lead')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={save} className="grid gap-4">
           <div className="grid gap-1.5">
-            <Label className="text-xs text-muted-foreground">Name *</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Lead’s full name" />
+            <Label className="text-xs text-muted-foreground">{t('Name *')}</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('Lead’s full name')} />
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="grid gap-1.5">
-              <Label className="text-xs text-muted-foreground">Email</Label>
+              <Label className="text-xs text-muted-foreground">{t('Email')}</Label>
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div className="grid gap-1.5">
-              <Label className="text-xs text-muted-foreground">Phone</Label>
+              <Label className="text-xs text-muted-foreground">{t('Phone')}</Label>
               <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="grid gap-1.5">
-              <Label className="text-xs text-muted-foreground">Stage</Label>
+              <Label className="text-xs text-muted-foreground">{t('Stage')}</Label>
               <Select value={stage} onValueChange={(v) => v && setStage(v)}>
-                <SelectTrigger><SelectValue>{(v: any) => LEAD_STAGES.find((s) => s.value === String(v))?.label ?? String(v)}</SelectValue></SelectTrigger>
+                <SelectTrigger><SelectValue>{(v: any) => t(LEAD_STAGES.find((s) => s.value === String(v))?.label ?? String(v))}</SelectValue></SelectTrigger>
                 <SelectContent>
-                  {LEAD_STAGES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                  {LEAD_STAGES.map((s) => <SelectItem key={s.value} value={s.value}>{t(s.label)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-1.5">
-              <Label className="text-xs text-muted-foreground">Assigned agent</Label>
+              <Label className="text-xs text-muted-foreground">{t('Assigned agent')}</Label>
               <Select value={agentId} onValueChange={(v) => v && setAgentId(v)}>
-                <SelectTrigger><SelectValue>{(v: any) => (v === NONE || !v ? '— Unassigned —' : (agents.find((a) => String(a.id) === String(v))?.name || agents.find((a) => String(a.id) === String(v))?.email || String(v)))}</SelectValue></SelectTrigger>
+                <SelectTrigger><SelectValue>{(v: any) => (v === NONE || !v ? t('— Unassigned —') : (agents.find((a) => String(a.id) === String(v))?.name || agents.find((a) => String(a.id) === String(v))?.email || String(v)))}</SelectValue></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NONE}>— Unassigned —</SelectItem>
-                  {!cap.manageUsers(me.role) && <SelectItem value={String(me.id)}>{me.name || me.email} (me)</SelectItem>}
+                  <SelectItem value={NONE}>{t('— Unassigned —')}</SelectItem>
+                  {!cap.manageUsers(me.role) && <SelectItem value={String(me.id)}>{me.name || me.email} {t('(me)')}</SelectItem>}
                   {pickAgents.map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.name || a.email}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -119,11 +121,11 @@ export function LeadDialog({
           </div>
 
           <div className="grid gap-1.5">
-            <Label className="text-xs text-muted-foreground">Interested unit</Label>
+            <Label className="text-xs text-muted-foreground">{t('Interested unit')}</Label>
             <Select value={unitId} onValueChange={(v) => v && setUnitId(v)}>
-              <SelectTrigger><SelectValue>{(v: any) => (v === NONE || !v ? '— No unit —' : (units.find((u) => String(u.id) === String(v))?.title ?? String(v)))}</SelectValue></SelectTrigger>
+              <SelectTrigger><SelectValue>{(v: any) => (v === NONE || !v ? t('— No unit —') : (units.find((u) => String(u.id) === String(v))?.title ?? String(v)))}</SelectValue></SelectTrigger>
               <SelectContent className="max-h-72">
-                <SelectItem value={NONE}>— No unit —</SelectItem>
+                <SelectItem value={NONE}>{t('— No unit —')}</SelectItem>
                 {units.map((u) => <SelectItem key={u.id} value={String(u.id)}>{u.title}{u.unit_code ? ` (${u.unit_code})` : ''}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -131,25 +133,25 @@ export function LeadDialog({
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="grid gap-1.5">
-              <Label className="text-xs text-muted-foreground">Monthly budget</Label>
-              <Input type="number" min="0" step="50" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="$ / month" />
+              <Label className="text-xs text-muted-foreground">{t('Monthly budget')}</Label>
+              <Input type="number" min="0" step="50" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder={t('$ / month')} />
             </div>
             <div className="grid gap-1.5">
-              <Label className="text-xs text-muted-foreground">Desired move-in</Label>
+              <Label className="text-xs text-muted-foreground">{t('Desired move-in')}</Label>
               <Input type="date" value={moveIn} onChange={(e) => setMoveIn(e.target.value)} />
             </div>
           </div>
 
           <div className="grid gap-1.5">
-            <Label className="text-xs text-muted-foreground">Notes</Label>
-            <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Anything useful about this lead…" />
+            <Label className="text-xs text-muted-foreground">{t('Notes')}</Label>
+            <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('Anything useful about this lead…')} />
           </div>
 
           <DialogFooter className="sm:justify-between">
-            {lead ? <Button type="button" variant="ghost" className="text-destructive hover:text-destructive" onClick={remove}>Delete</Button> : <span />}
+            {lead ? <Button type="button" variant="ghost" className="text-destructive hover:text-destructive" onClick={remove}>{t('Delete')}</Button> : <span />}
             <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button type="submit" disabled={busy}>{busy ? 'Saving…' : lead ? 'Save lead' : 'Create lead'}</Button>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('Cancel')}</Button>
+              <Button type="submit" disabled={busy}>{busy ? t('Saving…') : lead ? t('Save lead') : t('Create lead')}</Button>
             </div>
           </DialogFooter>
         </form>

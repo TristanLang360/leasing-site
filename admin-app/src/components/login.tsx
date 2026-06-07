@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { api, type Me } from '@/lib/api'
+import { useT } from '@/lib/i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function Login({ onLogin }: { onLogin: (me: Me) => void }) {
+  const { t } = useT()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -19,7 +21,7 @@ export function Login({ onLogin }: { onLogin: (me: Me) => void }) {
       const me = await api.post<Me>('/api/login', { email, password })
       onLogin(me)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+      setError(err instanceof Error ? err.message : t('Login failed'))
     } finally {
       setBusy(false)
     }
@@ -33,18 +35,18 @@ export function Login({ onLogin }: { onLogin: (me: Me) => void }) {
             <span className="inline-block size-5 rounded-sm bg-foreground" />
             <span className="font-semibold tracking-tight">Rentalium</span>
           </div>
-          <CardTitle>Staff sign in</CardTitle>
-          <CardDescription>Lease agents &amp; managers only.</CardDescription>
+          <CardTitle>{t('Staff sign in')}</CardTitle>
+          <CardDescription>{t('Lease agents & managers only.')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={submit} className="grid gap-4">
             <div className="grid grid-cols-1 gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('Email')}</Label>
               <Input id="email" type="email" autoComplete="username" required
                 value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@rentalium.com" />
             </div>
             <div className="grid grid-cols-1 gap-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('Password')}</Label>
               <Input id="password" type="password" autoComplete="current-password" required
                 value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
             </div>
@@ -52,11 +54,11 @@ export function Login({ onLogin }: { onLogin: (me: Me) => void }) {
               <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
             )}
             <Button type="submit" className="w-full" disabled={busy}>
-              {busy ? 'Signing in…' : 'Sign in'}
+              {busy ? t('Signing in…') : t('Sign in')}
             </Button>
           </form>
           <p className="mt-4 text-center text-sm">
-            <a href="/" className="text-muted-foreground hover:text-foreground">← Back to public site</a>
+            <a href="/" className="text-muted-foreground hover:text-foreground">{t('← Back to public site')}</a>
           </p>
         </CardContent>
       </Card>

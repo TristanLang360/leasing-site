@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { api, cap, LEAD_STAGES, type Lead, type LeadStage, type Me, type Unit, type User } from '@/lib/api'
 import { fmtPrice } from '@/lib/format'
+import { useT } from '@/lib/i18n'
 import { LeadDialog } from '@/components/lead-dialog'
 import { Button } from '@/components/ui/button'
 
 const STAGE_INDEX: Record<string, number> = Object.fromEntries(LEAD_STAGES.map((s, i) => [s.value, i]))
 
 export function CrmTab({ me }: { me: Me }) {
+  const { t } = useT()
   const [leads, setLeads] = useState<Lead[]>([])
   const [units, setUnits] = useState<Unit[]>([])
   const [agents, setAgents] = useState<User[]>([])
@@ -17,7 +19,7 @@ export function CrmTab({ me }: { me: Me }) {
   async function load() {
     setLoading(true)
     try { setLeads(await api.get<Lead[]>('/api/leads')) }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Failed to load leads') }
+    catch (err) { toast.error(err instanceof Error ? err.message : t('Failed to load leads')) }
     finally { setLoading(false) }
   }
   useEffect(() => { load() }, [])
@@ -32,7 +34,7 @@ export function CrmTab({ me }: { me: Me }) {
     if (!next) return
     setLeads((ls) => ls.map((l) => (l.id === lead.id ? { ...l, stage: next.value } : l))) // optimistic
     try { await api.put(`/api/leads/${lead.id}`, { stage: next.value }) }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Move failed'); load() }
+    catch (err) { toast.error(err instanceof Error ? err.message : t('Move failed')); load() }
   }
 
   const byStage = (s: LeadStage) => leads.filter((l) => l.stage === s)
@@ -41,9 +43,9 @@ export function CrmTab({ me }: { me: Me }) {
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="text-sm text-muted-foreground">
-          {loading ? 'Loading…' : `${leads.length} lead${leads.length === 1 ? '' : 's'} in the pipeline`}
+          {loading ? t('Loading…') : `${leads.length} ${leads.length === 1 ? t('lead in the pipeline') : t('leads in the pipeline')}`}
         </span>
-        <Button size="sm" onClick={() => setEditing(null)}>+ Add lead</Button>
+        <Button size="sm" onClick={() => setEditing(null)}>{t('+ Add lead')}</Button>
       </div>
 
       {/* Kanban board — scrolls horizontally on small screens */}
@@ -54,7 +56,7 @@ export function CrmTab({ me }: { me: Me }) {
             <div key={stage.value} className="flex w-72 shrink-0 flex-col gap-2">
               <div className="flex items-center gap-2 px-1">
                 <span className={`size-2.5 rounded-full ${stage.accent}`} />
-                <span className="text-sm font-medium">{stage.label}</span>
+                <span className="text-sm font-medium">{t(stage.label)}</span>
                 <span className="text-xs text-muted-foreground">{items.length}</span>
               </div>
               <div className="flex min-h-16 flex-col gap-2 rounded-lg bg-muted/40 p-2">
@@ -85,6 +87,7 @@ export function CrmTab({ me }: { me: Me }) {
 }
 
 function LeadCard({ lead, onOpen, onMove }: { lead: Lead; onOpen: () => void; onMove: (l: Lead, dir: -1 | 1) => void }) {
+  const { t } = useT()
   const idx = STAGE_INDEX[lead.stage]
   const contact = [lead.email, lead.phone].filter(Boolean).join(' · ')
   return (
@@ -96,14 +99,14 @@ function LeadCard({ lead, onOpen, onMove }: { lead: Lead; onOpen: () => void; on
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
           {lead.budget != null && <span>{fmtPrice(lead.budget)}/mo</span>}
           {lead.agent && <span>· {lead.agent.name || lead.agent.email}</span>}
-          {lead.source === 'website' && <span className="rounded bg-sky-100 px-1.5 text-[10px] font-medium text-sky-700">web</span>}
+          {lead.source === 'website' && <span className="rounded bg-sky-100 px-1.5 text-[10px] font-medium text-sky-700">{t('web')}</span>}
         </div>
       </button>
       <div className="mt-2 flex items-center justify-between">
         <button type="button" onClick={() => onMove(lead, -1)} disabled={idx === 0}
-          className="rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-30" title="Move back">← back</button>
+          className="rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-30" title={t('Move back')}>{t('← back')}</button>
         <button type="button" onClick={() => onMove(lead, 1)} disabled={idx === LEAD_STAGES.length - 1}
-          className="rounded px-1.5 py-0.5 text-xs font-medium text-primary hover:bg-muted disabled:opacity-30" title="Move forward">advance →</button>
+          className="rounded px-1.5 py-0.5 text-xs font-medium text-primary hover:bg-muted disabled:opacity-30" title={t('Move forward')}>{t('advance →')}</button>
       </div>
     </div>
   )

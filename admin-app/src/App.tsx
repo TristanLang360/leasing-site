@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, cap, type Me } from '@/lib/api'
 import { applyTheme, getTheme, type Theme } from '@/lib/theme'
+import { useT } from '@/lib/i18n'
 import { Login } from '@/components/login'
 import { UnitsTab } from '@/components/units-tab'
 import { CalendarTab } from '@/components/calendar-tab'
@@ -16,7 +17,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Toaster } from '@/components/ui/sonner'
 
+const roleLabel = (r: string) => (r === 'master' ? 'master' : r === 'agent' ? 'agent' : 'viewer')
+
 export default function App() {
+  const { t, lang, setLang } = useT()
   const [me, setMe] = useState<Me | null>(null)
   const [loading, setLoading] = useState(true)
   const [tourOpen, setTourOpen] = useState(false)
@@ -51,7 +55,7 @@ export default function App() {
   }
 
   if (loading) {
-    return <div className="grid min-h-screen place-items-center text-muted-foreground">Loading…</div>
+    return <div className="grid min-h-screen place-items-center text-muted-foreground">{t('Loading…')}</div>
   }
   if (!me) return <><Login onLogin={setMe} /><Toaster richColors /></>
 
@@ -65,39 +69,43 @@ export default function App() {
             <Badge variant="secondary" className="font-normal">admin</Badge>
           </div>
           <div className="flex items-center gap-3">
-            <a href="/" className="text-sm text-muted-foreground hover:text-foreground">Public site</a>
-            <Button variant="ghost" size="icon" className="size-8" aria-label="Toggle dark mode" title="Toggle dark mode"
+            <a href="/" className="text-sm text-muted-foreground hover:text-foreground">{t('Public site')}</a>
+            <Button variant="ghost" size="sm" className="h-8 px-2 font-semibold" aria-label="Language"
+              onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}>
+              {lang === 'fr' ? 'EN' : 'FR'}
+            </Button>
+            <Button variant="ghost" size="icon" className="size-8" aria-label={t('Toggle dark mode')} title={t('Toggle dark mode')}
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
               {theme === 'dark' ? '☀️' : '🌙'}
             </Button>
             {me.role === 'agent' && (
-              <Button variant="ghost" size="sm" onClick={() => setTourOpen(true)}>Guide</Button>
+              <Button variant="ghost" size="sm" onClick={() => setTourOpen(true)}>{t('Guide')}</Button>
             )}
             <NotificationBell />
             <span className="hidden text-sm text-muted-foreground sm:inline">
-              {me.name || me.email} · <span className="capitalize">{me.role}</span>
+              {me.name || me.email} · <span className="capitalize">{t(roleLabel(me.role))}</span>
             </span>
-            <Button variant="outline" size="sm" onClick={logout}>Log out</Button>
+            <Button variant="outline" size="sm" onClick={logout}>{t('Log out')}</Button>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-8">
         <div className="mb-6">
-          <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Admin</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Leasing dashboard</h1>
-          <p className="text-muted-foreground">Manage units, photos, showings, and your team. Changes are live immediately.</p>
+          <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">{t('Admin')}</p>
+          <h1 className="text-3xl font-semibold tracking-tight">{t('Leasing dashboard')}</h1>
+          <p className="text-muted-foreground">{t('Manage units, photos, showings, and your team. Changes are live immediately.')}</p>
         </div>
 
         <Tabs defaultValue="units">
           <TabsList>
-            <TabsTrigger value="units">Units</TabsTrigger>
-            <TabsTrigger value="calendar">Calendar</TabsTrigger>
-            {cap.calendar(me.role) && <TabsTrigger value="leads">Leads</TabsTrigger>}
-            {cap.calendar(me.role) && <TabsTrigger value="tasks">{cap.manageTasks(me.role) ? 'Tasks' : 'My tasks'}</TabsTrigger>}
-            {cap.blog(me.role) && <TabsTrigger value="blog">Blog</TabsTrigger>}
-            {cap.manageUsers(me.role) && <TabsTrigger value="agents">Agents</TabsTrigger>}
-            <TabsTrigger value="account">My account</TabsTrigger>
+            <TabsTrigger value="units">{t('Units')}</TabsTrigger>
+            <TabsTrigger value="calendar">{t('Calendar')}</TabsTrigger>
+            {cap.calendar(me.role) && <TabsTrigger value="leads">{t('Leads')}</TabsTrigger>}
+            {cap.calendar(me.role) && <TabsTrigger value="tasks">{cap.manageTasks(me.role) ? t('Tasks') : t('My tasks')}</TabsTrigger>}
+            {cap.blog(me.role) && <TabsTrigger value="blog">{t('Blog')}</TabsTrigger>}
+            {cap.manageUsers(me.role) && <TabsTrigger value="agents">{t('Agents')}</TabsTrigger>}
+            <TabsTrigger value="account">{t('My account')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="units" className="mt-6"><UnitsTab me={me} /></TabsContent>

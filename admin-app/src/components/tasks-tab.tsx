@@ -2,17 +2,19 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { api, cap, type Me, type PostingStatus, type Task, type Unit, type User } from '@/lib/api'
 import { celebrate } from '@/lib/confetti'
+import { useT, locale } from '@/lib/i18n'
 import { TaskDialog } from '@/components/task-dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 
 const STATUS_LABEL: Record<string, string> = { todo: 'To do', in_progress: 'In progress', done: 'Done' }
-const dueLabel = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'No due date'
 const statusText = (s: string) => (s === 'done' ? 'text-emerald-700' : s === 'in_progress' ? 'text-violet-700' : 'text-slate-600')
 
 export function TasksTab({ me }: { me: Me }) {
+  const { t: tr } = useT()
+  const dueLabel = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleString(locale(), { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : tr('No due date')
   const isMaster = cap.manageTasks(me.role)
   const [tasks, setTasks] = useState<Task[]>([])
   const [units, setUnits] = useState<Unit[]>([])
@@ -26,7 +28,7 @@ export function TasksTab({ me }: { me: Me }) {
   async function load() {
     setLoading(true)
     try { setTasks(await api.get<Task[]>('/api/tasks')) }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Failed to load tasks') }
+    catch (err) { toast.error(err instanceof Error ? err.message : tr('Failed to load tasks')) }
     finally { setLoading(false) }
     if (isMaster) api.get<PostingStatus>('/api/posting-status').then(setPosting).catch(() => {})
   }
@@ -44,9 +46,9 @@ export function TasksTab({ me }: { me: Me }) {
       : { status: next }
     try {
       await api.put(`/api/tasks/${t.id}`, body)
-      if (next === 'done') { celebrate(); toast.success('🎉 Task complete!') }
+      if (next === 'done') { celebrate(); toast.success(tr('🎉 Task complete!')) }
       load()
-    } catch (err) { toast.error(err instanceof Error ? err.message : 'Update failed') }
+    } catch (err) { toast.error(err instanceof Error ? err.message : tr('Update failed')) }
   }
 
   function openNew(agentId?: number) { setPresetAgentId(agentId); setEditing(null) }
@@ -58,10 +60,10 @@ export function TasksTab({ me }: { me: Me }) {
         <div className="min-w-0 flex-1">
           <div className={`truncate font-medium ${t.status === 'done' ? 'text-muted-foreground line-through' : ''}`}>📋 {t.title}</div>
           <div className="truncate text-xs text-muted-foreground">
-            {dueLabel(t.due_at)}{t.units?.length ? ` · ${t.units.length} units to post` : t.unit ? ` · ${t.unit.title}` : ''}{showAgent && t.agent ? ` · ${t.agent.name || t.agent.email}` : ''}
+            {dueLabel(t.due_at)}{t.units?.length ? ` · ${t.units.length} ${tr('units to post')}` : t.unit ? ` · ${t.unit.title}` : ''}{showAgent && t.agent ? ` · ${t.agent.name || t.agent.email}` : ''}
           </div>
         </div>
-        <Badge variant="outline" className={statusText(t.status)}>{STATUS_LABEL[t.status] ?? t.status}</Badge>
+        <Badge variant="outline" className={statusText(t.status)}>{tr(STATUS_LABEL[t.status] ?? t.status)}</Badge>
       </button>
     </div>
   )
@@ -85,15 +87,15 @@ export function TasksTab({ me }: { me: Me }) {
     const done = tasks.filter((t) => t.status === 'done')
     return (
       <div className="grid gap-4">
-        <span className="text-sm text-muted-foreground">{loading ? 'Loading…' : `${open.length} open · ${done.length} done`}</span>
+        <span className="text-sm text-muted-foreground">{loading ? tr('Loading…') : `${open.length} ${tr('open')} · ${done.length} ${tr('done')}`}</span>
         {tasks.length === 0 && !loading ? (
-          <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">No tasks assigned to you. 🎉</div>
+          <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">{tr('No tasks assigned to you. 🎉')}</div>
         ) : (
           <>
             <div className="grid grid-cols-1 gap-2">{open.map((t) => TaskRow(t, false))}</div>
             {done.length > 0 && (
               <div className="grid grid-cols-1 gap-2">
-                <h3 className="mt-2 text-sm font-medium text-muted-foreground">Completed</h3>
+                <h3 className="mt-2 text-sm font-medium text-muted-foreground">{tr('Completed')}</h3>
                 {done.map((t) => TaskRow(t, false))}
               </div>
             )}
@@ -118,22 +120,22 @@ export function TasksTab({ me }: { me: Me }) {
       <div className="grid gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setSelectedAgentId(null)}>← All agents</Button>
+            <Button variant="ghost" size="sm" onClick={() => setSelectedAgentId(null)}>{tr('← All agents')}</Button>
             <span className="font-semibold">{selected.name || selected.email}</span>
-            <Badge variant="secondary">{open.length} active</Badge>
+            <Badge variant="secondary">{open.length} {tr('active')}</Badge>
           </div>
-          <Button size="sm" onClick={() => openNew(selected.id)}>+ Assign task</Button>
+          <Button size="sm" onClick={() => openNew(selected.id)}>{tr('+ Assign task')}</Button>
         </div>
         {theirs.length === 0 ? (
           <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
-            No tasks for {selected.name || selected.email} yet. Click “+ Assign task”.
+            {tr('No tasks for this agent yet. Click “+ Assign task”.')}
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 gap-2">{open.map((t) => TaskRow(t, false))}</div>
             {done.length > 0 && (
               <div className="grid grid-cols-1 gap-2">
-                <h3 className="mt-2 text-sm font-medium text-muted-foreground">Completed</h3>
+                <h3 className="mt-2 text-sm font-medium text-muted-foreground">{tr('Completed')}</h3>
                 {done.map((t) => TaskRow(t, false))}
               </div>
             )}
@@ -147,20 +149,20 @@ export function TasksTab({ me }: { me: Me }) {
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <span className="text-sm text-muted-foreground">{loading ? 'Loading…' : `${realAgents.length} agent${realAgents.length === 1 ? '' : 's'}`}</span>
-        <Button size="sm" onClick={() => openNew()}>+ New task</Button>
+        <span className="text-sm text-muted-foreground">{loading ? tr('Loading…') : `${realAgents.length} ${realAgents.length === 1 ? tr('agent') : tr('agents')}`}</span>
+        <Button size="sm" onClick={() => openNew()}>{tr('+ New task')}</Button>
       </div>
 
       {posting && (
         <div className="rounded-lg border bg-muted/40 px-4 py-2.5 text-sm">
-          <span className="font-medium">Posting rotation</span> — cycle {posting.cycle}: {posting.assigned} of {posting.total} units assigned this round, <strong>{posting.remaining} left</strong>.
-          {posting.remaining === 0 && ' The next task restarts the rotation.'}
+          <span className="font-medium">{tr('Posting rotation')}</span> — {tr('cycle')} {posting.cycle}: {posting.assigned} / {posting.total} {tr('units assigned this round')}, <strong>{posting.remaining} {tr('left')}</strong>.
+          {posting.remaining === 0 && ` ${tr('The next task restarts the rotation.')}`}
         </div>
       )}
 
       {realAgents.length === 0 ? (
         <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
-          No agents yet. Add agents in the <strong>Agents</strong> tab, then assign them tasks here.
+          {tr('No agents yet. Add agents in the Agents tab, then assign them tasks here.')}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-2">
@@ -177,14 +179,14 @@ export function TasksTab({ me }: { me: Me }) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{a.name || a.email}</span>
-                    <Badge variant="secondary" className="capitalize">{a.role}</Badge>
-                    {!a.active && <Badge variant="outline">disabled</Badge>}
+                    <Badge variant="secondary" className="capitalize">{tr(a.role)}</Badge>
+                    {!a.active && <Badge variant="outline">{tr('disabled')}</Badge>}
                   </div>
                   <div className="truncate text-xs text-muted-foreground">{a.email}</div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  {active > 0 ? <Badge className="bg-violet-100 text-violet-800">{active} active</Badge> : <span className="text-xs text-muted-foreground">no active tasks</span>}
-                  {done > 0 && <span className="text-xs text-muted-foreground">{done} done</span>}
+                  {active > 0 ? <Badge className="bg-violet-100 text-violet-800">{active} {tr('active')}</Badge> : <span className="text-xs text-muted-foreground">{tr('no active tasks')}</span>}
+                  {done > 0 && <span className="text-xs text-muted-foreground">{done} {tr('done')}</span>}
                   <span className="text-muted-foreground">→</span>
                 </div>
               </button>
