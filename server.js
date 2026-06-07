@@ -657,6 +657,14 @@ async function withPostingUnits(tasks) {
   return Array.isArray(tasks) ? arr : arr[0];
 }
 
+// The five weekdays (Mon–Fri) of next week, at 09:00 local, for daily tasks.
+function nextWeekMonToFri() {
+  const now = new Date();
+  const daysToMon = ((1 - now.getDay() + 7) % 7) || 7; // next Monday (skips this week)
+  const mon = new Date(now); mon.setDate(now.getDate() + daysToMon); mon.setHours(9, 0, 0, 0);
+  return [0, 1, 2, 3, 4].map((i) => { const d = new Date(mon); d.setDate(mon.getDate() + i); return d; });
+}
+
 // Rotation engine: claim the next `count` units for an agent without ever
 // reusing a unit within a cycle (so two agents never get the same unit).
 // When the cycle is exhausted, it rolls to the next cycle = a fresh restart.
@@ -707,13 +715,24 @@ app.post('/api/tasks', requireCap(can.manageTasks), wrap(async (req, res) => {
   if (!t.agent_id) return res.status(400).json({ error: 'Assign the task to an agent.' });
   if (!(await repo.getUserById(t.agent_id))) return res.status(400).json({ error: 'Assigned agent not found.' });
 
-  // Posting task: auto-assign the next N units to this agent (rotation).
-  const autoUnits = Math.max(0, Math.min(Number(req.body.auto_units) || 0, 200));
-  if (autoUnits > 0) {
-    const created = await repo.createTask({ ...t, unit_id: null, created_by: req.user.id });
-    const assigned = await assignNextUnits(t.agent_id, autoUnits, created.id);
-    if (assigned.length === 0) { await repo.deleteTask(created.id); return res.status(400).json({ error: 'No available units to assign.' }); }
-    return res.status(201).json(await withPostingUnits(await repo.getTask(created.id)));
+  // Posting task: auto-assign units across Mon–Fri of next week (one task per
+  // day), each day a fresh batch from the rotation.
+  const perDay = Math.max(0, Math.min(Number(req.body.auto_units) || 0, 200));
+  if (perDay > 0) {
+    const days = nextWeekMonToFri();
+    const created = [];
+    for (const day of days) {
+      const weekday = day.toLocaleDateString('en-US', { weekday: 'long' });
+      const task = await repo.createTask({
+        title: `${t.title} — ${weekday}`, description: t.description, unit_id: null,
+        agent_id: t.agent_id, due_at: day.toISOString(), status: 'todo', created_by: req.user.id,
+      });
+      const assigned = await assignNextUnits(t.agent_id, perDay, task.id);
+      if (assigned.length === 0) { await repo.deleteTask(task.id); break; }
+      created.push(task.id);
+    }
+    if (created.length === 0) return res.status(400).json({ error: 'No available units to assign.' });
+    return res.status(201).json({ created: created.length });
   }
 
   if (t.unit_id && !(await repo.getUnit(t.unit_id))) return res.status(400).json({ error: 'Unit not found.' });

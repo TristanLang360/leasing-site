@@ -57,7 +57,7 @@ export function TaskDialog({
     setAgentId(task?.agent_id ? String(task.agent_id) : (presetAgentId ? String(presetAgentId) : NONE))
     setStatus(task?.status ?? 'todo')
     setAutoAssign(!task) // new tasks default to the posting rotation
-    setAutoCount('10')
+    setAutoCount('5')
     if (task?.due_at) { const d = new Date(task.due_at); setDate(d); setTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`) }
     else { setDate(undefined); setTime('10:00') }
   }, [open, task])
@@ -147,14 +147,14 @@ export function TaskDialog({
               {!task && (
                 <label className="flex items-center gap-2 text-sm">
                   <Checkbox checked={autoAssign} onCheckedChange={(v) => setAutoAssign(!!v)} />
-                  Auto-assign the next units to post (rotation)
+                  Assign next week's posting (Mon–Fri rotation)
                 </label>
               )}
               {showCount && (
                 <div className="grid gap-1.5">
-                  <Label className="text-xs text-muted-foreground">How many units to post</Label>
+                  <Label className="text-xs text-muted-foreground">Units per day</Label>
                   <Input type="number" min="1" max="200" value={autoCount} onChange={(e) => setAutoCount(e.target.value)} />
-                  <span className="text-xs text-muted-foreground">We'll claim the next {autoCount || '…'} units this agent hasn't posted yet — never the same units another agent has.</span>
+                  <span className="text-xs text-muted-foreground">Creates 5 daily tasks (Mon–Fri next week), {autoCount || '…'} units each — pulled from the rotation, never the same units another agent has.</span>
                 </div>
               )}
               {showBatch && (
@@ -238,7 +238,7 @@ export function TaskDialog({
             {isMaster && task ? <Button type="button" variant="ghost" className="text-destructive hover:text-destructive" onClick={remove}>Delete</Button> : <span />}
             <div className="flex gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button type="submit" disabled={busy}>{busy ? 'Saving…' : isMaster ? (task ? 'Save task' : 'Create task') : 'Update'}</Button>
+              <Button type="submit" disabled={busy}>{busy ? 'Saving…' : isMaster ? (showCount ? "Assign week" : task ? 'Save task' : 'Create task') : 'Update'}</Button>
             </div>
           </DialogFooter>
         </form>

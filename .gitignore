@@ -22,3 +22,4 @@ uploads/
 # Admin SPA build deps (dist IS committed so the server runs without a build step)
 admin-app/node_modules/
 .gstack/
+.vercel
