@@ -26,16 +26,19 @@ export default function App() {
       .finally(() => setLoading(false))
   }, [])
 
-  // New agents see the welcome tour once, on first login.
+  // New agents see the welcome tour exactly once, on first login. We mark it
+  // seen the instant it opens (not when dismissed), so it never auto-shows
+  // again even if they close the tab mid-tour.
   useEffect(() => {
-    if (me && me.role === 'agent' && !me.onboarded) setTourOpen(true)
+    if (me && me.role === 'agent' && !me.onboarded) {
+      setTourOpen(true)
+      api.post('/api/me/onboarded').catch(() => {})
+      setMe((m) => (m ? { ...m, onboarded: 1 } : m))
+    }
   }, [me])
 
-  async function finishTour() {
-    setTourOpen(false)
-    await api.post('/api/me/onboarded').catch(() => {})
-    setMe((m) => (m ? { ...m, onboarded: 1 } : m))
-  }
+  // The Guide button reopens the tour manually; closing it just hides it.
+  function closeTour() { setTourOpen(false) }
 
   async function logout() {
     await api.post('/api/logout').catch(() => {})
@@ -104,7 +107,7 @@ export default function App() {
         </Tabs>
       </main>
 
-      <OnboardingTour open={tourOpen} onDone={finishTour} />
+      <OnboardingTour open={tourOpen} onDone={closeTour} />
       <Toaster richColors />
     </div>
   )
