@@ -80,7 +80,10 @@ export interface Task {
   updated_at: string
   unit: { id: number; title: string; unit_code: string | null; address: string } | null
   agent: { id: number; name: string | null; email: string } | null
+  units?: Unit[] // posting batch (units auto-assigned to this task)
 }
+
+export interface PostingStatus { cycle: number; total: number; assigned: number; remaining: number }
 
 export interface Post {
   id: number

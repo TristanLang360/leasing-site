@@ -649,6 +649,40 @@ function parseTaskBody(b) {
   };
 }
 
+// Attach each task's assigned posting batch (task.units) to the response.
+async function withPostingUnits(tasks) {
+  const arr = Array.isArray(tasks) ? tasks : [tasks];
+  const map = await repo.unitsForTasks(arr.filter(Boolean).map((t) => t.id));
+  for (const t of arr) if (t) t.units = (map[t.id] || []).map(present);
+  return Array.isArray(tasks) ? arr : arr[0];
+}
+
+// Rotation engine: claim the next `count` units for an agent without ever
+// reusing a unit within a cycle (so two agents never get the same unit).
+// When the cycle is exhausted, it rolls to the next cycle = a fresh restart.
+async function assignNextUnits(agentId, count, taskId) {
+  const total = await repo.countAvailableUnits();
+  if (total === 0) return [];
+  count = Math.min(count, total);
+  const picked = [], pickedIds = new Set();
+  let cycle = await repo.getPostingCycle();
+  let guard = 0;
+  while (picked.length < count && guard++ < 500) {
+    const need = count - picked.length;
+    let avail = (await repo.availableUnitsNotInCycle(cycle, need + pickedIds.size)).filter((u) => !pickedIds.has(u.id));
+    if (avail.length === 0) { // every unit claimed this cycle → start a new cycle
+      cycle += 1;
+      avail = (await repo.availableUnitsNotInCycle(cycle, need + pickedIds.size)).filter((u) => !pickedIds.has(u.id));
+      if (avail.length === 0) break;
+    }
+    for (const u of avail.slice(0, need)) {
+      await repo.assignUnitPosting(u.id, agentId, cycle, taskId);
+      picked.push(u); pickedIds.add(u.id);
+    }
+  }
+  return picked;
+}
+
 app.get('/api/tasks', requireAuth, wrap(async (req, res) => {
   const opts = { from: req.query.from, to: req.query.to };
   if (req.user.role === 'master') {
@@ -656,7 +690,15 @@ app.get('/api/tasks', requireAuth, wrap(async (req, res) => {
   } else {
     opts.agentId = req.user.id; // agents/viewers only ever see their own tasks
   }
-  res.json(await repo.listTasks(opts));
+  res.json(await withPostingUnits(await repo.listTasks(opts)));
+}));
+
+// Rotation status for the master (how far through the current cycle).
+app.get('/api/posting-status', requireCap(can.manageTasks), wrap(async (req, res) => {
+  const cycle = await repo.getPostingCycle();
+  const total = await repo.countAvailableUnits();
+  const assigned = await repo.countAssignedInCycle(cycle);
+  res.json({ cycle, total, assigned, remaining: Math.max(0, total - assigned) });
 }));
 
 app.post('/api/tasks', requireCap(can.manageTasks), wrap(async (req, res) => {
@@ -664,8 +706,18 @@ app.post('/api/tasks', requireCap(can.manageTasks), wrap(async (req, res) => {
   if (!t.title) return res.status(400).json({ error: 'A task title is required.' });
   if (!t.agent_id) return res.status(400).json({ error: 'Assign the task to an agent.' });
   if (!(await repo.getUserById(t.agent_id))) return res.status(400).json({ error: 'Assigned agent not found.' });
+
+  // Posting task: auto-assign the next N units to this agent (rotation).
+  const autoUnits = Math.max(0, Math.min(Number(req.body.auto_units) || 0, 200));
+  if (autoUnits > 0) {
+    const created = await repo.createTask({ ...t, unit_id: null, created_by: req.user.id });
+    const assigned = await assignNextUnits(t.agent_id, autoUnits, created.id);
+    if (assigned.length === 0) { await repo.deleteTask(created.id); return res.status(400).json({ error: 'No available units to assign.' }); }
+    return res.status(201).json(await withPostingUnits(await repo.getTask(created.id)));
+  }
+
   if (t.unit_id && !(await repo.getUnit(t.unit_id))) return res.status(400).json({ error: 'Unit not found.' });
-  res.status(201).json(await repo.createTask({ ...t, created_by: req.user.id }));
+  res.status(201).json(await withPostingUnits(await repo.createTask({ ...t, created_by: req.user.id })));
 }));
 
 app.put('/api/tasks/:id', requireAuth, wrap(async (req, res) => {
@@ -686,7 +738,7 @@ app.put('/api/tasks/:id', requireAuth, wrap(async (req, res) => {
     newStatus = req.body.status;
   }
   if (newStatus === 'done' && existing.status !== 'done') await notifyTaskDone(saved, req.user);
-  res.json(saved);
+  res.json(await withPostingUnits(saved));
 }));
 
 app.delete('/api/tasks/:id', requireCap(can.manageTasks), wrap(async (req, res) => {

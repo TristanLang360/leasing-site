@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Calendar } from '@/components/ui/calendar'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
@@ -44,6 +45,8 @@ export function TaskDialog({
   const [date, setDate] = useState<Date | undefined>(undefined)
   const [time, setTime] = useState('10:00')
   const [dpOpen, setDpOpen] = useState(false)
+  const [autoAssign, setAutoAssign] = useState(true)
+  const [autoCount, setAutoCount] = useState('10')
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -53,12 +56,18 @@ export function TaskDialog({
     setUnitId(task?.unit_id ? String(task.unit_id) : NONE)
     setAgentId(task?.agent_id ? String(task.agent_id) : (presetAgentId ? String(presetAgentId) : NONE))
     setStatus(task?.status ?? 'todo')
+    setAutoAssign(!task) // new tasks default to the posting rotation
+    setAutoCount('10')
     if (task?.due_at) { const d = new Date(task.due_at); setDate(d); setTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`) }
     else { setDate(undefined); setTime('10:00') }
   }, [open, task])
 
   const timeOptions = useMemo(() => (TIME_SLOTS.includes(time) ? TIME_SLOTS : [time, ...TIME_SLOTS]), [time])
   const unit = task?.unit
+  const batch = task?.units ?? []
+  const showCount = isMaster && !task && autoAssign
+  const showBatch = batch.length > 0
+  const showUnitPicker = isMaster && !showCount && !showBatch
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
@@ -70,9 +79,14 @@ export function TaskDialog({
         if (agentId === NONE) { toast.error('Assign the task to an agent'); setBusy(false); return }
         let due_at = ''
         if (date) { const d = new Date(date); const [hh, mm] = time.split(':').map(Number); d.setHours(hh, mm, 0, 0); due_at = d.toISOString() }
-        const body = { title, description, unit_id: unitId === NONE ? '' : unitId, agent_id: agentId, due_at, status }
-        if (task) await api.put(`/api/tasks/${task.id}`, body)
-        else await api.post('/api/tasks', body)
+        if (showCount) {
+          const n = Math.max(1, Math.min(parseInt(autoCount, 10) || 10, 200))
+          await api.post('/api/tasks', { title, description, agent_id: agentId, due_at, status, auto_units: n })
+        } else {
+          const body = { title, description, unit_id: unitId === NONE ? '' : unitId, agent_id: agentId, due_at, status }
+          if (task) await api.put(`/api/tasks/${task.id}`, body)
+          else await api.post('/api/tasks', body)
+        }
       } else {
         // agent: only the status changes
         if (task) await api.put(`/api/tasks/${task.id}`, { status })
@@ -130,16 +144,37 @@ export function TaskDialog({
                   </Select>
                 </div>
               </div>
-              <div className="grid gap-1.5">
-                <Label className="text-xs text-muted-foreground">Unit (optional)</Label>
-                <Select value={unitId} onValueChange={(v) => v && setUnitId(v)}>
-                  <SelectTrigger><SelectValue>{(v: any) => (v === NONE || !v ? '— No unit —' : (units.find((u) => String(u.id) === String(v))?.title ?? String(v)))}</SelectValue></SelectTrigger>
-                  <SelectContent className="max-h-72">
-                    <SelectItem value={NONE}>— No unit —</SelectItem>
-                    {units.map((u) => <SelectItem key={u.id} value={String(u.id)}>{u.title}{u.unit_code ? ` (${u.unit_code})` : ''}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+              {!task && (
+                <label className="flex items-center gap-2 text-sm">
+                  <Checkbox checked={autoAssign} onCheckedChange={(v) => setAutoAssign(!!v)} />
+                  Auto-assign the next units to post (rotation)
+                </label>
+              )}
+              {showCount && (
+                <div className="grid gap-1.5">
+                  <Label className="text-xs text-muted-foreground">How many units to post</Label>
+                  <Input type="number" min="1" max="200" value={autoCount} onChange={(e) => setAutoCount(e.target.value)} />
+                  <span className="text-xs text-muted-foreground">We'll claim the next {autoCount || '…'} units this agent hasn't posted yet — never the same units another agent has.</span>
+                </div>
+              )}
+              {showBatch && (
+                <div className="grid gap-1.5">
+                  <Label className="text-xs text-muted-foreground">Units to post ({batch.length})</Label>
+                  <UnitBatch units={batch} />
+                </div>
+              )}
+              {showUnitPicker && (
+                <div className="grid gap-1.5">
+                  <Label className="text-xs text-muted-foreground">Unit (optional)</Label>
+                  <Select value={unitId} onValueChange={(v) => v && setUnitId(v)}>
+                    <SelectTrigger><SelectValue>{(v: any) => (v === NONE || !v ? '— No unit —' : (units.find((u) => String(u.id) === String(v))?.title ?? String(v)))}</SelectValue></SelectTrigger>
+                    <SelectContent className="max-h-72">
+                      <SelectItem value={NONE}>— No unit —</SelectItem>
+                      {units.map((u) => <SelectItem key={u.id} value={String(u.id)}>{u.title}{u.unit_code ? ` (${u.unit_code})` : ''}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="grid gap-1.5">
                 <Label className="text-xs text-muted-foreground">Due date (optional)</Label>
                 <div className="flex gap-2">
@@ -170,7 +205,12 @@ export function TaskDialog({
                 {task?.due_at && <div className="text-sm text-muted-foreground">Due {new Date(task.due_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</div>}
               </div>
               {task?.description && <p className="whitespace-pre-wrap rounded-md bg-muted/40 p-3 text-sm">{task.description}</p>}
-              {unit && (
+              {batch.length > 0 ? (
+                <div className="grid gap-1.5">
+                  <Label className="text-xs text-muted-foreground">Units to post ({batch.length})</Label>
+                  <UnitBatch units={batch} />
+                </div>
+              ) : unit ? (
                 <div className="rounded-md border p-3">
                   <div className="text-sm font-medium">{unit.title}</div>
                   <div className="text-xs text-muted-foreground">{unit.address}</div>
@@ -179,7 +219,7 @@ export function TaskDialog({
                     <Button type="button" size="sm" variant="outline" onClick={() => window.open(`/units/${unit.id}`, '_blank')}>Open listing</Button>
                   </div>
                 </div>
-              )}
+              ) : null}
               <div className="grid gap-1.5">
                 <Label className="text-xs text-muted-foreground">My progress</Label>
                 <Select value={status} onValueChange={(v) => v && setStatus(v)}>
@@ -204,5 +244,29 @@ export function TaskDialog({
         </form>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function UnitBatch({ units }: { units: Unit[] }) {
+  return (
+    <div className="grid max-h-72 grid-cols-1 gap-2 overflow-y-auto rounded-md border p-2">
+      {units.map((u) => (
+        <div key={u.id} className="flex items-center gap-2 rounded-md border bg-card p-2">
+          <div className="size-9 shrink-0 overflow-hidden rounded bg-muted">
+            {u.photos?.[0]
+              ? <img src={u.photos[0].url} alt="" className="h-full w-full object-cover" />
+              : <div className="grid h-full w-full place-items-center text-xs text-muted-foreground">{(u.title || '?').slice(0, 1)}</div>}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-medium">{u.title}</div>
+            <div className="truncate text-xs text-muted-foreground">{u.address}</div>
+          </div>
+          {u.photos?.length ? (
+            <a className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))} href={`/api/units/${u.id}/photos.zip`} title="Download photos">⬇</a>
+          ) : null}
+          <button type="button" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))} onClick={() => window.open(`/units/${u.id}`, '_blank')}>Open</button>
+        </div>
+      ))}
+    </div>
   )
 }

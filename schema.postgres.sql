@@ -112,3 +112,15 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_notif_user ON notifications(user_id, read);
+
+CREATE TABLE IF NOT EXISTS posting_assignments (
+  id         SERIAL PRIMARY KEY,
+  unit_id    INTEGER NOT NULL REFERENCES units(id) ON DELETE CASCADE,
+  agent_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  cycle      INTEGER NOT NULL DEFAULT 1,
+  task_id    INTEGER REFERENCES tasks(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (unit_id, cycle)   -- a unit is claimed by at most one agent per cycle
+);
+CREATE INDEX IF NOT EXISTS idx_pa_cycle ON posting_assignments(cycle);
+CREATE INDEX IF NOT EXISTS idx_pa_task ON posting_assignments(task_id);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { api, cap, type Me, type Task, type Unit, type User } from '@/lib/api'
+import { api, cap, type Me, type PostingStatus, type Task, type Unit, type User } from '@/lib/api'
 import { celebrate } from '@/lib/confetti'
 import { TaskDialog } from '@/components/task-dialog'
 import { Button } from '@/components/ui/button'
@@ -20,6 +20,7 @@ export function TasksTab({ me }: { me: Me }) {
   const [editing, setEditing] = useState<Task | null | undefined>(undefined)
   const [presetAgentId, setPresetAgentId] = useState<number | undefined>(undefined)
   const [selectedAgentId, setSelectedAgentId] = useState<number | null>(null)
+  const [posting, setPosting] = useState<PostingStatus | null>(null)
   const [loading, setLoading] = useState(true)
 
   async function load() {
@@ -27,6 +28,7 @@ export function TasksTab({ me }: { me: Me }) {
     try { setTasks(await api.get<Task[]>('/api/tasks')) }
     catch (err) { toast.error(err instanceof Error ? err.message : 'Failed to load tasks') }
     finally { setLoading(false) }
+    if (isMaster) api.get<PostingStatus>('/api/posting-status').then(setPosting).catch(() => {})
   }
   useEffect(() => { load() }, [])
   useEffect(() => {
@@ -56,7 +58,7 @@ export function TasksTab({ me }: { me: Me }) {
         <div className="min-w-0 flex-1">
           <div className={`truncate font-medium ${t.status === 'done' ? 'text-muted-foreground line-through' : ''}`}>📋 {t.title}</div>
           <div className="truncate text-xs text-muted-foreground">
-            {dueLabel(t.due_at)}{t.unit ? ` · ${t.unit.title}` : ''}{showAgent && t.agent ? ` · ${t.agent.name || t.agent.email}` : ''}
+            {dueLabel(t.due_at)}{t.units?.length ? ` · ${t.units.length} units to post` : t.unit ? ` · ${t.unit.title}` : ''}{showAgent && t.agent ? ` · ${t.agent.name || t.agent.email}` : ''}
           </div>
         </div>
         <Badge variant="outline" className={statusText(t.status)}>{STATUS_LABEL[t.status] ?? t.status}</Badge>
@@ -148,6 +150,13 @@ export function TasksTab({ me }: { me: Me }) {
         <span className="text-sm text-muted-foreground">{loading ? 'Loading…' : `${realAgents.length} agent${realAgents.length === 1 ? '' : 's'}`}</span>
         <Button size="sm" onClick={() => openNew()}>+ New task</Button>
       </div>
+
+      {posting && (
+        <div className="rounded-lg border bg-muted/40 px-4 py-2.5 text-sm">
+          <span className="font-medium">Posting rotation</span> — cycle {posting.cycle}: {posting.assigned} of {posting.total} units assigned this round, <strong>{posting.remaining} left</strong>.
+          {posting.remaining === 0 && ' The next task restarts the rotation.'}
+        </div>
+      )}
 
       {realAgents.length === 0 ? (
         <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
