@@ -276,9 +276,15 @@ app.post('/api/logout', wrap(async (req, res) => {
 }));
 
 app.get('/api/me', requireAuth, (req, res) => {
-  const { id, email, name, role } = req.user;
-  res.json({ id, email, name, role });
+  const { id, email, name, role, onboarded } = req.user;
+  res.json({ id, email, name, role, onboarded: onboarded ? 1 : 0 });
 });
+
+// Mark the welcome tour as seen (agents only see it once, ever).
+app.post('/api/me/onboarded', requireAuth, wrap(async (req, res) => {
+  await repo.setUserOnboarded(req.user.id, 1);
+  res.json({ ok: true });
+}));
 
 app.put('/api/me/password', requireAuth, wrap(async (req, res) => {
   const current = String(req.body.current || '');

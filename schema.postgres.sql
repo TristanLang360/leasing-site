@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS users (
   salt       TEXT NOT NULL,
   hash       TEXT NOT NULL,
   active     INTEGER NOT NULL DEFAULT 1,
+  onboarded  INTEGER NOT NULL DEFAULT 0,   -- agent has seen the welcome tour
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

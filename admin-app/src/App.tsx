@@ -8,6 +8,7 @@ import { BlogTab } from '@/components/blog-tab'
 import { NotificationBell } from '@/components/notification-bell'
 import { AgentsTab } from '@/components/agents-tab'
 import { AccountTab } from '@/components/account-tab'
+import { OnboardingTour } from '@/components/onboarding-tour'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -16,6 +17,7 @@ import { Toaster } from '@/components/ui/sonner'
 export default function App() {
   const [me, setMe] = useState<Me | null>(null)
   const [loading, setLoading] = useState(true)
+  const [tourOpen, setTourOpen] = useState(false)
 
   useEffect(() => {
     api.get<Me>('/api/me')
@@ -23,6 +25,17 @@ export default function App() {
       .catch(() => setMe(null))
       .finally(() => setLoading(false))
   }, [])
+
+  // New agents see the welcome tour once, on first login.
+  useEffect(() => {
+    if (me && me.role === 'agent' && !me.onboarded) setTourOpen(true)
+  }, [me])
+
+  async function finishTour() {
+    setTourOpen(false)
+    await api.post('/api/me/onboarded').catch(() => {})
+    setMe((m) => (m ? { ...m, onboarded: 1 } : m))
+  }
 
   async function logout() {
     await api.post('/api/logout').catch(() => {})
@@ -45,6 +58,9 @@ export default function App() {
           </div>
           <div className="flex items-center gap-3">
             <a href="/" className="text-sm text-muted-foreground hover:text-foreground">Public site</a>
+            {me.role === 'agent' && (
+              <Button variant="ghost" size="sm" onClick={() => setTourOpen(true)}>Guide</Button>
+            )}
             <NotificationBell />
             <span className="hidden text-sm text-muted-foreground sm:inline">
               {me.name || me.email} · <span className="capitalize">{me.role}</span>
@@ -88,6 +104,7 @@ export default function App() {
         </Tabs>
       </main>
 
+      <OnboardingTour open={tourOpen} onDone={finishTour} />
       <Toaster richColors />
     </div>
   )
