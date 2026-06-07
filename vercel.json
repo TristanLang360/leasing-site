@@ -4,7 +4,7 @@
   "functions": {
     "api/index.js": {
       "maxDuration": 30,
-      "includeFiles": "{index.html,units.html,units.js,styles.css,favicon.svg,*.jpg,*.png,*.svg,*.ico,admin-dist/**}"
+      "includeFiles": "{index.html,units.html,units.js,styles.css,favicon.svg,hero-montreal.jpg,*.jpg,*.png,*.svg,*.ico,admin-dist/**}"
     }
   },
   "rewrites": [

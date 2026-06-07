@@ -74,6 +74,7 @@ export function LeadDialog({
   }
 
   const pickAgents = agents.filter((a) => a.role !== 'master')
+  const isManager = cap.manageUsers(me.role) // only the master assigns leads to agents
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -97,7 +98,7 @@ export function LeadDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className={`grid grid-cols-1 gap-3 ${isManager ? 'sm:grid-cols-2' : ''}`}>
             <div className="grid gap-1.5">
               <Label className="text-xs text-muted-foreground">{t('Stage')}</Label>
               <Select value={stage} onValueChange={(v) => v && setStage(v)}>
@@ -107,17 +108,19 @@ export function LeadDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid gap-1.5">
-              <Label className="text-xs text-muted-foreground">{t('Assigned agent')}</Label>
-              <Select value={agentId} onValueChange={(v) => v && setAgentId(v)}>
-                <SelectTrigger><SelectValue>{(v: any) => (v === NONE || !v ? t('— Unassigned —') : (agents.find((a) => String(a.id) === String(v))?.name || agents.find((a) => String(a.id) === String(v))?.email || String(v)))}</SelectValue></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NONE}>{t('— Unassigned —')}</SelectItem>
-                  {!cap.manageUsers(me.role) && <SelectItem value={String(me.id)}>{me.name || me.email} {t('(me)')}</SelectItem>}
-                  {pickAgents.map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.name || a.email}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Assigned-agent picker is master-only; agents just add the lead. */}
+            {isManager && (
+              <div className="grid gap-1.5">
+                <Label className="text-xs text-muted-foreground">{t('Assigned agent')}</Label>
+                <Select value={agentId} onValueChange={(v) => v && setAgentId(v)}>
+                  <SelectTrigger><SelectValue>{(v: any) => (v === NONE || !v ? t('— Unassigned —') : (agents.find((a) => String(a.id) === String(v))?.name || agents.find((a) => String(a.id) === String(v))?.email || String(v)))}</SelectValue></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NONE}>{t('— Unassigned —')}</SelectItem>
+                    {pickAgents.map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.name || a.email}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <div className="grid gap-1.5">
