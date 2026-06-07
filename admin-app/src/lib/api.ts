@@ -85,6 +85,38 @@ export interface Task {
 
 export interface PostingStatus { cycle: number; total: number; assigned: number; remaining: number }
 
+export type LeadStage = 'new' | 'visited' | 'credit_sent' | 'application_sent' | 'rented' | 'lost'
+
+export interface Lead {
+  id: number
+  name: string
+  email: string | null
+  phone: string | null
+  unit_id: number | null
+  agent_id: number | null
+  appointment_id: number | null
+  stage: LeadStage
+  source: string
+  budget: number | null
+  move_in: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+  unit: { id: number; title: string; unit_code: string | null; address: string } | null
+  agent: { id: number; name: string | null; email: string } | null
+}
+
+// Pipeline order + display. `accent` drives the column header + card dot.
+export const LEAD_STAGES: { value: LeadStage; label: string; accent: string }[] = [
+  { value: 'new',              label: 'New',                accent: 'bg-sky-500' },
+  { value: 'visited',          label: 'Visited',            accent: 'bg-violet-500' },
+  { value: 'credit_sent',      label: 'Credit report sent', accent: 'bg-amber-500' },
+  { value: 'application_sent', label: 'Application sent',    accent: 'bg-blue-600' },
+  { value: 'rented',           label: 'Rented',             accent: 'bg-emerald-600' },
+  { value: 'lost',             label: 'Lost',               accent: 'bg-slate-400' },
+]
+export const leadStageLabel = (s: string) => LEAD_STAGES.find((x) => x.value === s)?.label ?? s
+
 export interface Post {
   id: number
   slug: string

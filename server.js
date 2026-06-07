@@ -612,6 +612,54 @@ app.delete('/api/appointments/:id', requireCap(can.calendar), wrap(async (req, r
   res.json({ ok: true });
 }));
 
+// ───────────────────────────────────────────────────────────────
+// Leads / CRM — a shared pipeline the whole team works. Stages:
+// new → visited → credit report sent → application sent → rented (or lost).
+// ───────────────────────────────────────────────────────────────
+const LEAD_STAGES = ['new', 'visited', 'credit_sent', 'application_sent', 'rented', 'lost'];
+function parseLeadBody(b) {
+  const num = (v) => { if (v === '' || v === undefined || v === null) return null; const n = Number(v); return Number.isFinite(n) ? n : null; };
+  return {
+    name: (b.name || '').trim(),
+    email: (b.email || '').trim() || null,
+    phone: (b.phone || '').trim() || null,
+    unit_id: num(b.unit_id),
+    agent_id: num(b.agent_id),
+    stage: LEAD_STAGES.includes(b.stage) ? b.stage : 'new',
+    budget: num(b.budget),
+    move_in: (b.move_in || '').trim() || null,
+    notes: (b.notes || '').trim() || null,
+  };
+}
+
+app.get('/api/leads', requireCap(can.calendar), wrap(async (req, res) => {
+  res.json(await repo.listLeads());
+}));
+
+app.post('/api/leads', requireCap(can.calendar), wrap(async (req, res) => {
+  const l = parseLeadBody(req.body);
+  if (!l.name) return res.status(400).json({ error: 'A lead name is required.' });
+  res.status(201).json(await repo.createLead({ ...l, source: 'manual' }));
+}));
+
+app.put('/api/leads/:id', requireCap(can.calendar), wrap(async (req, res) => {
+  const existing = await repo.getLead(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  // Quick stage-only move (kanban): { stage } with nothing else.
+  if (req.body.stage && Object.keys(req.body).length === 1) {
+    if (!LEAD_STAGES.includes(req.body.stage)) return res.status(400).json({ error: 'Invalid stage.' });
+    return res.json(await repo.setLeadStage(existing.id, req.body.stage));
+  }
+  const l = parseLeadBody(req.body);
+  if (!l.name) return res.status(400).json({ error: 'A lead name is required.' });
+  res.json(await repo.updateLead(existing.id, l));
+}));
+
+app.delete('/api/leads/:id', requireCap(can.calendar), wrap(async (req, res) => {
+  await repo.deleteLead(req.params.id);
+  res.json({ ok: true });
+}));
+
 // Public "Book a showing" form — creates a pending (requested) appointment
 // that staff see in the admin calendar. No auth (it's a public lead form).
 app.post('/api/showing-requests', wrap(async (req, res) => {
@@ -628,10 +676,19 @@ app.post('/api/showing-requests', wrap(async (req, res) => {
     title = `Showing request — ${unit.title}`;
   }
   const start_at = b.preferred ? new Date(b.preferred).toISOString() : new Date(Date.now() + 864e5).toISOString();
-  await repo.createAppointment({
+  const phone = String(b.client_phone || '').trim() || null;
+  const message = String(b.message || '').trim() || null;
+  const budget = Number(b.budget) || null;
+  const moveIn = String(b.move_in || '').trim() || null;
+  const appt = await repo.createAppointment({
     unit_id: unitId, title, start_at, end_at: null,
-    client_name: name, client_phone: String(b.client_phone || '').trim() || null, client_email: email,
-    notes: String(b.message || '').trim() || null, agent_id: null, status: 'requested', created_by: null,
+    client_name: name, client_phone: phone, client_email: email,
+    notes: message, agent_id: null, status: 'requested', created_by: null,
+  });
+  // Capture the visitor as a lead in the CRM, linked to this showing.
+  await repo.createLead({
+    name, email, phone, unit_id: unitId, agent_id: null, appointment_id: appt.id,
+    stage: 'new', source: 'website', budget, move_in: moveIn, notes: message,
   });
   res.status(201).json({ ok: true });
 }));
@@ -1126,6 +1183,10 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
         <label class="field"><span>Preferred date</span><input name="pref_date" type="date" /></label>
         <label class="field"><span>Preferred time</span><select name="pref_time">${timeOpts}</select></label>
       </div>
+      <div class="grid-2">
+        <label class="field"><span>Monthly budget</span><input name="budget" type="number" min="0" step="50" placeholder="$ / month" /></label>
+        <label class="field"><span>Desired move-in</span><input name="move_in" type="date" /></label>
+      </div>
       <label class="field"><span>Message</span><textarea name="message" rows="3" placeholder="Anything we should know?"></textarea></label>
       <div class="login-error" id="book-msg" hidden></div>
       <div class="drawer-foot">
@@ -1151,7 +1212,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
     msg.hidden=true;btn.disabled=true;btn.textContent='Sending…';
     var pd=f.pref_date.value,pt=f.pref_time.value;
     var preferred=pd?(pd+'T'+(pt||'10:00')):'';
-    var data={unit_id:${u.id},client_name:f.client_name.value,client_email:f.client_email.value,client_phone:f.client_phone.value,preferred:preferred,message:f.message.value};
+    var data={unit_id:${u.id},client_name:f.client_name.value,client_email:f.client_email.value,client_phone:f.client_phone.value,preferred:preferred,budget:f.budget.value,move_in:f.move_in.value,message:f.message.value};
     fetch('/api/showing-requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
       .then(function(r){if(!r.ok)return r.json().then(function(j){throw new Error(j.error||'Request failed')});return r.json();})
       .then(function(){

@@ -4,6 +4,7 @@ import { Login } from '@/components/login'
 import { UnitsTab } from '@/components/units-tab'
 import { CalendarTab } from '@/components/calendar-tab'
 import { TasksTab } from '@/components/tasks-tab'
+import { CrmTab } from '@/components/crm-tab'
 import { BlogTab } from '@/components/blog-tab'
 import { NotificationBell } from '@/components/notification-bell'
 import { AgentsTab } from '@/components/agents-tab'
@@ -84,6 +85,7 @@ export default function App() {
           <TabsList>
             <TabsTrigger value="units">Units</TabsTrigger>
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            {cap.calendar(me.role) && <TabsTrigger value="leads">Leads</TabsTrigger>}
             {cap.calendar(me.role) && <TabsTrigger value="tasks">{cap.manageTasks(me.role) ? 'Tasks' : 'My tasks'}</TabsTrigger>}
             {cap.blog(me.role) && <TabsTrigger value="blog">Blog</TabsTrigger>}
             {cap.manageUsers(me.role) && <TabsTrigger value="agents">Agents</TabsTrigger>}
@@ -92,6 +94,9 @@ export default function App() {
 
           <TabsContent value="units" className="mt-6"><UnitsTab me={me} /></TabsContent>
           <TabsContent value="calendar" className="mt-6"><CalendarTab me={me} /></TabsContent>
+          {cap.calendar(me.role) && (
+            <TabsContent value="leads" className="mt-6"><CrmTab me={me} /></TabsContent>
+          )}
           {cap.calendar(me.role) && (
             <TabsContent value="tasks" className="mt-6"><TasksTab me={me} /></TabsContent>
           )}

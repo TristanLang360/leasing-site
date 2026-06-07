@@ -125,3 +125,21 @@ CREATE TABLE IF NOT EXISTS posting_assignments (
 );
 CREATE INDEX IF NOT EXISTS idx_pa_cycle ON posting_assignments(cycle);
 CREATE INDEX IF NOT EXISTS idx_pa_task ON posting_assignments(task_id);
+
+CREATE TABLE IF NOT EXISTS leads (
+  id             SERIAL PRIMARY KEY,
+  name           TEXT NOT NULL,
+  email          TEXT,
+  phone          TEXT,
+  unit_id        INTEGER REFERENCES units(id) ON DELETE SET NULL,         -- unit of interest
+  agent_id       INTEGER REFERENCES users(id) ON DELETE SET NULL,         -- assigned agent
+  appointment_id INTEGER REFERENCES appointments(id) ON DELETE SET NULL,  -- linked showing
+  stage          TEXT NOT NULL DEFAULT 'new',   -- new|visited|credit_sent|application_sent|rented|lost
+  source         TEXT NOT NULL DEFAULT 'website',
+  budget         INTEGER,                        -- monthly budget
+  move_in        TEXT,                           -- desired move-in date
+  notes          TEXT,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_leads_stage ON leads(stage);

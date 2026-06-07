@@ -50,6 +50,15 @@ const STEPS: Step[] = [
     ),
   },
   {
+    icon: '🧲',
+    title: 'Leads & your pipeline',
+    body: (
+      <>The <strong>Leads</strong> tab is your CRM. Every showing request from the website lands here as a
+      new lead. Drag each lead through the pipeline with <strong>advance →</strong>: New → Visited →
+      Credit report sent → Application sent → Rented. Click a lead to edit contact info, budget and notes.</>
+    ),
+  },
+  {
     icon: '📋',
     title: 'Your daily posting tasks',
     body: (
