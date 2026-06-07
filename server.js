@@ -259,6 +259,7 @@ function parseUnitBody(b) {
     status: ['available', 'on_hold', 'unavailable', 'hidden'].includes(b.status) ? b.status : 'available',
     lat: num(b.lat, null),
     lng: num(b.lng, null),
+    building_id: num(b.building_id, null),
   };
 }
 
@@ -453,6 +454,76 @@ app.post('/api/units/:id/geocode', requireCap(can.editUnits), wrap(async (req, r
   await repo.resetGeocode(unit.id);
   kickGeocode();
   res.json({ ok: true, queued: true });
+}));
+
+// ───────────────────────────────────────────────────────────────
+// Buildings — units are grouped into buildings; only buildings are mapped.
+// ───────────────────────────────────────────────────────────────
+function parseBuildingBody(b) {
+  const num = (v) => { if (v === '' || v === undefined || v === null) return null; const n = Number(v); return Number.isFinite(n) ? n : null; };
+  return {
+    name: (b.name || '').trim(),
+    address: (b.address || '').trim(),
+    neighborhood: (b.neighborhood || '').trim() || null,
+    lat: num(b.lat),
+    lng: num(b.lng),
+  };
+}
+
+app.get('/api/buildings', requireAuth, wrap(async (req, res) => {
+  res.json(await repo.listBuildings());
+}));
+
+app.get('/api/buildings/:id', requireAuth, wrap(async (req, res) => {
+  const building = await repo.getBuilding(req.params.id);
+  if (!building) return res.status(404).json({ error: 'Not found' });
+  const units = (await repo.unitsForBuilding(building.id)).map(present);
+  res.json({ building, units });
+}));
+
+app.post('/api/buildings', requireCap(can.editUnits), wrap(async (req, res) => {
+  const b = parseBuildingBody(req.body);
+  if (!b.name || !b.address) return res.status(400).json({ error: 'Name and address are required.' });
+  let { lat, lng } = b, geocode_attempted = (lat != null && lng != null) ? 1 : 0;
+  if (lat == null || lng == null) { const g = await geocode(b.address); if (g) { lat = g.lat; lng = g.lng; } geocode_attempted = 1; }
+  res.status(201).json(await repo.createBuilding({ ...b, lat, lng, geocode_attempted }));
+}));
+
+app.put('/api/buildings/:id', requireCap(can.editUnits), wrap(async (req, res) => {
+  const existing = await repo.getBuilding(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  const b = parseBuildingBody(req.body);
+  if (!b.name || !b.address) return res.status(400).json({ error: 'Name and address are required.' });
+  let lat = existing.lat, lng = existing.lng, geocode_attempted = existing.geocode_attempted;
+  if (b.lat != null && b.lng != null) { lat = b.lat; lng = b.lng; geocode_attempted = 1; }
+  else if (b.address !== existing.address) { const g = await geocode(b.address); lat = g ? g.lat : null; lng = g ? g.lng : null; geocode_attempted = 1; }
+  res.json(await repo.updateBuilding(existing.id, { ...b, lat, lng, geocode_attempted }));
+}));
+
+app.delete('/api/buildings/:id', requireCap(can.deleteUnits), wrap(async (req, res) => {
+  await repo.deleteBuilding(req.params.id);
+  res.json({ ok: true });
+}));
+
+app.post('/api/buildings/:id/geocode', requireCap(can.editUnits), wrap(async (req, res) => {
+  const building = await repo.getBuilding(req.params.id);
+  if (!building) return res.status(404).json({ error: 'Not found' });
+  const g = await geocode(building.address);
+  const saved = await repo.updateBuilding(building.id, {
+    name: building.name, address: building.address, neighborhood: building.neighborhood,
+    lat: g ? g.lat : null, lng: g ? g.lng : null, geocode_attempted: 1,
+  });
+  res.json({ ok: !!g, building: saved });
+}));
+
+// Move a unit into a building (or pass building_id="" to unassign).
+app.put('/api/units/:id/building', requireCap(can.editUnits), wrap(async (req, res) => {
+  const existing = await repo.getUnit(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  const raw = req.body.building_id;
+  const bid = (raw === '' || raw === undefined || raw === null) ? null : Number(raw);
+  await repo.setUnitBuilding(existing.id, bid);
+  res.json({ ok: true });
 }));
 
 // ───────────────────────────────────────────────────────────────

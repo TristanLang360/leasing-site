@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { api, cap, type Me, type NearbyUnit, type Photo, type Unit } from '@/lib/api'
+import { api, cap, type Building, type Me, type NearbyUnit, type Photo, type Unit } from '@/lib/api'
 import { fmtPrice } from '@/lib/format'
 import { useT } from '@/lib/i18n'
 import { LocationMap } from '@/components/location-map'
@@ -26,11 +26,14 @@ function unitToForm(u: Unit | null): Form {
     locker_available: u?.locker_available ?? 'no', locker_cost: s(u?.locker_cost),
     dogs_policy: u?.dogs_policy ?? 'no', description: s(u?.description),
     lat: s(u?.lat), lng: s(u?.lng),
+    building_id: u?.building_id ? String(u.building_id) : '',
   }
 }
 
+const NO_BUILDING = 'none'
+
 export function UnitDialog({
-  me, unit, open, onOpenChange, onSaved, onChanged,
+  me, unit, open, onOpenChange, onSaved, onChanged, buildings = [], presetBuildingId,
 }: {
   me: Me
   unit: Unit | null               // null = new
@@ -38,6 +41,8 @@ export function UnitDialog({
   onOpenChange: (open: boolean) => void
   onSaved: (saved: Unit) => void   // parent swaps to edit mode so photos appear
   onChanged: () => void            // refresh the list (thumbnails/coords)
+  buildings?: Building[]           // when provided, show a building selector
+  presetBuildingId?: number | null // default building for a new unit
 }) {
   const { t } = useT()
   const editable = cap.editUnits(me.role)
@@ -68,7 +73,9 @@ export function UnitDialog({
 
   useEffect(() => {
     if (!open) return
-    setForm(unitToForm(unit))
+    const base = unitToForm(unit)
+    if (!unit && presetBuildingId != null) base.building_id = String(presetBuildingId)
+    setForm(base)
     setPhotos(unit?.photos ?? [])
     setNearby([])
     setNearbyReason(undefined)
@@ -184,6 +191,17 @@ export function UnitDialog({
               </Field>
             </div>
 
+            {buildings.length > 0 && (
+              <Field label="Building">
+                <Select value={form.building_id || NO_BUILDING} onValueChange={(v) => set('building_id', v === NO_BUILDING ? '' : v)}>
+                  <SelectTrigger><SelectValue>{(v: any) => (!v || v === NO_BUILDING ? t('— No building —') : (buildings.find((b) => String(b.id) === String(v))?.name ?? String(v)))}</SelectValue></SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    <SelectItem value={NO_BUILDING}>{t('— No building —')}</SelectItem>
+                    {buildings.map((b) => <SelectItem key={b.id} value={String(b.id)}>{b.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </Field>
+            )}
             <Field label="Title *"><Input required value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="Suite 304 — Loft" /></Field>
             <Field label="Address *"><Input required value={form.address} onChange={(e) => set('address', e.target.value)} placeholder="1420 Saint-Laurent, Montréal" /></Field>
             <Field label="Neighborhood"><Input value={form.neighborhood} onChange={(e) => set('neighborhood', e.target.value)} placeholder="Plateau" /></Field>

@@ -457,6 +457,33 @@ const FR: Record<string, string> = {
   'Located on the map': 'Localisée sur la carte',
   'Could not auto-locate — set the pin manually': 'Localisation automatique impossible — placez l’épingle manuellement',
   'Re-locate failed': 'Échec de la relocalisation',
+
+  // ── Buildings ────────────────────────────────────────────────
+  'Buildings': 'Immeubles',
+  'building': 'immeuble',
+  'buildings': 'immeubles',
+  'Building': 'Immeuble',
+  'View units →': 'Voir les unités →',
+  'No buildings are located on the map yet.': 'Aucun immeuble n’est encore localisé sur la carte.',
+  'Name and address are required.': 'Le nom et l’adresse sont obligatoires.',
+  'Building saved': 'Immeuble enregistré',
+  'Edit building': 'Modifier l’immeuble',
+  'New building': 'Nouvel immeuble',
+  'Building name *': 'Nom de l’immeuble *',
+  'e.g. 4995 Côte-Sainte-Catherine': 'p. ex. 4995 Côte-Sainte-Catherine',
+  'Street address *': 'Adresse municipale *',
+  'Create building': 'Créer l’immeuble',
+  'Failed to load buildings': 'Échec du chargement des immeubles',
+  '+ New building': '+ Nouvel immeuble',
+  'Search buildings by name, address, neighborhood…': 'Rechercher par nom, adresse, quartier…',
+  'No buildings yet.': 'Aucun immeuble pour l’instant.',
+  'No buildings match your search.': 'Aucun immeuble ne correspond à votre recherche.',
+  'Failed to load building': 'Échec du chargement de l’immeuble',
+  'Delete this building? Its units stay but become unassigned.': 'Supprimer cet immeuble ? Ses unités sont conservées mais non assignées.',
+  'Building deleted': 'Immeuble supprimé',
+  '← All buildings': '← Tous les immeubles',
+  'No units in this building yet.': 'Aucune unité dans cet immeuble pour l’instant.',
+  '— No building —': '— Aucun immeuble —',
   // END_FR
 }
 

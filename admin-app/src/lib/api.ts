@@ -7,8 +7,22 @@ export interface Me { id: number; email: string; name: string | null; role: Role
 
 export interface Photo { id: number; url: string; filename: string; kind?: 'image' | 'video'; sortOrder?: number }
 
+export interface Building {
+  id: number
+  name: string
+  address: string
+  neighborhood: string | null
+  lat: number | null
+  lng: number | null
+  geocode_attempted: number
+  created_at: string
+  unit_count?: number
+  available_count?: number
+}
+
 export interface Unit {
   id: number
+  building_id: number | null
   unit_code: string | null
   title: string
   address: string

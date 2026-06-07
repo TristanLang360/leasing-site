@@ -5,8 +5,20 @@
 -- Mirrors lib/repo.sqlite.js so the Postgres driver can be a drop-in.
 -- ───────────────────────────────────────────────────────────────
 
+CREATE TABLE IF NOT EXISTS buildings (
+  id                SERIAL PRIMARY KEY,
+  name              TEXT NOT NULL,
+  address           TEXT NOT NULL,
+  neighborhood      TEXT,
+  lat               DOUBLE PRECISION,
+  lng               DOUBLE PRECISION,
+  geocode_attempted INTEGER NOT NULL DEFAULT 0,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS units (
   id                SERIAL PRIMARY KEY,
+  building_id       INTEGER REFERENCES buildings(id) ON DELETE SET NULL,
   unit_code         TEXT,
   title             TEXT NOT NULL,
   address           TEXT NOT NULL,
@@ -29,6 +41,7 @@ CREATE TABLE IF NOT EXISTS units (
   geocode_attempted INTEGER NOT NULL DEFAULT 0,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+CREATE INDEX IF NOT EXISTS idx_units_building ON units(building_id);
 
 CREATE TABLE IF NOT EXISTS photos (
   id         SERIAL PRIMARY KEY,

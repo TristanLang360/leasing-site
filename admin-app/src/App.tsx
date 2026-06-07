@@ -3,7 +3,7 @@ import { api, cap, type Me } from '@/lib/api'
 import { applyTheme, getTheme, type Theme } from '@/lib/theme'
 import { useT } from '@/lib/i18n'
 import { Login } from '@/components/login'
-import { UnitsTab } from '@/components/units-tab'
+import { BuildingsTab } from '@/components/buildings-tab'
 import { CalendarTab } from '@/components/calendar-tab'
 import { TasksTab } from '@/components/tasks-tab'
 import { CrmTab } from '@/components/crm-tab'
@@ -99,7 +99,7 @@ export default function App() {
 
         <Tabs defaultValue="units">
           <TabsList>
-            <TabsTrigger value="units">{t('Units')}</TabsTrigger>
+            <TabsTrigger value="units">{t('Buildings')}</TabsTrigger>
             <TabsTrigger value="calendar">{t('Calendar')}</TabsTrigger>
             {cap.calendar(me.role) && <TabsTrigger value="leads">{t('Leads')}</TabsTrigger>}
             {cap.calendar(me.role) && <TabsTrigger value="tasks">{cap.manageTasks(me.role) ? t('Tasks') : t('My tasks')}</TabsTrigger>}
@@ -108,7 +108,7 @@ export default function App() {
             <TabsTrigger value="account">{t('My account')}</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="units" className="mt-6"><UnitsTab me={me} /></TabsContent>
+          <TabsContent value="units" className="mt-6"><BuildingsTab me={me} /></TabsContent>
           <TabsContent value="calendar" className="mt-6"><CalendarTab me={me} /></TabsContent>
           {cap.calendar(me.role) && (
             <TabsContent value="leads" className="mt-6"><CrmTab me={me} /></TabsContent>
