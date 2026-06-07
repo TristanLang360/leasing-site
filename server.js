@@ -541,6 +541,17 @@ app.delete('/api/photos/:id', requireCap(can.editUnits), wrap(async (req, res) =
   res.json({ ok: true });
 }));
 
+// Reorder a unit's media. `order` is the photo ids in the desired sequence;
+// the first one becomes the unit thumbnail/cover.
+app.put('/api/units/:id/photos/order', requireCap(can.editUnits), wrap(async (req, res) => {
+  const unit = await repo.getUnit(req.params.id);
+  if (!unit) return res.status(404).json({ error: 'Unit not found' });
+  const ids = Array.isArray(req.body.order) ? req.body.order.map(Number).filter(Number.isFinite) : [];
+  if (!ids.length) return res.status(400).json({ error: 'No order provided.' });
+  await repo.reorderPhotos(unit.id, ids);
+  res.json({ ok: true });
+}));
+
 app.get('/api/photos/:id/download', requireAuth, wrap(async (req, res) => {
   const photo = await repo.getPhoto(req.params.id);
   if (!photo) return res.status(404).send('Not found');

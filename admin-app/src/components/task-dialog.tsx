@@ -276,7 +276,9 @@ function UnitBatch({ units, onPick }: { units: Unit[]; onPick: (u: Unit) => void
           <button type="button" onClick={() => onPick(u)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
             <div className="size-9 shrink-0 overflow-hidden rounded bg-muted">
               {u.photos?.[0]
-                ? <img src={u.photos[0].url} alt="" className="h-full w-full object-cover" />
+                ? (u.photos[0].kind === 'video'
+                    ? <video src={u.photos[0].url} className="h-full w-full object-cover" muted playsInline preload="metadata" />
+                    : <img src={u.photos[0].url} alt="" className="h-full w-full object-cover" />)
                 : <div className="grid h-full w-full place-items-center text-xs text-muted-foreground">{(u.title || '?').slice(0, 1)}</div>}
             </div>
             <div className="min-w-0 flex-1">

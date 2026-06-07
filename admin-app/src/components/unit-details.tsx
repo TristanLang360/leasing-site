@@ -164,7 +164,9 @@ export function UnitDetails({
                 className="flex items-center gap-3 rounded-md border px-3 py-2 text-left hover:bg-muted/40">
                 <div className="size-12 shrink-0 overflow-hidden rounded bg-muted">
                   {n.photos[0]
-                    ? <img src={n.photos[0].url} alt="" className="h-full w-full object-cover" />
+                    ? (n.photos[0].kind === 'video'
+                        ? <video src={n.photos[0].url} className="h-full w-full object-cover" muted playsInline preload="metadata" />
+                        : <img src={n.photos[0].url} alt="" className="h-full w-full object-cover" />)
                     : <div className="grid h-full w-full place-items-center text-sm text-muted-foreground">{(n.title || '?').slice(0, 1)}</div>}
                 </div>
                 <div className="min-w-0 flex-1">

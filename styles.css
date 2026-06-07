@@ -467,6 +467,7 @@ footer {
   background-position: center;
 }
 .unit-photo.has-image::after { display: none; }
+.unit-photo-vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
 
 /* ---------- Admin ---------- */
 .admin-tag {

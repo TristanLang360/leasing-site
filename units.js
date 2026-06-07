@@ -43,8 +43,11 @@ const dogsLabel = (p) => p === 'yes'
 
 function unitCardHTML(u, idx) {
   const variant = ((idx % 6) + 1);
-  const photo = u.photos && u.photos[0]
-    ? `<div class="unit-photo has-image" style="background-image:url('${u.photos[0].url}')">`
+  const cover = u.photos && u.photos[0];
+  const photo = cover
+    ? (cover.kind === 'video'
+        ? `<div class="unit-photo has-image"><video class="unit-photo-vid" src="${cover.url}" muted playsinline preload="metadata"></video>`
+        : `<div class="unit-photo has-image" style="background-image:url('${cover.url}')">`)
     : `<div class="unit-photo v${variant}">`;
 
   const amenities = [];

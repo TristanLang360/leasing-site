@@ -44,7 +44,25 @@ export function UnitDialog({
   const [nearby, setNearby] = useState<NearbyUnit[]>([])
   const [nearbyReason, setNearbyReason] = useState<string | undefined>()
   const [busy, setBusy] = useState(false)
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  // Move media[from] to position `to`, persist the new order (first = thumbnail).
+  function reorder(from: number, to: number) {
+    if (from === to || from < 0 || to < 0) return
+    setPhotos((prev) => {
+      if (from >= prev.length || to >= prev.length) return prev
+      const next = [...prev]
+      const [moved] = next.splice(from, 1)
+      next.splice(to, 0, moved)
+      if (unit?.id) {
+        api.put(`/api/units/${unit.id}/photos/order`, { order: next.map((p) => p.id) })
+          .then(onChanged)
+          .catch((e) => toast.error(e instanceof Error ? e.message : 'Reorder failed'))
+      }
+      return next
+    })
+  }
 
   useEffect(() => {
     if (!open) return
@@ -248,20 +266,44 @@ export function UnitDialog({
                   )}
                 </div>
                 {photos.length === 0 && <p className="text-sm text-muted-foreground">No photos or videos yet.</p>}
+                {photos.length > 1 && editable && (
+                  <p className="text-xs text-muted-foreground">Drag to reorder. The first one is the thumbnail shown everywhere.</p>
+                )}
                 <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                  {photos.map((p) => (
-                    <div key={p.id} className="group relative aspect-square overflow-hidden rounded-md border bg-black/5">
+                  {photos.map((p, i) => (
+                    <div key={p.id}
+                      draggable={editable}
+                      onDragStart={() => setDragIndex(i)}
+                      onDragOver={(e) => { if (dragIndex !== null) e.preventDefault() }}
+                      onDrop={(e) => { e.preventDefault(); if (dragIndex !== null) reorder(dragIndex, i); setDragIndex(null) }}
+                      onDragEnd={() => setDragIndex(null)}
+                      className={`group relative aspect-square overflow-hidden rounded-md border bg-black/5 ${editable ? 'cursor-grab active:cursor-grabbing' : ''} ${dragIndex === i ? 'opacity-40' : ''} ${i === 0 ? 'ring-2 ring-primary' : ''}`}>
                       {p.kind === 'video'
-                        ? <video src={p.url} className="h-full w-full object-cover" muted playsInline preload="metadata" controls />
-                        : <img src={p.url} alt="" className="h-full w-full object-cover" loading="lazy" />}
-                      {p.kind === 'video' && (
+                        ? <video src={p.url} className="pointer-events-none h-full w-full object-cover" muted playsInline preload="metadata" />
+                        : <img src={p.url} alt="" className="pointer-events-none h-full w-full object-cover" loading="lazy" draggable={false} />}
+                      {i === 0 && (
+                        <span className="pointer-events-none absolute inset-x-0 top-0 bg-primary/90 py-0.5 text-center text-[10px] font-semibold text-primary-foreground">
+                          {p.kind === 'video' ? 'Thumbnail · ▶ video' : 'Thumbnail'}
+                        </span>
+                      )}
+                      {i !== 0 && p.kind === 'video' && (
                         <span className="pointer-events-none absolute left-1 top-1 rounded bg-black/60 px-1 text-[10px] font-medium text-white">▶ video</span>
                       )}
                       <a href={`/api/photos/${p.id}/download`} download
                         className="absolute bottom-1 left-1 grid size-6 place-items-center rounded bg-black/55 text-xs text-white opacity-0 transition group-hover:opacity-100">⬇</a>
                       {editable && (
-                        <button type="button" onClick={() => deletePhoto(p.id)}
-                          className="absolute right-1 top-1 grid size-6 place-items-center rounded bg-black/55 text-xs text-white opacity-0 transition group-hover:opacity-100">×</button>
+                        <>
+                          {i > 0 && (
+                            <button type="button" title="Move left / make thumbnail" onClick={() => reorder(i, i - 1)}
+                              className="absolute bottom-1 right-7 grid size-6 place-items-center rounded bg-black/55 text-xs text-white opacity-0 transition group-hover:opacity-100">‹</button>
+                          )}
+                          {i < photos.length - 1 && (
+                            <button type="button" title="Move right" onClick={() => reorder(i, i + 1)}
+                              className="absolute bottom-1 right-1 grid size-6 place-items-center rounded bg-black/55 text-xs text-white opacity-0 transition group-hover:opacity-100">›</button>
+                          )}
+                          <button type="button" onClick={() => deletePhoto(p.id)}
+                            className="absolute right-1 top-1 grid size-6 place-items-center rounded bg-black/55 text-xs text-white opacity-0 transition group-hover:opacity-100">×</button>
+                        </>
                       )}
                     </div>
                   ))}
