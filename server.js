@@ -631,6 +631,35 @@ app.post('/api/units/:id/photos', requireCap(can.editUnits), mediaUpload.array('
   res.status(201).json({ photos: added.map((p) => ({ id: p.id, url: storage.publicUrl(p.key), filename: p.key, kind: p.kind })) });
 }));
 
+// Direct-to-storage upload (browser → Supabase), so large videos aren't
+// capped by the serverless request-body limit. 1) get signed URLs, 2) the
+// browser PUTs each file to Supabase, 3) confirm to record them in the DB.
+app.post('/api/units/:id/photos/sign', requireCap(can.editUnits), wrap(async (req, res) => {
+  const unit = await repo.getUnit(req.params.id);
+  if (!unit) return res.status(404).json({ error: 'Unit not found' });
+  if (typeof storage.createUploadUrl !== 'function') return res.status(400).json({ error: 'Direct upload not supported by this storage driver.' });
+  const files = Array.isArray(req.body.files) ? req.body.files.slice(0, 20) : [];
+  if (!files.length) return res.status(400).json({ error: 'No files.' });
+  const uploads = [];
+  for (const f of files) {
+    const kind = /^video\//i.test(f.type || '') ? 'video' : 'image';
+    const { key, url, token } = await storage.createUploadUrl({ originalname: f.name || 'upload' });
+    uploads.push({ key, url, token, kind });
+  }
+  res.json({ uploads });
+}));
+
+app.post('/api/units/:id/photos/confirm', requireCap(can.editUnits), wrap(async (req, res) => {
+  const unit = await repo.getUnit(req.params.id);
+  if (!unit) return res.status(404).json({ error: 'Unit not found' });
+  const items = (Array.isArray(req.body.items) ? req.body.items : [])
+    .filter((i) => i && i.key)
+    .map((i) => ({ key: String(i.key), kind: i.kind === 'video' ? 'video' : 'image' }));
+  if (!items.length) return res.status(400).json({ error: 'No uploaded items.' });
+  const added = await repo.addPhotos(unit.id, items);
+  res.status(201).json({ photos: added.map((p) => ({ id: p.id, url: storage.publicUrl(p.key), filename: p.key, kind: p.kind })) });
+}));
+
 app.delete('/api/photos/:id', requireCap(can.editUnits), wrap(async (req, res) => {
   const key = await repo.deletePhoto(req.params.id);
   if (!key) return res.status(404).json({ error: 'Not found' });

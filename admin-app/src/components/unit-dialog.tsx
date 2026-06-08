@@ -32,6 +32,40 @@ function unitToForm(u: Unit | null): Form {
 
 const NO_BUILDING = 'none'
 
+type SignedUpload = { key: string; url: string; token: string; kind: string }
+
+// Upload images/videos. Prefers signing each file and PUTting it straight to
+// storage (so large videos aren't blocked by the serverless body limit), and
+// falls back to a multipart POST when direct upload isn't available.
+async function uploadMedia(unitId: number, files: File[]): Promise<Photo[]> {
+  let uploads: SignedUpload[] | null = null
+  try {
+    const r = await api.post<{ uploads: SignedUpload[] }>(`/api/units/${unitId}/photos/sign`, {
+      files: files.map((f) => ({ name: f.name, type: f.type })),
+    })
+    uploads = r.uploads
+  } catch {
+    uploads = null // e.g. local disk storage — use the multipart fallback
+  }
+
+  if (uploads && uploads.length === files.length) {
+    const items: { key: string; kind: string }[] = []
+    for (let i = 0; i < files.length; i++) {
+      const up = uploads[i]
+      const res = await fetch(up.url, { method: 'PUT', body: files[i], headers: { 'Content-Type': files[i].type || 'application/octet-stream' } })
+      if (!res.ok) throw new Error(`Upload failed (${res.status})`)
+      items.push({ key: up.key, kind: up.kind })
+    }
+    const r = await api.post<{ photos: Photo[] }>(`/api/units/${unitId}/photos/confirm`, { items })
+    return r.photos
+  }
+
+  const fd = new FormData()
+  files.forEach((f) => fd.append('photos', f))
+  const r = await api.form<{ photos: Photo[] }>(`/api/units/${unitId}/photos`, fd)
+  return r.photos
+}
+
 export function UnitDialog({
   me, unit, open, onOpenChange, onSaved, onChanged, buildings = [], presetBuildingId,
 }: {
@@ -114,12 +148,11 @@ export function UnitDialog({
 
   async function uploadFiles(files: FileList | null) {
     if (!unit?.id || !files?.length) return
-    const fd = new FormData()
-    const hasVideo = Array.from(files).some((f) => f.type.startsWith('video/'))
-    Array.from(files).forEach((f) => fd.append('photos', f))
+    const arr = Array.from(files)
+    const hasVideo = arr.some((f) => f.type.startsWith('video/'))
     const tid = toast.loading(hasVideo ? t('Uploading… videos can take a moment.') : t('Uploading…'))
     try {
-      const { photos: added } = await api.form<{ photos: Photo[] }>(`/api/units/${unit.id}/photos`, fd)
+      const added = await uploadMedia(unit.id, arr)
       setPhotos((p) => [...p, ...added])
       onChanged()
       toast.success(`${t('Added')} ${added.length} ${added.length === 1 ? t('file') : t('files')}`, { id: tid })
