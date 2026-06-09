@@ -37,7 +37,7 @@ module.exports = {
   // Public "Text us" number — set CONTACT_SMS to your real number (E.164,
   // e.g. +15145551234). Used for the SMS-draft link on listing pages.
   contact: {
-    sms: process.env.CONTACT_SMS || '+15145550100',
+    sms: process.env.CONTACT_SMS || '+14383400510',
   },
 
   session: {
