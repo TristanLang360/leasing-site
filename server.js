@@ -1232,6 +1232,8 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
     : 'Now';
   const located = u.lat != null && u.lng != null;
   const dest = located ? `${u.lat},${u.lng}` : encodeURIComponent(u.address);
+  // "Text us" opens the phone's SMS app with a draft message about this unit.
+  const smsBody = encodeURIComponent(`Hi! I'm interested in ${u.address} — can I book a showing?`);
 
   // Similar available units nearby (ranked by bed/price similarity, then
   // distance) — server-rendered, mirrors the admin's "Similar units nearby".
@@ -1322,7 +1324,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
         <div class="listing-cta">
           <div class="listing-cta-price">${Number(u.price) > 0 ? `${money(u.price)} <span>/ mo</span>` : 'Contact for price'}</div>
           <button type="button" class="btn btn-primary" id="book-btn">Book a showing</button>
-          <a class="btn btn-ghost" href="tel:+15145550100">+1 (514) 555-0100</a>
+          <a class="btn btn-ghost" href="sms:${config.contact.sms}?&body=${smsBody}">💬 Text us · reply under 10 min</a>
           <div class="listing-dir">
             <span class="muted small">Directions:</span>
             <a class="btn btn-ghost btn-sm dir-btn" href="https://www.google.com/maps/dir/?api=1&destination=${dest}" target="_blank" rel="noopener" aria-label="Get directions in Google Maps">${gmapsSvg}<span>Google Maps</span></a>
