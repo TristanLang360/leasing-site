@@ -96,11 +96,16 @@ async function seedMaster() {
 // Strip apartment/unit/basement suffixes and add city/province context so
 // Nominatim can resolve bare street addresses from imports.
 function geocodeQuery(address) {
+  // Strip apartment tokens anywhere (incl. "2302 #102 Chem..." where the apt
+  // comes before the street), not just everything after the first one.
   let s = String(address || '')
-    .split(/\s*(?:#|\bapt\.?|\bunit\b|\bbsmt\b|\bbasement\b|\bsuite\b|\bste\.?)/i)[0]
-    .replace(/[,\s]+$/, '').trim();
-  if (!/montr|qu[ée]bec|,\s*qc\b|canada/i.test(s)) s += ', Montréal, QC, Canada';
-  return s;
+    .replace(/#\s*[0-9a-z]+/gi, ' ')
+    .replace(/\b(?:apt\.?|unit|bsmt|basement|suite|ste\.?)\b\.?\s*[0-9a-z]*/gi, ' ')
+    .replace(/\s+/g, ' ').replace(/[,\s]+$/, '').trim();
+  if (/montr|qu[ée]bec|,\s*qc\b|canada/i.test(s)) return s;
+  // Has an explicit city (a comma) → just add province/country; otherwise
+  // assume Montréal so bare street names disambiguate to the city.
+  return s.includes(',') ? s + ', QC, Canada' : s + ', Montréal, QC, Canada';
 }
 // Greater Montréal bounding box — reject geocodes that land elsewhere
 // (bare street names often match a city on another continent).
