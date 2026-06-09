@@ -1121,8 +1121,8 @@ ${canonical ? `<link rel="canonical" href="${escHtml(canonical)}" />` : ''}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=fr4" />
-<script src="/i18n-public.js?v=fr4"></script>
+<link rel="stylesheet" href="/styles.css?v=fr5" />
+<script src="/i18n-public.js?v=fr5"></script>
 ${head}
 </head>
 <body>

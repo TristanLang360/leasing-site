@@ -1072,9 +1072,9 @@ video.listing-shot { width: 100%; height: 100%; object-fit: cover; background-co
 }
 .listing-cta-price { font-family: 'Fraunces', serif; font-size: 1.6rem; }
 .listing-cta-price span { font-family: 'Inter', sans-serif; font-size: 0.95rem; color: var(--ink-muted); }
-.listing-cta .btn { justify-content: center; }
+.listing-cta .btn { justify-content: center; white-space: normal; text-align: center; min-width: 0; }
 .listing-dir { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-.dir-btn { display: inline-flex; align-items: center; gap: 6px; }
+.dir-btn { display: inline-flex; align-items: center; gap: 6px; white-space: normal; min-width: 0; }
 .dir-btn svg { display: block; flex: none; }
 .listing-disclaimer {
   margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line);
