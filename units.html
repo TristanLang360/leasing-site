@@ -30,6 +30,29 @@
   </div>
 </header>
 
+<!-- TEST FLOW (revertable): budget gate → full-screen map ─────────── -->
+<div class="budget-gate" id="budget-gate">
+  <form class="budget-card" id="budget-form">
+    <div class="brand" style="justify-content:center;gap:8px;margin-bottom:4px;"><span class="brand-mark"></span> Rentalium</div>
+    <h2>What's your budget?</h2>
+    <p>Tell us your monthly budget and we'll show every available unit that fits, on the map.</p>
+    <label class="field" style="text-align:left;"><span>Monthly budget</span>
+      <input id="budget-input" type="number" min="0" step="50" inputmode="numeric" placeholder="$ / month" required />
+    </label>
+    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Show units on the map →</button>
+  </form>
+</div>
+
+<div class="fs-map-wrap" id="fs-map-wrap">
+  <div class="fs-bar">
+    <a href="index.html" class="brand" style="gap:8px;"><span class="brand-mark"></span> Rentalium</a>
+    <span class="fs-count" id="fs-count"></span>
+    <button class="btn btn-ghost btn-sm" id="fs-change">Change budget</button>
+  </div>
+  <div id="fs-map"></div>
+</div>
+<!-- END TEST FLOW ─────────────────────────────────────────────────── -->
+
 <section class="page-header">
   <div class="container">
     <div class="eyebrow">Available units</div>

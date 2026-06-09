@@ -32,6 +32,55 @@ async function loadUnits() {
     document.getElementById('no-results').style.display = 'block';
   }
   applyFilters();
+  // TEST FLOW: if the budget gate is already showing the map, repopulate now
+  // that units have loaded.
+  if (document.body.classList.contains('fs-active')) renderFsMap(gateBudget);
+}
+
+// ── TEST FLOW (revertable): budget gate → full-screen map ──────────
+let fsMap = null, fsLayer = null, gateBudget = null;
+
+function showGate() {
+  document.body.classList.add('gate-active');
+  document.body.classList.remove('fs-active');
+}
+
+function showFsMap(budget) {
+  gateBudget = budget;
+  document.body.classList.remove('gate-active');
+  document.body.classList.add('fs-active');
+  if (!fsMap && typeof L !== 'undefined') {
+    fsMap = L.map('fs-map', { scrollWheelZoom: true }).setView([45.5019, -73.5674], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(fsMap);
+    fsLayer = L.layerGroup().addTo(fsMap);
+  }
+  setTimeout(() => { if (fsMap) fsMap.invalidateSize(); }, 60);
+  renderFsMap(budget);
+}
+
+function renderFsMap(budget) {
+  if (!fsMap || !fsLayer) return;
+  fsLayer.clearLayers();
+  const within = UNITS.filter((u) =>
+    u.lat != null && u.lng != null && Number(u.price) > 0 && (!budget || Number(u.price) <= budget));
+  const pts = [];
+  within.forEach((u) => {
+    const m = L.marker([u.lat, u.lng]);
+    m.bindPopup(
+      `<strong>${escapeHtml(u.address)}</strong><br>${fmtBeds(u.beds)} · ${fmtPrice(u.price)}<br>` +
+      `<a href="${unitHref(u)}" class="map-popup-link">View listing →</a>`
+    );
+    m.addTo(fsLayer);
+    pts.push([u.lat, u.lng]);
+  });
+  const count = document.getElementById('fs-count');
+  if (count) count.textContent = budget
+    ? `${within.length} unit${within.length === 1 ? '' : 's'} up to $${Number(budget).toLocaleString('en-US')}/mo`
+    : `${within.length} available unit${within.length === 1 ? '' : 's'}`;
+  if (pts.length) fsMap.fitBounds(pts, { padding: [60, 60], maxZoom: 15 });
+  else fsMap.setView([45.5019, -73.5674], 11);
 }
 
 const fmtCost = (n) => (n ? `$${Number(n).toLocaleString('en-US')}/mo` : 'included');
@@ -185,6 +234,19 @@ function applyFilters() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // TEST FLOW: gate visitors behind a budget form, then show a full-screen map.
+  const budgetForm = document.getElementById('budget-form');
+  if (budgetForm) {
+    showGate();
+    budgetForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const v = parseInt(document.getElementById('budget-input').value, 10);
+      showFsMap(Number.isFinite(v) && v > 0 ? v : null);
+    });
+    const change = document.getElementById('fs-change');
+    if (change) change.addEventListener('click', showGate);
+  }
+
   initMap();
   ['f-search', 'f-beds', 'f-price-min', 'f-price-max', 'f-sort'].forEach((id) => {
     const el = document.getElementById(id);
