@@ -68,8 +68,8 @@ function unitCardHTML(u, idx) {
         <span class="unit-price">${fmtPrice(u.price)}</span>
       </div>
       <div class="unit-body">
-        <h3>${escapeHtml(u.title)}</h3>
-        <div class="unit-addr">${escapeHtml(u.address)}${u.neighborhood ? ' · ' + escapeHtml(u.neighborhood) : ''}</div>
+        <h3>${escapeHtml(u.address)}</h3>
+        ${u.neighborhood ? `<div class="unit-addr">${escapeHtml(u.neighborhood)}</div>` : ''}
         <div class="unit-meta">
           <span>${fmtBeds(u.beds)}</span>
           <span>${u.baths} bath${u.baths > 1 ? 's' : ''}</span>

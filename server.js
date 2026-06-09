@@ -1288,8 +1288,8 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
   const body = `
   <section class="page-header"><div class="container">
     <div class="eyebrow"><a href="/units.html" style="color:inherit;">Available units</a></div>
-    <h1>${escHtml(u.title)}</h1>
-    <p class="listing-sub">${escHtml(u.address)}${u.neighborhood ? ' · ' + escHtml(u.neighborhood) : ''}</p>
+    <h1>${escHtml(u.address)}</h1>
+    <p class="listing-sub">${escHtml(beds)}${u.neighborhood ? ' · ' + escHtml(u.neighborhood) : ''}</p>
     <div class="listing-priceline">
       <span class="listing-price">${priceMo(u.price)}</span>
       <span class="listing-facts">${facts.map((f) => `<span>${escHtml(f)}</span>`).join('')}</span>
@@ -1328,7 +1328,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
       <button class="icon-btn" id="book-close" aria-label="Close">×</button>
     </div>
     <form class="modal-body" id="book-form">
-      <p class="muted small" style="margin:0;">Request a showing for <strong>${escHtml(u.title)}</strong> — we'll confirm by email.</p>
+      <p class="muted small" style="margin:0;">Request a showing for <strong>${escHtml(u.address)}</strong> — we'll confirm by email.</p>
       <label class="field"><span>Your name *</span><input name="client_name" required /></label>
       <div class="grid-2">
         <label class="field"><span>Email *</span><input name="client_email" type="email" required /></label>
@@ -1379,7 +1379,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
 })();</script>`;
 
   res.type('html').send(renderShell({
-    title: `${u.title} — ${u.neighborhood || 'Montréal'}${u.price > 0 ? ` | ${money(u.price)}/mo` : ''} | Rentalium`,
+    title: `${u.address} — ${u.neighborhood || 'Montréal'}${u.price > 0 ? ` | ${money(u.price)}/mo` : ''} | Rentalium`,
     description: u.description
       || `${beds}, ${u.baths} bath rental at ${u.address}, Montréal${u.price > 0 ? ` — ${money(u.price)}/mo` : ''}. Available ${avail}. Book a showing with Rentalium.`,
     canonical: `https://rentalium.ca/units/${u.id}/${slug}`,

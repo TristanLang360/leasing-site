@@ -349,8 +349,8 @@
               <span class="unit-price">${fmtPrice(u.price)}</span>
             </div>
             <div class="unit-body">
-              <h3>${esc(u.title)}</h3>
-              <div class="unit-addr">${esc(u.address)}</div>
+              <h3>${esc(u.address)}</h3>
+              ${u.neighborhood ? `<div class="unit-addr">${esc(u.neighborhood)}</div>` : ''}
               <div class="unit-meta">
                 <span>${fmtBeds(u.beds)}</span>
                 <span>${u.baths} bath${u.baths > 1 ? 's' : ''}</span>
