@@ -1303,6 +1303,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
 
   const body = `
   <section class="page-header"><div class="container">
+    <a class="btn btn-ghost btn-sm listing-back" href="/units.html" onclick="if(history.length>1){history.back();return false;}">&larr; Back to map</a>
     <div class="eyebrow"><a href="/units.html" style="color:inherit;">Available units</a></div>
     <h1>${escHtml(u.address)}</h1>
     <p class="listing-sub">${escHtml(beds)}${u.neighborhood ? ' · ' + escHtml(u.neighborhood) : ''}</p>

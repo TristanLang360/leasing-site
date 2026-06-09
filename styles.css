@@ -422,6 +422,8 @@ footer {
   margin-bottom: 28px;
   box-shadow: var(--shadow-sm);
 }
+.listing-back { display: inline-flex; margin-bottom: 18px; }
+
 /* Similar units nearby (listing page) */
 .similar-section { margin-top: 40px; }
 .similar-section h2 { margin-bottom: 18px; }
