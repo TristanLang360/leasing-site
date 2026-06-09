@@ -152,8 +152,10 @@ function renderMap(list) {
 function applyFilters() {
   const q = document.getElementById('f-search').value.trim().toLowerCase();
   const beds = document.getElementById('f-beds').value;
-  const maxPrice = document.getElementById('f-price').value;
+  const minPrice = parseInt(document.getElementById('f-price-min').value, 10);
+  const maxPrice = parseInt(document.getElementById('f-price-max').value, 10);
   const sort = document.getElementById('f-sort').value;
+  const hasPriceFilter = Number.isFinite(minPrice) || Number.isFinite(maxPrice);
 
   let list = UNITS.filter((u) => {
     if (q) {
@@ -165,7 +167,12 @@ function applyFilters() {
       if (n === 3) { if ((u.beds || 0) < 3) return false; }
       else if ((u.beds || 0) !== n) return false;
     }
-    if (maxPrice && u.price > parseInt(maxPrice, 10)) return false;
+    if (hasPriceFilter) {
+      const p = Number(u.price);
+      if (!p) return false; // "Contact for price" units can't match a range
+      if (Number.isFinite(minPrice) && p < minPrice) return false;
+      if (Number.isFinite(maxPrice) && p > maxPrice) return false;
+    }
     return true;
   });
 
@@ -179,7 +186,7 @@ function applyFilters() {
 
 document.addEventListener('DOMContentLoaded', () => {
   initMap();
-  ['f-search', 'f-beds', 'f-price', 'f-sort'].forEach((id) => {
+  ['f-search', 'f-beds', 'f-price-min', 'f-price-max', 'f-sort'].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('input', applyFilters);
@@ -189,7 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (reset) reset.addEventListener('click', () => {
     document.getElementById('f-search').value = '';
     document.getElementById('f-beds').value = '';
-    document.getElementById('f-price').value = '';
+    document.getElementById('f-price-min').value = '';
+    document.getElementById('f-price-max').value = '';
     document.getElementById('f-sort').value = 'price-asc';
     applyFilters();
   });

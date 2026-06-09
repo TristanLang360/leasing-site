@@ -50,13 +50,11 @@
         <option value="2">2 bedrooms</option>
         <option value="3">3+ bedrooms</option>
       </select>
-      <select id="f-price">
-        <option value="">Any price</option>
-        <option value="1500">Under $1,500</option>
-        <option value="2000">Under $2,000</option>
-        <option value="2500">Under $2,500</option>
-        <option value="3500">Under $3,500</option>
-      </select>
+      <div class="price-range">
+        <input id="f-price-min" type="number" min="0" step="50" inputmode="numeric" placeholder="Min $" aria-label="Minimum price" />
+        <span class="price-dash">–</span>
+        <input id="f-price-max" type="number" min="0" step="50" inputmode="numeric" placeholder="Max $" aria-label="Maximum price" />
+      </div>
       <select id="f-sort">
         <option value="price-asc">Price: low to high</option>
         <option value="price-desc">Price: high to low</option>

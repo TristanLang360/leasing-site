@@ -422,6 +422,9 @@ footer {
   margin-bottom: 28px;
   box-shadow: var(--shadow-sm);
 }
+.price-range { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.price-range input { width: 100%; min-width: 0; }
+.price-dash { color: var(--ink-muted); }
 .filters input, .filters select {
   width: 100%;
   height: 44px;
