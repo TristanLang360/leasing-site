@@ -1121,8 +1121,8 @@ ${canonical ? `<link rel="canonical" href="${escHtml(canonical)}" />` : ''}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=fr3" />
-<script src="/i18n-public.js?v=fr3"></script>
+<link rel="stylesheet" href="/styles.css?v=fr4" />
+<script src="/i18n-public.js?v=fr4"></script>
 ${head}
 </head>
 <body>
@@ -1404,6 +1404,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
 
   const bookingScript = `
 <script>(function(){
+  var FR=window.PUBLIC_LANG==='fr';
   var bd=document.getElementById('book-backdrop'),md=document.getElementById('book-modal');
   function open(){bd.classList.add('open');md.classList.add('open');}
   function close(){bd.classList.remove('open');md.classList.remove('open');}
@@ -1415,17 +1416,17 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
   document.getElementById('book-form').addEventListener('submit',function(e){
     e.preventDefault();
     var f=e.target,msg=document.getElementById('book-msg'),btn=document.getElementById('book-submit');
-    msg.hidden=true;btn.disabled=true;btn.textContent='Sending…';
+    msg.hidden=true;btn.disabled=true;btn.textContent=FR?'Envoi…':'Sending…';
     var pd=f.pref_date.value,pt=f.pref_time.value;
     var preferred=pd?(pd+'T'+(pt||'10:00')):'';
     var data={unit_id:${u.id},client_name:f.client_name.value,client_email:f.client_email.value,client_phone:f.client_phone.value,preferred:preferred,message:f.message.value};
     fetch('/api/showing-requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
       .then(function(r){if(!r.ok)return r.json().then(function(j){throw new Error(j.error||'Request failed')});return r.json();})
       .then(function(){
-        md.querySelector('.modal-body').innerHTML='<p style="padding:18px 0;">&#10003; Thanks! Your showing request was sent. A Rentalium agent will reach out shortly.</p><div class="drawer-foot"><button type="button" class="btn btn-primary" id="book-done">Done</button></div>';
+        md.querySelector('.modal-body').innerHTML='<p style="padding:18px 0;">&#10003; '+(FR?'Merci ! Votre demande de visite a été envoyée. Un agent Rentalium vous contactera sous peu.':'Thanks! Your showing request was sent. A Rentalium agent will reach out shortly.')+'</p><div class="drawer-foot"><button type="button" class="btn btn-primary" id="book-done">'+(FR?'Terminé':'Done')+'</button></div>';
         document.getElementById('book-done').addEventListener('click',close);
       })
-      .catch(function(err){msg.textContent=err.message;msg.hidden=false;btn.disabled=false;btn.textContent='Send request';});
+      .catch(function(err){msg.textContent=err.message;msg.hidden=false;btn.disabled=false;btn.textContent=FR?'Envoyer la demande':'Send request';});
   });
 })();</script>`;
 

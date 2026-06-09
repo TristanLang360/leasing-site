@@ -205,9 +205,29 @@
       'Guides et nouvelles de l’équipe de location montréalaise de Rentalium — pour propriétaires et locataires.',
     'Read more': 'Lire la suite',
     'No posts yet — check back soon.': 'Aucun article pour l’instant — revenez bientôt.',
+    'Post not found': 'Article introuvable',
+    '← Back to the blog': '← Retour au blogue',
+    '← All posts': '← Tous les articles',
 
     // Dynamic (set by units.js / featured) — used via window.PUBLIC_LANG
     'Contact for price': 'Prix sur demande',
+
+    // Listing / 404 / carousel / booking extras
+    '← Back to all units': '← Retour à toutes les unités',
+    'No photos yet — contact us for more details.': 'Pas encore de photos — contactez-nous pour en savoir plus.',
+    'Request a showing for': 'Demander une visite pour',
+    '— we’ll confirm by email.': '— nous confirmerons par courriel.',
+    'Previous': 'Précédent',
+    'Next': 'Suivant',
+    'Close': 'Fermer',
+    'Done': 'Terminé',
+    'Get directions in Google Maps': 'Itinéraire dans Google Maps',
+    'Get directions in Apple Maps': 'Itinéraire dans Apple Maps',
+    'Language': 'Langue',
+    'Minimum price': 'Prix minimum',
+    'Maximum price': 'Prix maximum',
+    'Min $': 'Min $',
+    'Max $': 'Max $',
   };
 
   // Whole-element HTML overrides for elements with inline markup whose word
@@ -229,14 +249,21 @@
   // Regex transforms for dynamic unit data (server-rendered numbers) that
   // can't be dictionary keys. Applied to a text node only when it had no
   // exact dictionary match.
+  var MONTHS = {
+    January: 'janvier', February: 'février', March: 'mars', April: 'avril',
+    May: 'mai', June: 'juin', July: 'juillet', August: 'août',
+    September: 'septembre', October: 'octobre', November: 'novembre', December: 'décembre'
+  };
   function frNumbers(s) {
     return s
       .replace(/\$\s*([\d,]+)\s*\/\s*mo\b/g, function (m, n) { return n.replace(/,/g, ' ') + ' $ / mois'; })
       .replace(/\b(\d+)\s*beds?\b/g, function (m, n) { return n + ' chambre' + (Number(n) > 1 ? 's' : ''); })
       .replace(/\b(\d+)\s*baths?\b/g, function (m, n) { return n + ' sdb'; })
       .replace(/\b([\d,]+)\s*sqft\b/g, function (m, n) { return n.replace(/,/g, ' ') + ' pi²'; })
+      .replace(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/g, function (m) { return MONTHS[m]; })
       .replace(/\bAvailable\b/g, 'Disponible')
-      .replace(/\bStudio\b/g, 'Studio');
+      .replace(/\bYes\b/g, 'Oui')
+      .replace(/\bNo\b/g, 'Non');
   }
 
   // Normalize for matching: curly→straight quotes, collapse whitespace, trim.
