@@ -755,12 +755,16 @@ footer {
 .modal-backdrop.open { opacity: 1; pointer-events: auto; }
 .modal {
   position: fixed; top: 50%; left: 50%; transform: translate(-50%, -48%) scale(0.98);
-  width: min(560px, calc(100vw - 32px)); max-height: 88vh; overflow: auto; background: #fff;
+  width: min(560px, calc(100vw - 32px)); max-height: 88vh; overflow-x: hidden; overflow-y: auto; background: #fff;
   border-radius: var(--radius); box-shadow: var(--shadow-md); opacity: 0; pointer-events: none;
   transition: opacity var(--t), transform var(--t); z-index: 61;
 }
 .modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
 .modal-body { padding: 20px 24px 24px; display: grid; gap: 14px; }
+/* The booking/CSV modals reuse .drawer-foot, but their body padding is 24px
+   (not the side drawer's 26px) — match the negative margins so the footer
+   spans edge-to-edge without overhanging the modal on mobile. */
+.modal .drawer-foot { margin: 16px -24px -24px; }
 .csv-result {
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm);
   padding: 12px 14px; font-size: 0.9rem;
