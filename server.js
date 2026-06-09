@@ -199,6 +199,9 @@ app.get('/', (req, res, next) => {
   res.sendFile(path.join(__dirname, 'index.html'), (err) => err && next());
 });
 
+// Friendly URL for the units/map page (units.html still works for old links).
+app.get('/unit-finder', (req, res) => res.sendFile(path.join(__dirname, 'units.html')));
+
 // Static: public site files. Local photo uploads are served from disk;
 // with the Supabase driver, photo URLs point at the bucket instead.
 app.use(express.static(__dirname, { extensions: ['html'] }));
@@ -1127,9 +1130,9 @@ ${head}
   <nav class="nav-links">
     <a href="/index.html#services">Services</a>
     <a href="/index.html#neighbourhoods">Neighbourhoods</a>
-    <a href="/units.html"${navActive('units')}>Available units</a>
+    <a href="/unit-finder"${navActive('units')}>Available units</a>
     <a href="/blog"${navActive('blog')}>Blog</a>
-    <a href="/units.html" class="btn btn-primary btn-sm">Browse rentals</a>
+    <a href="/unit-finder" class="btn btn-primary btn-sm">Browse rentals</a>
   </nav>
 </div></header>
 ${body}
@@ -1219,7 +1222,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
   if (!raw) {
     return res.status(404).type('html').send(renderShell({
       title: 'Listing not found | Rentalium', description: 'This listing could not be found.', active: 'units',
-      body: `<section class="page-header"><div class="container"><div class="eyebrow">Available units</div><h1>Listing not found</h1><p><a href="/units.html">&larr; Back to all units</a></p></div></section>`,
+      body: `<section class="page-header"><div class="container"><div class="eyebrow">Available units</div><h1>Listing not found</h1><p><a href="/unit-finder">&larr; Back to all units</a></p></div></section>`,
     }));
   }
   const u = present(raw);
@@ -1303,7 +1306,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
 
   const body = `
   <section class="page-header"><div class="container">
-    <a class="btn btn-ghost btn-sm listing-back" href="/units.html" onclick="if(history.length>1){history.back();return false;}">&larr; Back to map</a>
+    <a class="btn btn-ghost btn-sm listing-back" href="/unit-finder" onclick="if(history.length>1){history.back();return false;}">&larr; Back to map</a>
     <h1>${escHtml(u.address)}</h1>
     <p class="listing-sub">${escHtml(beds)}${u.neighborhood ? ' · ' + escHtml(u.neighborhood) : ''}</p>
     <div class="listing-priceline">
@@ -1346,7 +1349,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
         }).join('')}
       </div>
     </div>` : ''}
-    <p style="margin-top:32px;"><a class="btn btn-ghost" href="/units.html">&larr; All available units</a></p>
+    <p style="margin-top:32px;"><a class="btn btn-ghost" href="/unit-finder">&larr; All available units</a></p>
     <p class="listing-disclaimer">Listing information is provided for general informational purposes only and may change without notice. Square footage, availability, pricing, and amenities are approximate and not guaranteed; photos may not reflect the exact unit. Submitting a showing request does not create a lease, reservation, or obligation. Rentalium is an equal-opportunity housing agency.</p>
   </div></section>
 
