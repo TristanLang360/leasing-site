@@ -34,19 +34,20 @@ async function loadUnits() {
   applyFilters();
   // TEST FLOW: if the budget gate is already showing the map, repopulate now
   // that units have loaded.
-  if (document.body.classList.contains('fs-active')) renderFsMap(gateBudget);
+  if (document.body.classList.contains('fs-active')) renderFsMap(gateBudget, gateBeds);
 }
 
 // ── TEST FLOW (revertable): budget gate → full-screen map ──────────
-let fsMap = null, fsLayer = null, gateBudget = null;
+let fsMap = null, fsLayer = null, gateBudget = null, gateBeds = '';
 
 function showGate() {
   document.body.classList.add('gate-active');
   document.body.classList.remove('fs-active');
 }
 
-function showFsMap(budget) {
+function showFsMap(budget, beds) {
   gateBudget = budget;
+  gateBeds = beds || '';
   document.body.classList.remove('gate-active');
   document.body.classList.add('fs-active');
   if (!fsMap && typeof L !== 'undefined') {
@@ -57,14 +58,23 @@ function showFsMap(budget) {
     fsLayer = L.layerGroup().addTo(fsMap);
   }
   setTimeout(() => { if (fsMap) fsMap.invalidateSize(); }, 60);
-  renderFsMap(budget);
+  renderFsMap(budget, beds);
 }
 
-function renderFsMap(budget) {
+function renderFsMap(budget, beds) {
   if (!fsMap || !fsLayer) return;
+  beds = beds === undefined ? gateBeds : beds;
   fsLayer.clearLayers();
-  const within = UNITS.filter((u) =>
-    u.lat != null && u.lng != null && Number(u.price) > 0 && (!budget || Number(u.price) <= budget));
+  const within = UNITS.filter((u) => {
+    if (u.lat == null || u.lng == null || !(Number(u.price) > 0)) return false;
+    if (budget && Number(u.price) > budget) return false;
+    if (beds !== '') {
+      const n = parseInt(beds, 10);
+      if (n === 3) { if ((u.beds || 0) < 3) return false; }
+      else if ((u.beds || 0) !== n) return false;
+    }
+    return true;
+  });
   const pts = [];
   within.forEach((u) => {
     const m = L.marker([u.lat, u.lng]);
@@ -79,7 +89,9 @@ function renderFsMap(budget) {
   if (count) count.textContent = budget
     ? `${within.length} unit${within.length === 1 ? '' : 's'} up to $${Number(budget).toLocaleString('en-US')}/mo`
     : `${within.length} available unit${within.length === 1 ? '' : 's'}`;
-  if (pts.length) fsMap.fitBounds(pts, { padding: [60, 60], maxZoom: 15 });
+  // Keep the view comfortably zoomed out so the whole set is visible.
+  if (pts.length > 1) fsMap.fitBounds(pts, { padding: [60, 60], maxZoom: 13 });
+  else if (pts.length === 1) fsMap.setView(pts[0], 13);
   else fsMap.setView([45.5019, -73.5674], 11);
 }
 
@@ -241,7 +253,8 @@ document.addEventListener('DOMContentLoaded', () => {
     budgetForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const v = parseInt(document.getElementById('budget-input').value, 10);
-      showFsMap(Number.isFinite(v) && v > 0 ? v : null);
+      const beds = document.getElementById('budget-beds').value;
+      showFsMap(Number.isFinite(v) && v > 0 ? v : null, beds);
     });
     const change = document.getElementById('fs-change');
     if (change) change.addEventListener('click', showGate);
