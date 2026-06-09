@@ -18,7 +18,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="styles.css?v=fr1" />
+<script src="/i18n-public.js?v=fr1"></script>
 <!-- Local business structured data (RealEstateAgent). Replace address/phone with your real NAP. -->
 <script type="application/ld+json">
 {
@@ -63,6 +64,7 @@
       <a href="/unit-finder">Available units</a>
       <a href="/blog">Blog</a>
       <a href="#contact">Contact</a>
+      <button class="lang-toggle" type="button" aria-label="Language">FR</button>
       <a href="/unit-finder" class="btn btn-primary btn-sm">Browse rentals</a>
     </nav>
   </div>
@@ -330,8 +332,11 @@
       if (!r.ok) return;
       const all = await r.json();
       const grid = document.getElementById('featured-grid');
-      const fmtPrice = (n) => (Number(n) > 0 ? '$' + Number(n).toLocaleString('en-US') + ' / mo' : 'Contact for price');
-      const fmtBeds = (n) => n === 0 ? 'Studio' : `${n} bed${n > 1 ? 's' : ''}`;
+      const FR = window.PUBLIC_LANG === 'fr';
+      const fmtPrice = (n) => Number(n) > 0
+        ? (FR ? Number(n).toLocaleString('fr-CA') + ' $ / mois' : '$' + Number(n).toLocaleString('en-US') + ' / mo')
+        : (FR ? 'Prix sur demande' : 'Contact for price');
+      const fmtBeds = (n) => n === 0 ? 'Studio' : (FR ? `${n} chambre${n > 1 ? 's' : ''}` : `${n} bed${n > 1 ? 's' : ''}`);
       const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;" }[c]));
       const slugify = (s) => String(s ?? '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
       const unitHref = (u) => `/units/${u.id}/${slugify(u.title) || 'listing'}`;
@@ -345,7 +350,7 @@
           <a class="unit-card-link" href="${unitHref(u)}">
           <article class="unit-card">
             ${photo}
-              <span class="unit-tag">Available</span>
+              <span class="unit-tag">${FR ? 'Disponible' : 'Available'}</span>
               <span class="unit-price">${fmtPrice(u.price)}</span>
             </div>
             <div class="unit-body">
@@ -353,8 +358,8 @@
               ${u.neighborhood ? `<div class="unit-addr">${esc(u.neighborhood)}</div>` : ''}
               <div class="unit-meta">
                 <span>${fmtBeds(u.beds)}</span>
-                <span>${u.baths} bath${u.baths > 1 ? 's' : ''}</span>
-                ${u.sqft ? `<span>${u.sqft.toLocaleString()} sqft</span>` : ''}
+                <span>${FR ? u.baths + ' sdb' : u.baths + ' bath' + (u.baths > 1 ? 's' : '')}</span>
+                ${u.sqft ? `<span>${u.sqft.toLocaleString()} ${FR ? 'pi²' : 'sqft'}</span>` : ''}
               </div>
             </div>
           </article>
@@ -363,7 +368,9 @@
       }).join('');
       // Also update the hero badge count
       const badge = document.querySelector('.hero-badge .v');
-      if (badge) badge.textContent = `${all.length} unit${all.length === 1 ? '' : 's'} available in Montréal`;
+      if (badge) badge.textContent = FR
+        ? `${all.length} unité${all.length === 1 ? '' : 's'} disponible${all.length === 1 ? '' : 's'} à Montréal`
+        : `${all.length} unit${all.length === 1 ? '' : 's'} available in Montréal`;
     } catch (e) {}
   })();
 
@@ -374,8 +381,9 @@
       if (!r.ok) return;
       const posts = await r.json();
       if (!posts.length) return;
+      const FR = window.PUBLIC_LANG === 'fr';
       const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;" }[c]));
-      const fmtDate = (p) => { const d = new Date(p.published_at || p.created_at); return isNaN(d) ? '' : d.toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' }); };
+      const fmtDate = (p) => { const d = new Date(p.published_at || p.created_at); return isNaN(d) ? '' : d.toLocaleDateString(FR ? 'fr-CA' : 'en-CA', { year:'numeric', month:'long', day:'numeric' }); };
       document.getElementById('blog-teaser-grid').innerHTML = posts.slice(0, 3).map((p) => `
         <article class="post-card">
           ${p.cover_url ? `<a href="/blog/${esc(p.slug)}" class="post-cover" style="background-image:url('${esc(p.cover_url)}')"></a>` : ''}
@@ -383,7 +391,7 @@
             <div class="post-meta">${esc(fmtDate(p))}</div>
             <h2><a href="/blog/${esc(p.slug)}">${esc(p.title)}</a></h2>
             ${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ''}
-            <a class="post-readmore" href="/blog/${esc(p.slug)}">Read more &rarr;</a>
+            <a class="post-readmore" href="/blog/${esc(p.slug)}">${FR ? 'Lire la suite' : 'Read more'} &rarr;</a>
           </div>
         </article>`).join('');
       document.getElementById('blog-teaser').style.display = '';

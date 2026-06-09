@@ -1,13 +1,18 @@
 // Public listings page — fetches live data from /api/units.
 // Manage units & photos at /admin.
 
-const fmtPrice = (n) => (Number(n) > 0 ? '$' + Number(n).toLocaleString('en-US') + ' / mo' : 'Contact for price');
-const fmtBeds = (n) => n === 0 ? 'Studio' : `${n} bed${n > 1 ? 's' : ''}`;
+const FR = (typeof window !== 'undefined' && window.PUBLIC_LANG === 'fr');
+const fmtPrice = (n) => Number(n) > 0
+  ? (FR ? Number(n).toLocaleString('fr-CA') + ' $ / mois' : '$' + Number(n).toLocaleString('en-US') + ' / mo')
+  : (FR ? 'Prix sur demande' : 'Contact for price');
+const fmtBeds = (n) => n === 0 ? 'Studio' : (FR ? `${n} chambre${n > 1 ? 's' : ''}` : `${n} bed${n > 1 ? 's' : ''}`);
+const fmtBath = (n) => FR ? `${n} sdb` : `${n} bath${n > 1 ? 's' : ''}`;
 const fmtAvail = (iso) => {
-  if (!iso) return 'Now';
+  const now = FR ? 'Maintenant' : 'Now';
+  if (!iso) return now;
   const d = new Date(iso + 'T00:00:00');
-  if (isNaN(d)) return 'Now';
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  if (isNaN(d)) return now;
+  return d.toLocaleDateString(FR ? 'fr-CA' : 'en-US', { month: 'short', day: 'numeric' });
 };
 const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -28,7 +33,7 @@ async function loadUnits() {
   } catch (e) {
     UNITS = [];
     document.getElementById('no-results').textContent =
-      'Could not load units. Is the server running?';
+      FR ? 'Impossible de charger les unités.' : 'Could not load units. Is the server running?';
     document.getElementById('no-results').style.display = 'block';
   }
   applyFilters();
@@ -80,26 +85,30 @@ function renderFsMap(budget, beds) {
     const m = L.marker([u.lat, u.lng]);
     m.bindPopup(
       `<strong>${escapeHtml(u.address)}</strong><br>${fmtBeds(u.beds)} · ${fmtPrice(u.price)}<br>` +
-      `<a href="${unitHref(u)}" class="map-popup-link">View listing →</a>`
+      `<a href="${unitHref(u)}" class="map-popup-link">${FR ? 'Voir l’annonce →' : 'View listing →'}</a>`
     );
     m.addTo(fsLayer);
     pts.push([u.lat, u.lng]);
   });
   const count = document.getElementById('fs-count');
+  const nU = within.length, plural = nU === 1 ? '' : 's';
   if (count) count.textContent = budget
-    ? `${within.length} unit${within.length === 1 ? '' : 's'} up to $${Number(budget).toLocaleString('en-US')}/mo`
-    : `${within.length} available unit${within.length === 1 ? '' : 's'}`;
+    ? (FR ? `${nU} unité${plural} jusqu’à ${Number(budget).toLocaleString('fr-CA')} $/mois`
+          : `${nU} unit${plural} up to $${Number(budget).toLocaleString('en-US')}/mo`)
+    : (FR ? `${nU} unité${plural} disponible${plural}` : `${nU} available unit${plural}`);
   // Keep the view comfortably zoomed out so the whole set is visible.
   if (pts.length > 1) fsMap.fitBounds(pts, { padding: [60, 60], maxZoom: 13 });
   else if (pts.length === 1) fsMap.setView(pts[0], 13);
   else fsMap.setView([45.5019, -73.5674], 11);
 }
 
-const fmtCost = (n) => (n ? `$${Number(n).toLocaleString('en-US')}/mo` : 'included');
+const fmtCost = (n) => n
+  ? (FR ? `${Number(n).toLocaleString('fr-CA')} $/mois` : `$${Number(n).toLocaleString('en-US')}/mo`)
+  : (FR ? 'inclus' : 'included');
 const dogsLabel = (p) => p === 'yes'
-  ? '🐾 Dogs welcome'
+  ? (FR ? '🐾 Chiens bienvenus' : '🐾 Dogs welcome')
   : p === 'contact'
-    ? '🐾 Contact us about your dog'
+    ? (FR ? '🐾 Contactez-nous au sujet de votre chien' : '🐾 Contact us about your dog')
     : '';
 
 function unitCardHTML(u, idx) {
@@ -113,8 +122,8 @@ function unitCardHTML(u, idx) {
 
   const amenities = [];
   if (u.appliances) amenities.push(`⚡︎ ${escapeHtml(u.appliances)}`);
-  if (u.parking_available === 'yes') amenities.push(`🅿︎ Parking · ${fmtCost(u.parking_cost)}`);
-  if (u.locker_available === 'yes') amenities.push(`🔒 Locker · ${fmtCost(u.locker_cost)}`);
+  if (u.parking_available === 'yes') amenities.push(`🅿︎ ${FR ? 'Stationnement' : 'Parking'} · ${fmtCost(u.parking_cost)}`);
+  if (u.locker_available === 'yes') amenities.push(`🔒 ${FR ? 'Casier' : 'Locker'} · ${fmtCost(u.locker_cost)}`);
   const dogs = dogsLabel(u.dogs_policy);
   if (dogs) amenities.push(dogs);
   const amenitiesHTML = amenities.length
@@ -125,7 +134,7 @@ function unitCardHTML(u, idx) {
     <a class="unit-card-link" href="${unitHref(u)}">
     <article class="unit-card" id="unit-card-${u.id}">
       ${photo}
-        <span class="unit-tag">Avail ${fmtAvail(u.available_date)}</span>
+        <span class="unit-tag">${FR ? 'Dispo' : 'Avail'} ${fmtAvail(u.available_date)}</span>
         <span class="unit-price">${fmtPrice(u.price)}</span>
       </div>
       <div class="unit-body">
@@ -133,8 +142,8 @@ function unitCardHTML(u, idx) {
         ${u.neighborhood ? `<div class="unit-addr">${escapeHtml(u.neighborhood)}</div>` : ''}
         <div class="unit-meta">
           <span>${fmtBeds(u.beds)}</span>
-          <span>${u.baths} bath${u.baths > 1 ? 's' : ''}</span>
-          ${u.sqft ? `<span>${u.sqft.toLocaleString()} sqft</span>` : ''}
+          <span>${fmtBath(u.baths)}</span>
+          ${u.sqft ? `<span>${u.sqft.toLocaleString()} ${FR ? 'pi²' : 'sqft'}</span>` : ''}
         </div>
         ${amenitiesHTML}
       </div>
@@ -150,15 +159,17 @@ function renderUnits(list) {
 
   if (list.length === 0) {
     grid.innerHTML = '';
-    if (empty.textContent.trim() === '' || empty.textContent.includes('No units match')) {
-      empty.textContent = 'No units match your filters. Try widening your search.';
+    if (empty.textContent.trim() === '' || empty.textContent.includes('No units match') || empty.textContent.includes('correspond')) {
+      empty.textContent = FR ? 'Aucune unité ne correspond à vos filtres. Élargissez votre recherche.'
+                             : 'No units match your filters. Try widening your search.';
     }
     empty.style.display = 'block';
-    meta.textContent = '0 units';
+    meta.textContent = FR ? '0 unité' : '0 units';
     return;
   }
   empty.style.display = 'none';
-  meta.textContent = `Showing ${list.length} unit${list.length > 1 ? 's' : ''}`;
+  meta.textContent = FR ? `${list.length} unité${list.length > 1 ? 's' : ''} affichée${list.length > 1 ? 's' : ''}`
+                        : `Showing ${list.length} unit${list.length > 1 ? 's' : ''}`;
   grid.innerHTML = list.map(unitCardHTML).join('');
   renderMap(list);
 }
@@ -182,7 +193,7 @@ function initMap() {
     const wrap = document.getElementById('units-map');
     const hint = document.getElementById('map-hint');
     const hidden = wrap.classList.toggle('hidden');
-    toggle.textContent = hidden ? 'Show map' : 'Hide map';
+    toggle.textContent = hidden ? (FR ? 'Afficher la carte' : 'Show map') : (FR ? 'Masquer la carte' : 'Hide map');
     toggle.setAttribute('aria-expanded', String(!hidden));
     if (hint) hint.style.visibility = hidden ? 'hidden' : 'visible';
     if (!hidden) setTimeout(() => map.invalidateSize(), 50);
@@ -199,7 +210,7 @@ function renderMap(list) {
     m.bindPopup(
       `<strong>${escapeHtml(u.title)}</strong><br>${escapeHtml(u.address)}<br>` +
       `${fmtBeds(u.beds)} · ${fmtPrice(u.price)}<br>` +
-      `<a href="${unitHref(u)}" class="map-popup-link">View listing →</a>`
+      `<a href="${unitHref(u)}" class="map-popup-link">${FR ? 'Voir l’annonce →' : 'View listing →'}</a>`
     );
     m.addTo(markerLayer);
     pts.push([u.lat, u.lng]);

@@ -1121,7 +1121,8 @@ ${canonical ? `<link rel="canonical" href="${escHtml(canonical)}" />` : ''}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=similar1" />
+<link rel="stylesheet" href="/styles.css?v=fr1" />
+<script src="/i18n-public.js?v=fr1"></script>
 ${head}
 </head>
 <body>
@@ -1132,6 +1133,7 @@ ${head}
     <a href="/index.html#neighbourhoods">Neighbourhoods</a>
     <a href="/unit-finder"${navActive('units')}>Available units</a>
     <a href="/blog"${navActive('blog')}>Blog</a>
+    <button class="lang-toggle" type="button" aria-label="Language">FR</button>
     <a href="/unit-finder" class="btn btn-primary btn-sm">Browse rentals</a>
   </nav>
 </div></header>
