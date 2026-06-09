@@ -330,12 +330,13 @@
       if (!r.ok) return;
       const all = await r.json();
       const grid = document.getElementById('featured-grid');
-      const fmtPrice = (n) => '$' + (n || 0).toLocaleString('en-US') + ' / mo';
+      const fmtPrice = (n) => (Number(n) > 0 ? '$' + Number(n).toLocaleString('en-US') + ' / mo' : 'Contact for price');
       const fmtBeds = (n) => n === 0 ? 'Studio' : `${n} bed${n > 1 ? 's' : ''}`;
       const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;" }[c]));
       const slugify = (s) => String(s ?? '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
       const unitHref = (u) => `/units/${u.id}/${slugify(u.title) || 'listing'}`;
-      grid.innerHTML = all.slice(0, 3).map((u, i) => {
+      const priced = all.filter((u) => Number(u.price) > 0);
+      grid.innerHTML = (priced.length ? priced : all).slice(0, 3).map((u, i) => {
         const variant = (i % 6) + 1;
         const photo = u.photos && u.photos[0]
           ? `<div class="unit-photo has-image" style="background-image:url('${u.photos[0].url}')">`

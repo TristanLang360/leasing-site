@@ -1225,6 +1225,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
   const u = present(raw);
   const slug = slugify(u.title) || 'listing';
   const money = (n) => '$' + Number(n || 0).toLocaleString('en-US');
+  const priceMo = (n) => (Number(n) > 0 ? `${money(n)} / mo` : 'Contact for price');
   const beds = u.beds === 0 ? 'Studio' : `${u.beds} bed${u.beds > 1 ? 's' : ''}`;
   const avail = u.available_date
     ? new Date(u.available_date + 'T00:00:00').toLocaleDateString('en-CA', { month: 'long', day: 'numeric', year: 'numeric' })
@@ -1290,7 +1291,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
     <h1>${escHtml(u.title)}</h1>
     <p class="listing-sub">${escHtml(u.address)}${u.neighborhood ? ' · ' + escHtml(u.neighborhood) : ''}</p>
     <div class="listing-priceline">
-      <span class="listing-price">${money(u.price)} / mo</span>
+      <span class="listing-price">${priceMo(u.price)}</span>
       <span class="listing-facts">${facts.map((f) => `<span>${escHtml(f)}</span>`).join('')}</span>
     </div>
   </div></section>
@@ -1305,7 +1306,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
       </div>
       <aside class="listing-aside">
         <div class="listing-cta">
-          <div class="listing-cta-price">${money(u.price)} <span>/ mo</span></div>
+          <div class="listing-cta-price">${Number(u.price) > 0 ? `${money(u.price)} <span>/ mo</span>` : 'Contact for price'}</div>
           <button type="button" class="btn btn-primary" id="book-btn">Book a showing</button>
           <a class="btn btn-ghost" href="tel:+15145550100">+1 (514) 555-0100</a>
           <div class="listing-dir">
@@ -1378,9 +1379,9 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
 })();</script>`;
 
   res.type('html').send(renderShell({
-    title: `${u.title} — ${u.neighborhood || 'Montréal'} | ${money(u.price)}/mo | Rentalium`,
+    title: `${u.title} — ${u.neighborhood || 'Montréal'}${u.price > 0 ? ` | ${money(u.price)}/mo` : ''} | Rentalium`,
     description: u.description
-      || `${beds}, ${u.baths} bath rental at ${u.address}, Montréal — ${money(u.price)}/mo. Available ${avail}. Book a showing with Rentalium.`,
+      || `${beds}, ${u.baths} bath rental at ${u.address}, Montréal${u.price > 0 ? ` — ${money(u.price)}/mo` : ''}. Available ${avail}. Book a showing with Rentalium.`,
     canonical: `https://rentalium.ca/units/${u.id}/${slug}`,
     active: 'units',
     head: `${mapHead}\n<meta property="og:type" content="website" />\n<script type="application/ld+json">${JSON.stringify(ld)}</script>`,

@@ -1,7 +1,7 @@
 // Public listings page — fetches live data from /api/units.
 // Manage units & photos at /admin.
 
-const fmtPrice = (n) => '$' + (n || 0).toLocaleString('en-US') + ' / mo';
+const fmtPrice = (n) => (Number(n) > 0 ? '$' + Number(n).toLocaleString('en-US') + ' / mo' : 'Contact for price');
 const fmtBeds = (n) => n === 0 ? 'Studio' : `${n} bed${n > 1 ? 's' : ''}`;
 const fmtAvail = (iso) => {
   if (!iso) return 'Now';
@@ -169,8 +169,9 @@ function applyFilters() {
     return true;
   });
 
-  if (sort === 'price-asc')  list.sort((a, b) => a.price - b.price);
-  if (sort === 'price-desc') list.sort((a, b) => b.price - a.price);
+  // Units with no price (0) sort to the end either way, so the grid leads with real listings.
+  if (sort === 'price-asc')  list.sort((a, b) => (a.price || Infinity) - (b.price || Infinity));
+  if (sort === 'price-desc') list.sort((a, b) => (b.price || 0) - (a.price || 0));
   if (sort === 'size-desc')  list.sort((a, b) => (b.sqft || 0) - (a.sqft || 0));
 
   renderUnits(list);
