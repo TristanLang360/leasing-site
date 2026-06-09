@@ -1118,7 +1118,7 @@ ${canonical ? `<link rel="canonical" href="${escHtml(canonical)}" />` : ''}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css" />
+<link rel="stylesheet" href="/styles.css?v=similar1" />
 ${head}
 </head>
 <body>
@@ -1233,6 +1233,20 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
   const located = u.lat != null && u.lng != null;
   const dest = located ? `${u.lat},${u.lng}` : encodeURIComponent(u.address);
 
+  // Similar available units nearby (ranked by bed/price similarity, then
+  // distance) — server-rendered, mirrors the admin's "Similar units nearby".
+  let similar = [];
+  if (located) {
+    const others = (await repo.locatedUnitsExcept(u.id)).map(present)
+      .filter((o) => o.status === 'available' && o.lat != null && o.lng != null);
+    const scored = others.map((o) => ({ o, km: haversineKm(u.lat, u.lng, o.lat, o.lng) }));
+    const isSimilar = (o) => Math.abs((o.beds || 0) - (u.beds || 0)) <= 1
+      && (u.price ? Math.abs(o.price - u.price) / u.price <= 0.35 : true);
+    const sim = scored.filter((s) => isSimilar(s.o)).sort((a, b) => a.km - b.km);
+    const rest = scored.filter((s) => !isSimilar(s.o)).sort((a, b) => a.km - b.km);
+    similar = [...sim, ...rest].slice(0, 4).map((s) => ({ ...s.o, km: Math.round(s.km * 10) / 10 }));
+  }
+
   const gmapsSvg = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335"/><circle cx="12" cy="9" r="2.6" fill="#fff"/></svg>';
   const amapsSvg = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><defs><linearGradient id="am-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#46c0f5"/><stop offset="1" stop-color="#1aa657"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" fill="url(#am-grad)"/><path d="M12 6.4l3.6 9.6L12 14l-3.6 2z" fill="#fff"/></svg>';
 
@@ -1317,6 +1331,19 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
         </div>
       </aside>
     </div>
+    ${similar.length ? `<div class="similar-section">
+      <h2>Similar units nearby</h2>
+      <div class="similar-grid">
+        ${similar.map((s) => {
+          const img = (s.photos.find((p) => p.kind !== 'video') || {}).url;
+          const sBeds = s.beds === 0 ? 'Studio' : `${s.beds} bed${s.beds > 1 ? 's' : ''}`;
+          return `<a class="similar-card" href="/units/${s.id}/${slugify(s.title) || 'listing'}">
+            <div class="similar-thumb"${img ? ` style="background-image:url('${escHtml(img)}')"` : ''}><span class="similar-dist">${s.km} km</span></div>
+            <div class="similar-body"><strong>${escHtml(s.address)}</strong><span class="muted small">${sBeds} · ${priceMo(s.price)}</span></div>
+          </a>`;
+        }).join('')}
+      </div>
+    </div>` : ''}
     <p style="margin-top:32px;"><a class="btn btn-ghost" href="/units.html">&larr; All available units</a></p>
     <p class="listing-disclaimer">Listing information is provided for general informational purposes only and may change without notice. Square footage, availability, pricing, and amenities are approximate and not guaranteed; photos may not reflect the exact unit. Submitting a showing request does not create a lease, reservation, or obligation. Rentalium is an equal-opportunity housing agency.</p>
   </div></section>
@@ -1337,10 +1364,6 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
       <div class="grid-2">
         <label class="field"><span>Preferred date</span><input name="pref_date" type="date" /></label>
         <label class="field"><span>Preferred time</span><select name="pref_time">${timeOpts}</select></label>
-      </div>
-      <div class="grid-2">
-        <label class="field"><span>Monthly budget</span><input name="budget" type="number" min="0" step="50" placeholder="$ / month" /></label>
-        <label class="field"><span>Desired move-in</span><input name="move_in" type="date" /></label>
       </div>
       <label class="field"><span>Message</span><textarea name="message" rows="3" placeholder="Anything we should know?"></textarea></label>
       <div class="login-error" id="book-msg" hidden></div>
@@ -1367,7 +1390,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
     msg.hidden=true;btn.disabled=true;btn.textContent='Sending…';
     var pd=f.pref_date.value,pt=f.pref_time.value;
     var preferred=pd?(pd+'T'+(pt||'10:00')):'';
-    var data={unit_id:${u.id},client_name:f.client_name.value,client_email:f.client_email.value,client_phone:f.client_phone.value,preferred:preferred,budget:f.budget.value,move_in:f.move_in.value,message:f.message.value};
+    var data={unit_id:${u.id},client_name:f.client_name.value,client_email:f.client_email.value,client_phone:f.client_phone.value,preferred:preferred,message:f.message.value};
     fetch('/api/showing-requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
       .then(function(r){if(!r.ok)return r.json().then(function(j){throw new Error(j.error||'Request failed')});return r.json();})
       .then(function(){
