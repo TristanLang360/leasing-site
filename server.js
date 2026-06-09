@@ -1121,8 +1121,8 @@ ${canonical ? `<link rel="canonical" href="${escHtml(canonical)}" />` : ''}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=fr2" />
-<script src="/i18n-public.js?v=fr2"></script>
+<link rel="stylesheet" href="/styles.css?v=fr3" />
+<script src="/i18n-public.js?v=fr3"></script>
 ${head}
 </head>
 <body>
@@ -1270,19 +1270,27 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
     ...u.photos.filter((p) => p.kind === 'video'),
     ...u.photos.filter((p) => p.kind !== 'video'),
   ];
+  const hasImg = media.some((p) => p.kind !== 'video');
   const gallery = media.length
     ? `<div class="listing-carousel" id="lc" data-count="${media.length}">
         <div class="lc-viewport"><div class="lc-track">${media.map((p, i) =>
           p.kind === 'video'
             ? `<div class="lc-slide"><video src="${escHtml(p.url)}" controls preload="metadata" playsinline aria-label="Video ${i + 1}"></video></div>`
-            : `<a class="lc-slide" href="${escHtml(p.url)}" target="_blank" rel="noopener" style="background-image:url('${escHtml(p.url)}')" aria-label="Photo ${i + 1}"></a>`
+            : `<button type="button" class="lc-slide lc-photo" data-url="${escHtml(p.url)}" style="background-image:url('${escHtml(p.url)}')" aria-label="Photo ${i + 1}"></button>`
         ).join('')}</div></div>
         ${media.length > 1 ? `
         <button type="button" class="lc-arrow lc-prev" aria-label="Previous">&lsaquo;</button>
         <button type="button" class="lc-arrow lc-next" aria-label="Next">&rsaquo;</button>
         <div class="lc-counter"><span id="lc-cur">1</span> / ${media.length}</div>
         <div class="lc-dots">${media.map((_, i) => `<button type="button" class="lc-dot${i === 0 ? ' on' : ''}" data-i="${i}" aria-label="Go to ${i + 1}"></button>`).join('')}</div>` : ''}
-      </div>`
+      </div>${hasImg ? `
+      <div class="lb" id="lb" aria-hidden="true">
+        <button type="button" class="lb-close" aria-label="Close">&times;</button>
+        <button type="button" class="lb-arrow lb-prev" aria-label="Previous">&lsaquo;</button>
+        <img class="lb-img" id="lb-img" alt="" />
+        <button type="button" class="lb-arrow lb-next" aria-label="Next">&rsaquo;</button>
+        <div class="lb-counter"><span id="lb-cur">1</span> / <span id="lb-total">1</span></div>
+      </div>` : ''}`
     : `<div class="listing-noimg">No photos yet — contact us for more details.</div>`;
 
   const facts = [beds, `${u.baths} bath${u.baths > 1 ? 's' : ''}`]
@@ -1421,7 +1429,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
   });
 })();</script>`;
 
-  const carouselScript = media.length > 1 ? `
+  const carouselScript = media.length ? `
 <script>(function(){
   var lc=document.getElementById('lc'); if(!lc) return;
   var track=lc.querySelector('.lc-track'), slides=lc.querySelectorAll('.lc-slide');
@@ -1435,13 +1443,50 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
     var vids=lc.querySelectorAll('video');
     for(var v=0; v<vids.length; v++){ if(!slides[i].contains(vids[v])) vids[v].pause(); }
   }
-  lc.querySelector('.lc-prev').addEventListener('click', function(){ go(i-1); });
-  lc.querySelector('.lc-next').addEventListener('click', function(){ go(i+1); });
+  var prev=lc.querySelector('.lc-prev'), next=lc.querySelector('.lc-next');
+  if(prev) prev.addEventListener('click', function(){ go(i-1); });
+  if(next) next.addEventListener('click', function(){ go(i+1); });
   for(var d=0; d<dots.length; d++) dots[d].addEventListener('click', function(e){ go(parseInt(e.currentTarget.getAttribute('data-i'),10)); });
+
+  // ── Lightbox (click a photo → full-screen) ──
+  var lb=document.getElementById('lb'), photos=lc.querySelectorAll('.lc-photo');
+  var imgs=[], li=0;
+  for(var pI=0; pI<photos.length; pI++) imgs.push(photos[pI].getAttribute('data-url'));
+  if(lb){
+    var lbImg=document.getElementById('lb-img'), lbCur=document.getElementById('lb-cur'), lbTotal=document.getElementById('lb-total');
+    if(lbTotal) lbTotal.textContent=imgs.length;
+    function lbShow(k){ li=(k+imgs.length)%imgs.length; lbImg.src=imgs[li]; if(lbCur) lbCur.textContent=li+1; }
+    function lbOpen(k){ lbShow(k); lb.classList.add('open'); document.body.style.overflow='hidden'; }
+    function lbClose(){ lb.classList.remove('open'); document.body.style.overflow=''; }
+    for(var pj=0; pj<photos.length; pj++){ (function(idx){ photos[pj].addEventListener('click', function(){ lbOpen(idx); }); })(pj); }
+    lb.querySelector('.lb-close').addEventListener('click', lbClose);
+    lb.querySelector('.lb-prev').addEventListener('click', function(e){ e.stopPropagation(); lbShow(li-1); });
+    lb.querySelector('.lb-next').addEventListener('click', function(e){ e.stopPropagation(); lbShow(li+1); });
+    lb.addEventListener('click', function(e){ if(e.target===lb) lbClose(); });
+    // swipe inside the lightbox
+    var lsx=0; lb.addEventListener('touchstart', function(e){ lsx=e.touches[0].clientX; }, {passive:true});
+    lb.addEventListener('touchend', function(e){ var dx=e.changedTouches[0].clientX-lsx; if(Math.abs(dx)>40) lbShow(li+(dx<0?1:-1)); }, {passive:true});
+  }
+  var lbOpenNow=function(){ return lb && lb.classList.contains('open'); };
+
+  // ── Keyboard: lightbox when open, else the carousel ──
   document.addEventListener('keydown', function(e){
     if(/^(input|textarea|select)$/i.test((e.target.tagName||''))) return;
+    if(lbOpenNow()){
+      if(e.key==='Escape') lbClose(); else if(e.key==='ArrowLeft') lbShow(li-1); else if(e.key==='ArrowRight') lbShow(li+1);
+      return;
+    }
     if(e.key==='ArrowLeft') go(i-1); else if(e.key==='ArrowRight') go(i+1);
   });
+
+  // ── Touch swipe on the carousel ──
+  var vp=lc.querySelector('.lc-viewport'), sx=0, sy=0, sw=false;
+  vp.addEventListener('touchstart', function(e){ var t=e.touches[0]; sx=t.clientX; sy=t.clientY; sw=true; }, {passive:true});
+  vp.addEventListener('touchend', function(e){
+    if(!sw) return; sw=false;
+    var t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy;
+    if(Math.abs(dx)>40 && Math.abs(dx)>Math.abs(dy)) go(i+(dx<0?1:-1));
+  }, {passive:true});
 })();</script>` : '';
 
   res.type('html').send(renderShell({
