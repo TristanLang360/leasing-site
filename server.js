@@ -1121,8 +1121,8 @@ ${canonical ? `<link rel="canonical" href="${escHtml(canonical)}" />` : ''}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=fr1" />
-<script src="/i18n-public.js?v=fr1"></script>
+<link rel="stylesheet" href="/styles.css?v=fr2" />
+<script src="/i18n-public.js?v=fr2"></script>
 ${head}
 </head>
 <body>
@@ -1265,11 +1265,24 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
     timeOpts += `<option value="${val}">${label}</option>`;
   }
 
-  const gallery = u.photos.length
-    ? `<div class="listing-gallery">${u.photos.map((p, i) =>
-        p.kind === 'video'
-          ? `<video class="listing-shot${i === 0 ? ' lead' : ''}" src="${escHtml(p.url)}" controls preload="metadata" playsinline aria-label="Video ${i + 1}"></video>`
-          : `<a href="${escHtml(p.url)}" target="_blank" rel="noopener" class="listing-shot${i === 0 ? ' lead' : ''}" style="background-image:url('${escHtml(p.url)}')" aria-label="Photo ${i + 1}"></a>`).join('')}</div>`
+  // Media for the slideshow: videos first, then photos (each keeps its order).
+  const media = [
+    ...u.photos.filter((p) => p.kind === 'video'),
+    ...u.photos.filter((p) => p.kind !== 'video'),
+  ];
+  const gallery = media.length
+    ? `<div class="listing-carousel" id="lc" data-count="${media.length}">
+        <div class="lc-viewport"><div class="lc-track">${media.map((p, i) =>
+          p.kind === 'video'
+            ? `<div class="lc-slide"><video src="${escHtml(p.url)}" controls preload="metadata" playsinline aria-label="Video ${i + 1}"></video></div>`
+            : `<a class="lc-slide" href="${escHtml(p.url)}" target="_blank" rel="noopener" style="background-image:url('${escHtml(p.url)}')" aria-label="Photo ${i + 1}"></a>`
+        ).join('')}</div></div>
+        ${media.length > 1 ? `
+        <button type="button" class="lc-arrow lc-prev" aria-label="Previous">&lsaquo;</button>
+        <button type="button" class="lc-arrow lc-next" aria-label="Next">&rsaquo;</button>
+        <div class="lc-counter"><span id="lc-cur">1</span> / ${media.length}</div>
+        <div class="lc-dots">${media.map((_, i) => `<button type="button" class="lc-dot${i === 0 ? ' on' : ''}" data-i="${i}" aria-label="Go to ${i + 1}"></button>`).join('')}</div>` : ''}
+      </div>`
     : `<div class="listing-noimg">No photos yet — contact us for more details.</div>`;
 
   const facts = [beds, `${u.baths} bath${u.baths > 1 ? 's' : ''}`]
@@ -1408,6 +1421,29 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
   });
 })();</script>`;
 
+  const carouselScript = media.length > 1 ? `
+<script>(function(){
+  var lc=document.getElementById('lc'); if(!lc) return;
+  var track=lc.querySelector('.lc-track'), slides=lc.querySelectorAll('.lc-slide');
+  var dots=lc.querySelectorAll('.lc-dot'), cur=document.getElementById('lc-cur');
+  var n=slides.length, i=0;
+  function go(k){
+    i=(k+n)%n;
+    track.style.transform='translateX(-'+(i*100)+'%)';
+    if(cur) cur.textContent=(i+1);
+    for(var d=0; d<dots.length; d++) dots[d].classList.toggle('on', d===i);
+    var vids=lc.querySelectorAll('video');
+    for(var v=0; v<vids.length; v++){ if(!slides[i].contains(vids[v])) vids[v].pause(); }
+  }
+  lc.querySelector('.lc-prev').addEventListener('click', function(){ go(i-1); });
+  lc.querySelector('.lc-next').addEventListener('click', function(){ go(i+1); });
+  for(var d=0; d<dots.length; d++) dots[d].addEventListener('click', function(e){ go(parseInt(e.currentTarget.getAttribute('data-i'),10)); });
+  document.addEventListener('keydown', function(e){
+    if(/^(input|textarea|select)$/i.test((e.target.tagName||''))) return;
+    if(e.key==='ArrowLeft') go(i-1); else if(e.key==='ArrowRight') go(i+1);
+  });
+})();</script>` : '';
+
   res.type('html').send(renderShell({
     title: `${u.address} — ${u.neighborhood || 'Montréal'}${u.price > 0 ? ` | ${money(u.price)}/mo` : ''} | Rentalium`,
     description: u.description
@@ -1415,7 +1451,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
     canonical: `https://rentalium.ca/units/${u.id}/${slug}`,
     active: 'units',
     head: `${mapHead}\n<meta property="og:type" content="website" />\n<script type="application/ld+json">${JSON.stringify(ld)}</script>`,
-    body: body + bookingScript + mapScript,
+    body: body + bookingScript + mapScript + carouselScript,
   }));
 }));
 

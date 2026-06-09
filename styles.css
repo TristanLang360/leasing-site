@@ -982,6 +982,47 @@ video.listing-shot { width: 100%; height: 100%; object-fit: cover; background-co
   background: var(--surface); border: 1px dashed var(--line); border-radius: var(--radius);
   padding: 48px; text-align: center; color: var(--ink-muted); margin-bottom: 32px;
 }
+
+/* ---------- Listing carousel (manual slideshow) ---------- */
+.listing-carousel {
+  position: relative; margin-bottom: 32px; border-radius: var(--radius);
+  overflow: hidden; background: #0c0c0c; box-shadow: var(--shadow-sm);
+}
+.lc-viewport { overflow: hidden; }
+.lc-track { display: flex; transition: transform 0.4s cubic-bezier(.2,.8,.2,1); }
+.lc-slide {
+  flex: 0 0 100%; width: 100%; aspect-ratio: 16 / 10;
+  background-size: cover; background-position: center; background-repeat: no-repeat;
+  display: block;
+}
+.lc-slide video { width: 100%; height: 100%; object-fit: contain; background: #000; display: block; }
+.lc-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px; border-radius: 999px; z-index: 3;
+  background: rgba(255,255,255,0.92); color: var(--ink); font-size: 1.6rem; line-height: 1;
+  display: grid; place-items: center; box-shadow: var(--shadow-sm);
+  transition: background var(--t), transform var(--t);
+}
+.lc-arrow:hover { background: #fff; }
+.lc-prev { left: 14px; } .lc-next { right: 14px; }
+.lc-counter {
+  position: absolute; top: 14px; right: 14px; z-index: 3;
+  background: rgba(12,12,12,0.6); color: #fff; font-size: 0.8rem; font-weight: 500;
+  padding: 4px 10px; border-radius: 999px;
+}
+.lc-dots {
+  position: absolute; left: 0; right: 0; bottom: 14px; z-index: 3;
+  display: flex; gap: 7px; justify-content: center;
+}
+.lc-dot {
+  width: 8px; height: 8px; border-radius: 999px; background: rgba(255,255,255,0.5);
+  transition: background var(--t), transform var(--t);
+}
+.lc-dot.on { background: #fff; transform: scale(1.25); }
+@media (max-width: 560px) {
+  .lc-slide { aspect-ratio: 4 / 3; }
+  .lc-arrow { width: 38px; height: 38px; font-size: 1.3rem; }
+}
 .listing-grid { display: grid; grid-template-columns: 1fr 340px; gap: 40px; align-items: start; }
 .listing-main h2 { font-size: 1.5rem; margin: 28px 0 12px; }
 .listing-main h2:first-child { margin-top: 0; }
