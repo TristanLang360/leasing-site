@@ -584,7 +584,7 @@ footer {
   display: flex; gap: 10px; justify-content: flex-end;
 }
 
-.field { display: grid; gap: 6px; }
+.field { display: grid; gap: 6px; min-width: 0; }
 .field > span, .field > legend {
   font-size: 0.78rem;
   color: var(--ink-muted);
@@ -593,6 +593,8 @@ footer {
   padding: 0;
 }
 .field input, .field select, .field textarea {
+  width: 100%;
+  max-width: 100%;
   height: 44px;
   border: 1px solid var(--line);
   background: #fff;
@@ -968,7 +970,7 @@ video.listing-shot { width: 100%; height: 100%; object-fit: cover; background-co
   .row-actions { grid-column: span 2; justify-content: flex-end; }
   .row-thumb { width: 72px; height: 56px; }
   .photo-list { grid-template-columns: repeat(2, 1fr); }
-  .grid-3 { grid-template-columns: 1fr; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .cal-cell { min-height: 64px; }
   .cal-date { font-size: 0.72rem; }
   .appt-row { grid-template-columns: 1fr auto; }
