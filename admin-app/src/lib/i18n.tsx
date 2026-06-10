@@ -457,6 +457,8 @@ const FR: Record<string, string> = {
   'Located on the map': 'Localisée sur la carte',
   'Could not auto-locate — set the pin manually': 'Localisation automatique impossible — placez l’épingle manuellement',
   'Re-locate failed': 'Échec de la relocalisation',
+  '📍 Location follows the building — set the pin on the building to move it.':
+    '📍 L’emplacement suit l’immeuble — réglez l’épingle sur l’immeuble pour le déplacer.',
 
   // ── Buildings ────────────────────────────────────────────────
   'Buildings': 'Immeubles',

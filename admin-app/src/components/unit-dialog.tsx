@@ -172,24 +172,6 @@ export function UnitDialog({
     }
   }
 
-  async function regeocode() {
-    if (!unit?.id) return
-    toast.info(t('Re-locating from address…'))
-    try {
-      await api.post(`/api/units/${unit.id}/geocode`)
-      setTimeout(async () => {
-        const fresh = await api.get<Unit>(`/api/units/${unit.id}`)
-        set('lat', fresh.lat == null ? '' : String(fresh.lat))
-        set('lng', fresh.lng == null ? '' : String(fresh.lng))
-        onChanged()
-        if (fresh.lat != null) toast.success(t('Located on the map'))
-        else toast.warning(t('Could not auto-locate — set the pin manually'))
-      }, 2500)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('Re-locate failed'))
-    }
-  }
-
   function directions() {
     const dest = form.lat && form.lng ? `${form.lat},${form.lng}` : encodeURIComponent(form.address)
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${dest}`, '_blank', 'noopener')
@@ -291,22 +273,11 @@ export function UnitDialog({
               <Separator />
               <div className="grid grid-cols-1 gap-2">
                 <Label>{t('Location')}</Label>
-                <LocationMap
-                  lat={lat} lng={lng} editable={editable} nearby={nearby}
-                  onChange={(la, ln) => { set('lat', la.toFixed(6)); set('lng', ln.toFixed(6)) }}
-                />
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Latitude"><Input type="number" step="any" disabled={!editable} value={form.lat} onChange={(e) => set('lat', e.target.value)} placeholder={t('auto')} /></Field>
-                  <Field label="Longitude"><Input type="number" step="any" disabled={!editable} value={form.lng} onChange={(e) => set('lng', e.target.value)} placeholder={t('auto')} /></Field>
-                </div>
+                <LocationMap lat={lat} lng={lng} editable={false} nearby={nearby} />
                 <div className="flex flex-wrap gap-2">
-                  {editable && <Button type="button" variant="outline" size="sm" onClick={regeocode}>{t('↻ Re-locate from address')}</Button>}
                   <Button type="button" variant="outline" size="sm" onClick={directions}>{t('🧭 Directions')}</Button>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {lat != null ? `📍 ${t('Pinned at')} ${lat.toFixed(5)}, ${lng!.toFixed(5)}. ${t('Click or drag the pin to adjust.')}`
-                    : t('⏳ Not located yet — re-locate from the address, or click the map to drop a pin.')}
-                </p>
+                <p className="text-sm text-muted-foreground">{t('📍 Location follows the building — set the pin on the building to move it.')}</p>
               </div>
 
               {/* Photos */}

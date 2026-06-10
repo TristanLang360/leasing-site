@@ -425,9 +425,14 @@ app.get('/api/units/:id/nearby', requireAuth, wrap(async (req, res) => {
 app.post('/api/units', requireCap(can.editUnits), wrap(async (req, res) => {
   const u = parseUnitBody(req.body);
   if (!u.title || !u.address) return res.status(400).json({ error: 'title and address are required' });
-  const geocode_attempted = (u.lat != null && u.lng != null) ? 1 : 0;
+  let geocode_attempted = (u.lat != null && u.lng != null) ? 1 : 0;
+  // A unit in a building inherits the building's pin (location is building-owned).
+  if (u.building_id != null) {
+    const b = await repo.getBuilding(u.building_id);
+    if (b && b.lat != null) { u.lat = b.lat; u.lng = b.lng; geocode_attempted = 1; }
+  }
   const unit = await repo.createUnit({ ...u, geocode_attempted });
-  kickGeocode();
+  if (u.building_id == null) kickGeocode();
   res.status(201).json(present(unit));
 }));
 
@@ -445,8 +450,14 @@ app.put('/api/units/:id', requireCap(can.editUnits), wrap(async (req, res) => {
   if (u.lat != null && u.lng != null) { lat = u.lat; lng = u.lng; geocode_attempted = 1; }
   else if (u.address !== existing.address) { lat = null; lng = null; geocode_attempted = 0; }
 
+  // If the unit belongs to a building, its pin comes from the building.
+  let inherited = false;
+  if (u.building_id != null) {
+    const b = await repo.getBuilding(u.building_id);
+    if (b && b.lat != null) { lat = b.lat; lng = b.lng; geocode_attempted = 1; inherited = true; }
+  }
   const unit = await repo.updateUnit(existing.id, { ...u, lat, lng, geocode_attempted });
-  kickGeocode();
+  if (!inherited) kickGeocode();
   res.json(present(unit));
 }));
 
@@ -510,7 +521,9 @@ app.put('/api/buildings/:id', requireCap(can.editUnits), wrap(async (req, res) =
   let lat = existing.lat, lng = existing.lng, geocode_attempted = existing.geocode_attempted;
   if (b.lat != null && b.lng != null) { lat = b.lat; lng = b.lng; geocode_attempted = 1; }
   else if (b.address !== existing.address) { const g = await geocode(b.address); lat = g ? g.lat : null; lng = g ? g.lng : null; geocode_attempted = 1; }
-  res.json(presentBuilding(await repo.updateBuilding(existing.id, { ...b, lat, lng, geocode_attempted })));
+  const saved = await repo.updateBuilding(existing.id, { ...b, lat, lng, geocode_attempted });
+  await repo.setUnitsCoordsForBuilding(existing.id, lat, lng); // units mirror the building's pin
+  res.json(presentBuilding(saved));
 }));
 
 app.delete('/api/buildings/:id', requireCap(can.deleteUnits), wrap(async (req, res) => {
@@ -524,10 +537,12 @@ app.post('/api/buildings/:id/geocode', requireCap(can.editUnits), wrap(async (re
   const building = await repo.getBuilding(req.params.id);
   if (!building) return res.status(404).json({ error: 'Not found' });
   const g = await geocode(building.address);
+  const lat = g ? g.lat : null, lng = g ? g.lng : null;
   const saved = await repo.updateBuilding(building.id, {
     name: building.name, address: building.address, neighborhood: building.neighborhood,
-    lat: g ? g.lat : null, lng: g ? g.lng : null, geocode_attempted: 1,
+    lat, lng, geocode_attempted: 1,
   });
+  await repo.setUnitsCoordsForBuilding(building.id, lat, lng); // units mirror the building's pin
   res.json({ ok: !!g, building: presentBuilding(saved) });
 }));
 
@@ -557,6 +572,11 @@ app.put('/api/units/:id/building', requireCap(can.editUnits), wrap(async (req, r
   const raw = req.body.building_id;
   const bid = (raw === '' || raw === undefined || raw === null) ? null : Number(raw);
   await repo.setUnitBuilding(existing.id, bid);
+  // Inherit the new building's pin so location stays building-owned.
+  if (bid != null) {
+    const b = await repo.getBuilding(bid);
+    if (b && b.lat != null) await repo.setCoords(existing.id, b.lat, b.lng);
+  }
   res.json({ ok: true });
 }));
 
