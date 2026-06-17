@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lease Agent Application — Rentalium</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f4f5;
+    --card: #ffffff;
+    --fg: #09090b;
+    --muted: #71717a;
+    --border: #e4e4e7;
+    --input-border: #d4d4d8;
+    --primary: #18181b;
+    --primary-fg: #fafafa;
+    --accent: #f4f4f5;
+    --ring: rgba(24,24,27,0.12);
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    padding: 2rem 1rem 3rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrapper { max-width: 500px; margin: 0 auto; }
+
+  /* Top bar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    min-height: 28px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fg);
+    text-decoration: none;
+  }
+  .logo img { width: 20px; height: 20px; }
+  .step-indicator {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  /* Progress */
+  .progress-track { height: 3px; background: var(--border); }
+  .progress-fill { height: 3px; background: var(--fg); transition: width 0.35s ease; width: 0%; }
+
+  /* Card body */
+  .card-body { padding: 1.75rem; }
+
+  /* Steps */
+  .step { display: none; }
+  .step.active { display: block; }
+
+  /* Step header */
+  .step-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 6px;
+  }
+  .step-title {
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--fg);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+  .step-sub {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Separator */
+  .sep { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+  /* Field */
+  .field { margin-bottom: 1.125rem; }
+  .field > label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--fg);
+    margin-bottom: 6px;
+  }
+  .hint { font-size: 12px; color: var(--muted); margin-bottom: 6px; line-height: 1.5; }
+
+  /* Inputs */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  select,
+  textarea {
+    width: 100%;
+    height: 38px;
+    padding: 0 11px;
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius);
+    font-size: 14px;
+    color: var(--fg);
+    background: var(--card);
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+  input::placeholder, textarea::placeholder { color: #a1a1aa; }
+  textarea {
+    height: auto;
+    min-height: 96px;
+    padding: 9px 11px;
+    resize: vertical;
+    line-height: 1.6;
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 11px center;
+    cursor: pointer;
+    padding-right: 32px;
+  }
+
+  /* Radio options */
+  .radio-group { display: flex; flex-direction: column; gap: 7px; }
+  .radio-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 13px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s;
+    user-select: none;
+  }
+  .radio-option:hover { border-color: var(--input-border); background: var(--accent); }
+  .radio-option.selected { border-color: var(--primary); background: var(--accent); }
+  .radio-option input[type="radio"] { display: none; }
+  .radio-dot {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--input-border);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.12s, background 0.12s;
+  }
+  .radio-option.selected .radio-dot {
+    border-color: var(--primary);
+    background: var(--primary);
+  }
+  .radio-option.selected .radio-dot::after {
+    content: '';
+    width: 5px;
+    height: 5px;
+    background: white;
+    border-radius: 50%;
+    display: block;
+  }
+  .radio-option span { font-size: 14px; color: var(--fg); }
+
+  /* Checkbox options */
+  .checkbox-group { display: flex; flex-direction: column; gap: 7px; }
+  .checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 13px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s;
+    user-select: none;
+  }
+  .checkbox-option:hover { border-color: var(--input-border); background: var(--accent); }
+  .checkbox-option.checked { border-color: var(--primary); background: var(--accent); }
+  .checkbox-option input[type="checkbox"] { display: none; }
+  .check-box {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--input-border);
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s;
+  }
+  .checkbox-option.checked .check-box {
+    border-color: var(--primary);
+    background: var(--primary);
+  }
+  .checkbox-option.checked .check-box svg { display: block; }
+  .check-box svg { display: none; width: 10px; height: 10px; }
+  .checkbox-option span { font-size: 14px; color: var(--fg); }
+
+  /* Buttons */
+  .btn-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 16px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    transition: all 0.12s;
+    white-space: nowrap;
+    outline: none;
+  }
+  .btn-primary { background: var(--primary); color: var(--primary-fg); }
+  .btn-primary:hover { background: #27272a; }
+  .btn-primary:focus-visible { box-shadow: 0 0 0 3px var(--ring); }
+  .btn-outline {
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--border);
+  }
+  .btn-outline:hover { background: var(--accent); }
+
+  /* Language picker */
+  .lang-screen { padding: 0.25rem 0; }
+  .lang-title { font-size: 19px; font-weight: 600; text-align: center; margin-bottom: 4px; }
+  .lang-sub { font-size: 14px; color: var(--muted); text-align: center; margin-bottom: 1.5rem; }
+  .lang-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .lang-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 1.5rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: center;
+    transition: border-color 0.12s, box-shadow 0.12s, background 0.12s;
+    outline: none;
+  }
+  .lang-card:hover {
+    border-color: var(--primary);
+    background: var(--accent);
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+  .lang-card:focus-visible {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+  .lang-flag { font-size: 2rem; line-height: 1; }
+  .lang-name { font-size: 15px; font-weight: 600; color: var(--fg); }
+  .lang-cta { font-size: 12px; color: var(--muted); }
+
+  /* Loading */
+  .loading { text-align: center; padding: 3rem 0 2rem; }
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 2.5px solid var(--border);
+    border-top-color: var(--fg);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto 1rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading p { font-size: 14px; color: var(--muted); }
+
+  /* Result */
+  .result-wrap { text-align: center; padding: 2.5rem 1rem 2rem; }
+  .result-check {
+    width: 52px;
+    height: 52px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+  }
+  .result-check svg { width: 24px; height: 24px; }
+  .result-title { font-size: 18px; font-weight: 600; color: var(--fg); margin-bottom: 10px; }
+  .result-name {
+    display: inline-block;
+    font-size: 13px;
+    color: var(--muted);
+    background: var(--accent);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 2px 10px;
+    margin-bottom: 1.25rem;
+  }
+  .result-msg {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.75;
+    max-width: 340px;
+    margin: 0 auto;
+  }
+
+  /* Error */
+  .error-msg {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    padding: 11px 13px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    margin-top: 0.75rem;
+  }
+
+  /* Powered */
+  .powered { text-align: center; font-size: 12px; color: #a1a1aa; margin-top: 1rem; }
+
+  @media (max-width: 400px) {
+    body { padding: 1.25rem 0.75rem 2.5rem; }
+    .card-body { padding: 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <div class="topbar">
+    <a href="/" class="logo">
+      <img src="/favicon.svg" alt=""> Rentalium
+    </a>
+    <div class="step-indicator" id="step-indicator"></div>
+  </div>
+
+  <div class="card">
+    <div class="progress-track">
+      <div class="progress-fill" id="progress"></div>
+    </div>
+
+    <div class="card-body">
+
+      <!-- Step 0: Language picker -->
+      <div class="step active" id="step-0">
+        <div class="lang-screen">
+          <div class="lang-title">Choose your language</div>
+          <div class="lang-sub">Choisissez votre langue</div>
+          <div class="lang-cards">
+            <button class="lang-card" onclick="chooseLang('en')">
+              <div class="lang-flag">🇨🇦</div>
+              <div class="lang-name">English</div>
+              <div class="lang-cta">Continue in English</div>
+            </button>
+            <button class="lang-card" onclick="chooseLang('fr')">
+              <div class="lang-flag">🇨🇦</div>
+              <div class="lang-name">Français</div>
+              <div class="lang-cta">Continuer en français</div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: Basic Info -->
+      <div class="step" id="step-1">
+        <div class="step-label" data-i18n="step1_label">Step 1 of 7</div>
+        <div class="step-title" data-i18n="step1_title">Let's start with the basics</div>
+        <div class="step-sub" data-i18n="step1_sub">Tell us a bit about yourself before we get into the questions.</div>
+        <div class="field">
+          <label data-i18n="name_label">Full name</label>
+          <input type="text" id="name" data-i18n-ph="name_ph" placeholder="Your full name" />
+        </div>
+        <div class="field">
+          <label data-i18n="email_label">Email address</label>
+          <input type="email" id="email" data-i18n-ph="email_ph" placeholder="your@email.com" />
+        </div>
+        <div class="field">
+          <label data-i18n="phone_label">Phone number</label>
+          <input type="tel" id="phone" placeholder="514-xxx-xxxx" />
+        </div>
+        <div class="btn-nav">
+          <div></div>
+          <button class="btn btn-primary" onclick="nextStep(1)" data-i18n="btn_continue">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Availability -->
+      <div class="step" id="step-2">
+        <div class="step-label" data-i18n="step2_label">Step 2 of 7</div>
+        <div class="step-title" data-i18n="step2_title">Availability &amp; schedule</div>
+        <div class="step-sub" data-i18n="step2_sub">Leasing requires flexibility, including evenings and weekends when tenants are free.</div>
+        <div class="field">
+          <label data-i18n="avail_label">Are you available to work evenings and weekends?</label>
+          <div class="radio-group" id="availability">
+            <label class="radio-option"><input type="radio" name="avail" value="Yes, fully available"><div class="radio-dot"></div><span data-i18n="avail_yes_full">Yes, fully available</span></label>
+            <label class="radio-option"><input type="radio" name="avail" value="Yes, with some limitations"><div class="radio-dot"></div><span data-i18n="avail_yes_limit">Yes, with some limitations</span></label>
+            <label class="radio-option"><input type="radio" name="avail" value="Weekdays only"><div class="radio-dot"></div><span data-i18n="avail_weekdays">Weekdays only</span></label>
+            <label class="radio-option"><input type="radio" name="avail" value="No"><div class="radio-dot"></div><span data-i18n="avail_no">No</span></label>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="field">
+          <label data-i18n="start_label">When can you start?</label>
+          <select id="start">
+            <option value="" data-i18n="start_opt0">Select one</option>
+            <option data-i18n="start_imm">Immediately</option>
+            <option data-i18n="start_1w">Within 1 week</option>
+            <option data-i18n="start_2w">Within 2 weeks</option>
+            <option data-i18n="start_1m">Within 1 month</option>
+            <option data-i18n="start_more">More than 1 month</option>
+          </select>
+        </div>
+        <div class="btn-nav">
+          <button class="btn btn-outline" onclick="prevStep(2)" data-i18n="btn_back">← Back</button>
+          <button class="btn btn-primary" onclick="nextStep(2)" data-i18n="btn_continue">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Commission -->
+      <div class="step" id="step-3">
+        <div class="step-label" data-i18n="step3_label">Step 3 of 7</div>
+        <div class="step-title" data-i18n="step3_title">Compensation comfort</div>
+        <div class="step-sub" data-i18n="step3_sub">Our agents work on a base + commission structure. Your income grows with performance.</div>
+        <div class="field">
+          <label data-i18n="comm_label">Have you worked in a commission-based role before?</label>
+          <div class="radio-group" id="commission-exp">
+            <label class="radio-option"><input type="radio" name="comm" value="Yes, in real estate or leasing"><div class="radio-dot"></div><span data-i18n="comm_re">Yes, in real estate or leasing</span></label>
+            <label class="radio-option"><input type="radio" name="comm" value="Yes, in a different field (sales, etc.)"><div class="radio-dot"></div><span data-i18n="comm_other">Yes, in a different field (sales, etc.)</span></label>
+            <label class="radio-option"><input type="radio" name="comm" value="No, but I am comfortable with it"><div class="radio-dot"></div><span data-i18n="comm_no_ok">No, but I am comfortable with it</span></label>
+            <label class="radio-option"><input type="radio" name="comm" value="No, I prefer a fixed salary only"><div class="radio-dot"></div><span data-i18n="comm_no">No, I prefer a fixed salary only</span></label>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="field">
+          <label data-i18n="motiv_label">What motivates you most about this role?</label>
+          <div class="hint" data-i18n="motiv_hint">Be honest — there are no wrong answers here.</div>
+          <textarea id="motivation" data-i18n-ph="motiv_ph" placeholder="e.g. I like meeting people, I want to earn based on my effort..."></textarea>
+        </div>
+        <div class="btn-nav">
+          <button class="btn btn-outline" onclick="prevStep(3)" data-i18n="btn_back">← Back</button>
+          <button class="btn btn-primary" onclick="nextStep(3)" data-i18n="btn_continue">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Languages -->
+      <div class="step" id="step-4">
+        <div class="step-label" data-i18n="step4_label">Step 4 of 7</div>
+        <div class="step-title" data-i18n="step4_title">Languages &amp; communication</div>
+        <div class="step-sub" data-i18n="step4_sub">We serve a diverse tenant base across Montreal. Strong communication is essential.</div>
+        <div class="field">
+          <label data-i18n="lang_spoken_label">Which languages do you speak fluently?</label>
+          <div class="checkbox-group" id="languages">
+            <label class="checkbox-option"><input type="checkbox" value="French"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="lang_french">French</span></label>
+            <label class="checkbox-option"><input type="checkbox" value="English"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="lang_english">English</span></label>
+            <label class="checkbox-option"><input type="checkbox" value="Arabic"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="lang_arabic">Arabic</span></label>
+            <label class="checkbox-option"><input type="checkbox" value="Spanish"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="lang_spanish">Spanish</span></label>
+            <label class="checkbox-option"><input type="checkbox" value="Other"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="lang_other">Other</span></label>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="field">
+          <label data-i18n="resp_label">How quickly do you typically respond to messages?</label>
+          <div class="radio-group" id="response-time">
+            <label class="radio-option"><input type="radio" name="resp" value="Within 30 minutes"><div class="radio-dot"></div><span data-i18n="resp_30">Within 30 minutes</span></label>
+            <label class="radio-option"><input type="radio" name="resp" value="Within 1–2 hours"><div class="radio-dot"></div><span data-i18n="resp_1h">Within 1–2 hours</span></label>
+            <label class="radio-option"><input type="radio" name="resp" value="Same day"><div class="radio-dot"></div><span data-i18n="resp_same">Same day</span></label>
+            <label class="radio-option"><input type="radio" name="resp" value="Next day or later"><div class="radio-dot"></div><span data-i18n="resp_next">Next day or later</span></label>
+          </div>
+        </div>
+        <div class="btn-nav">
+          <button class="btn btn-outline" onclick="prevStep(4)" data-i18n="btn_back">← Back</button>
+          <button class="btn btn-primary" onclick="nextStep(4)" data-i18n="btn_continue">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 5: Tech -->
+      <div class="step" id="step-5">
+        <div class="step-label" data-i18n="step5_label">Step 5 of 7</div>
+        <div class="step-title" data-i18n="step5_title">Technology &amp; tools</div>
+        <div class="step-sub" data-i18n="step5_sub">Our team uses an internal platform to manage leads, showings, and leases. You will use it daily.</div>
+        <div class="field">
+          <label data-i18n="tech_label">How comfortable are you learning a new software platform?</label>
+          <div class="radio-group" id="tech-comfort">
+            <label class="radio-option"><input type="radio" name="tech" value="Very comfortable, I pick up new tools quickly"><div class="radio-dot"></div><span data-i18n="tech_very">Very comfortable — I pick up new tools quickly</span></label>
+            <label class="radio-option"><input type="radio" name="tech" value="Comfortable, with a bit of training"><div class="radio-dot"></div><span data-i18n="tech_ok">Comfortable with a bit of training</span></label>
+            <label class="radio-option"><input type="radio" name="tech" value="I prefer to avoid software if possible"><div class="radio-dot"></div><span data-i18n="tech_avoid">I prefer to avoid software if possible</span></label>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="field">
+          <label data-i18n="smartphone_label">Do you have a smartphone you use for work?</label>
+          <div class="radio-group" id="smartphone">
+            <label class="radio-option"><input type="radio" name="phone_yn" value="Yes"><div class="radio-dot"></div><span data-i18n="opt_yes">Yes</span></label>
+            <label class="radio-option"><input type="radio" name="phone_yn" value="No"><div class="radio-dot"></div><span data-i18n="opt_no">No</span></label>
+          </div>
+        </div>
+        <div class="btn-nav">
+          <button class="btn btn-outline" onclick="prevStep(5)" data-i18n="btn_back">← Back</button>
+          <button class="btn btn-primary" onclick="nextStep(5)" data-i18n="btn_continue">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 6: Scenario -->
+      <div class="step" id="step-6">
+        <div class="step-label" data-i18n="step6_label">Step 6 of 7</div>
+        <div class="step-title" data-i18n="step6_title">Real-world scenario</div>
+        <div class="step-sub" data-i18n="step6_sub">This is the most important question. Take your time and answer as you would on the job.</div>
+        <div class="field">
+          <label data-i18n="scenario_label">A tenant sends you a message at 7pm asking to see an apartment tomorrow morning. You have a showing already at 10am at a different property. What do you do?</label>
+          <div class="hint" data-i18n="scenario_hint">Tell us exactly how you would handle this step by step.</div>
+          <textarea id="scenario" data-i18n-ph="scenario_ph" placeholder="Write your answer here..." style="min-height:120px;"></textarea>
+        </div>
+        <div class="btn-nav">
+          <button class="btn btn-outline" onclick="prevStep(6)" data-i18n="btn_back">← Back</button>
+          <button class="btn btn-primary" onclick="nextStep(6)" data-i18n="btn_continue">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 7: Final -->
+      <div class="step" id="step-7">
+        <div class="step-label" data-i18n="step7_label">Step 7 of 7</div>
+        <div class="step-title" data-i18n="step7_title">One last thing</div>
+        <div class="step-sub" data-i18n="step7_sub">Almost done — just two quick questions.</div>
+        <div class="field">
+          <label data-i18n="transport_label">Do you have a car or reliable transportation to get to showings across Montreal?</label>
+          <div class="radio-group" id="transport">
+            <label class="radio-option"><input type="radio" name="trans" value="Yes, I have a car"><div class="radio-dot"></div><span data-i18n="trans_car">Yes, I have a car</span></label>
+            <label class="radio-option"><input type="radio" name="trans" value="Yes, public transit is fine for me"><div class="radio-dot"></div><span data-i18n="trans_transit">Yes, public transit works for me</span></label>
+            <label class="radio-option"><input type="radio" name="trans" value="No, I would need help with this"><div class="radio-dot"></div><span data-i18n="trans_no">No, I would need help with this</span></label>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="field">
+          <label data-i18n="extra_label">Is there anything else you want us to know about you?</label>
+          <textarea id="extra" data-i18n-ph="extra_ph" placeholder="Optional — anything that sets you apart or context you want to share..."></textarea>
+        </div>
+        <div class="btn-nav">
+          <button class="btn btn-outline" onclick="prevStep(7)" data-i18n="btn_back">← Back</button>
+          <button class="btn btn-primary" id="submit-btn" onclick="submitForm()" data-i18n="btn_submit">Submit application →</button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="step" id="step-loading">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p data-i18n="loading_msg">Submitting your application...</p>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="step" id="step-result">
+        <div class="result-wrap">
+          <div class="result-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div class="result-title" data-i18n="result_title">Application submitted!</div>
+          <div class="result-name" id="result-name"></div>
+          <p class="result-msg" data-i18n="result_msg">Thank you for applying to join the Rentalium team. We have received your application and will be in touch shortly to schedule a training session if you are selected.</p>
+        </div>
+        <div class="powered" data-i18n="powered">Rentalium Leasing</div>
+      </div>
+
+    </div><!-- /card-body -->
+  </div><!-- /card -->
+
+</div><!-- /wrapper -->
+
+<script>
+let lang = 'en';
+let currentStep = 0;
+const totalSteps = 7;
+
+const T = {
+  en: {
+    header_title: 'Lease Agent Application',
+    header_sub: 'Residential Leasing Division — takes about 5 minutes',
+    step1_label: 'Step 1 of 7', step1_title: "Let's start with the basics",
+    step1_sub: 'Tell us a bit about yourself before we get into the questions.',
+    name_label: 'Full name', name_ph: 'Your full name',
+    email_label: 'Email address', email_ph: 'your@email.com',
+    phone_label: 'Phone number',
+    step2_label: 'Step 2 of 7', step2_title: 'Availability & schedule',
+    step2_sub: 'Leasing requires flexibility, including evenings and weekends when tenants are free.',
+    avail_label: 'Are you available to work evenings and weekends?',
+    avail_yes_full: 'Yes, fully available', avail_yes_limit: 'Yes, with some limitations',
+    avail_weekdays: 'Weekdays only', avail_no: 'No',
+    start_label: 'When can you start?', start_opt0: 'Select one',
+    start_imm: 'Immediately', start_1w: 'Within 1 week', start_2w: 'Within 2 weeks',
+    start_1m: 'Within 1 month', start_more: 'More than 1 month',
+    step3_label: 'Step 3 of 7', step3_title: 'Compensation comfort',
+    step3_sub: 'Our agents work on a base + commission structure. Your income grows with performance.',
+    comm_label: 'Have you worked in a commission-based role before?',
+    comm_re: 'Yes, in real estate or leasing',
+    comm_other: 'Yes, in a different field (sales, etc.)',
+    comm_no_ok: 'No, but I am comfortable with it',
+    comm_no: 'No, I prefer a fixed salary only',
+    motiv_label: 'What motivates you most about this role?',
+    motiv_hint: 'Be honest — there are no wrong answers here.',
+    motiv_ph: 'e.g. I like meeting people, I want to earn based on my effort, I enjoy helping people find a home...',
+    step4_label: 'Step 4 of 7', step4_title: 'Languages & communication',
+    step4_sub: 'We serve a diverse tenant base across Montreal. Strong communication is essential.',
+    lang_spoken_label: 'Which languages do you speak fluently?',
+    lang_french: 'French', lang_english: 'English', lang_arabic: 'Arabic',
+    lang_spanish: 'Spanish', lang_other: 'Other',
+    resp_label: 'How quickly do you typically respond to messages?',
+    resp_30: 'Within 30 minutes', resp_1h: 'Within 1–2 hours',
+    resp_same: 'Same day', resp_next: 'Next day or later',
+    step5_label: 'Step 5 of 7', step5_title: 'Technology & tools',
+    step5_sub: 'Our team uses an internal platform to manage leads, showings, and leases. You will use it daily.',
+    tech_label: 'How comfortable are you learning a new software platform?',
+    tech_very: 'Very comfortable — I pick up new tools quickly',
+    tech_ok: 'Comfortable with a bit of training',
+    tech_avoid: 'I prefer to avoid software if possible',
+    smartphone_label: 'Do you have a smartphone you use for work?',
+    opt_yes: 'Yes', opt_no: 'No',
+    step6_label: 'Step 6 of 7', step6_title: 'Real-world scenario',
+    step6_sub: 'This is the most important question. Take your time and answer as you would on the job.',
+    scenario_label: 'A tenant sends you a message at 7pm asking to see an apartment tomorrow morning. You have a showing already at 10am at a different property. What do you do?',
+    scenario_hint: 'Tell us exactly how you would handle this step by step.',
+    scenario_ph: 'Write your answer here...',
+    step7_label: 'Step 7 of 7', step7_title: 'One last thing',
+    step7_sub: 'Almost done — just two quick questions.',
+    transport_label: 'Do you have a car or reliable transportation to get to showings across Montreal?',
+    trans_car: 'Yes, I have a car',
+    trans_transit: 'Yes, public transit works for me',
+    trans_no: 'No, I would need help with this',
+    extra_label: 'Is there anything else you want us to know about you?',
+    extra_ph: 'Optional — anything that sets you apart or context you want to share...',
+    btn_continue: 'Continue →', btn_back: '← Back', btn_submit: 'Submit application →',
+    loading_msg: 'Submitting your application...',
+    result_title: 'Application submitted!',
+    result_msg: 'Thank you for applying to join the Rentalium team. We have received your application and will be in touch shortly to schedule a training session if you are selected.',
+    powered: 'Rentalium Leasing',
+    alert_name: 'Please enter your name.',
+    alert_email: 'Please enter your email.',
+    alert_avail: 'Please select your availability.',
+    alert_start: 'Please select when you can start.',
+    alert_comm: 'Please select your commission experience.',
+    alert_motiv: 'Please tell us what motivates you.',
+    alert_langs: 'Please select at least one language.',
+    alert_resp: 'Please select your typical response time.',
+    alert_tech: 'Please select your tech comfort level.',
+    alert_smartphone: 'Please indicate whether you have a smartphone.',
+    alert_scenario: 'Please write an answer to the scenario question.',
+    alert_transport: 'Please select your transportation option.',
+    alert_error: 'Something went wrong submitting your application. Please try again or contact support.',
+  },
+  fr: {
+    header_title: 'Candidature — Agent Locatif',
+    header_sub: 'Division de location résidentielle — environ 5 minutes',
+    step1_label: 'Étape 1 de 7', step1_title: 'Pour commencer',
+    step1_sub: 'Parlez-nous un peu de vous avant de répondre aux questions.',
+    name_label: 'Nom complet', name_ph: 'Votre nom complet',
+    email_label: 'Adresse courriel', email_ph: 'votre@courriel.com',
+    phone_label: 'Numéro de téléphone',
+    step2_label: 'Étape 2 de 7', step2_title: 'Disponibilités et horaire',
+    step2_sub: 'Le courtage locatif exige de la flexibilité, notamment les soirs et fins de semaine lorsque les locataires sont disponibles.',
+    avail_label: 'Êtes-vous disponible pour travailler les soirs et les fins de semaine ?',
+    avail_yes_full: 'Oui, entièrement disponible', avail_yes_limit: 'Oui, avec certaines contraintes',
+    avail_weekdays: 'Jours de semaine seulement', avail_no: 'Non',
+    start_label: 'Quand pouvez-vous commencer ?', start_opt0: 'Sélectionnez',
+    start_imm: 'Immédiatement', start_1w: 'Dans 1 semaine', start_2w: 'Dans 2 semaines',
+    start_1m: 'Dans 1 mois', start_more: "Plus d'un mois",
+    step3_label: 'Étape 3 de 7', step3_title: 'Rémunération à la commission',
+    step3_sub: 'Nos agents travaillent avec un salaire de base et des commissions. Vos revenus croissent avec vos résultats.',
+    comm_label: 'Avez-vous déjà travaillé dans un rôle à commission ?',
+    comm_re: 'Oui, en immobilier ou en location',
+    comm_other: 'Oui, dans un autre domaine (ventes, etc.)',
+    comm_no_ok: "Non, mais je suis à l'aise avec ce modèle",
+    comm_no: 'Non, je préfère un salaire fixe',
+    motiv_label: "Qu'est-ce qui vous motive le plus dans ce rôle ?",
+    motiv_hint: "Soyez honnête — il n'y a pas de mauvaises réponses.",
+    motiv_ph: "ex. J'aime rencontrer des gens, je veux être payé selon mes efforts, j'aime aider les gens à trouver un logement...",
+    step4_label: 'Étape 4 de 7', step4_title: 'Langues et communication',
+    step4_sub: 'Nous servons une clientèle diversifiée à travers Montréal. Une communication claire est essentielle.',
+    lang_spoken_label: 'Quelles langues parlez-vous couramment ?',
+    lang_french: 'Français', lang_english: 'Anglais', lang_arabic: 'Arabe',
+    lang_spanish: 'Espagnol', lang_other: 'Autre',
+    resp_label: 'En général, combien de temps mettez-vous à répondre aux messages ?',
+    resp_30: 'En moins de 30 minutes', resp_1h: 'En 1 à 2 heures',
+    resp_same: 'Le même jour', resp_next: 'Le lendemain ou plus',
+    step5_label: 'Étape 5 de 7', step5_title: 'Technologie et outils',
+    step5_sub: "Notre équipe utilise une plateforme interne pour gérer les prospects, les visites et les baux. Vous l'utiliserez quotidiennement.",
+    tech_label: "Êtes-vous à l'aise pour apprendre un nouveau logiciel ?",
+    tech_very: "Très à l'aise, j'apprends vite",
+    tech_ok: "À l'aise avec un peu de formation",
+    tech_avoid: 'Je préfère éviter les logiciels si possible',
+    smartphone_label: 'Avez-vous un téléphone intelligent que vous utilisez pour le travail ?',
+    opt_yes: 'Oui', opt_no: 'Non',
+    step6_label: 'Étape 6 de 7', step6_title: 'Mise en situation',
+    step6_sub: "C'est la question la plus importante. Prenez votre temps et répondez comme vous le feriez dans votre travail.",
+    scenario_label: 'Un locataire vous envoie un message à 19h pour voir un appartement demain matin. Vous avez déjà une visite prévue à 10h dans une autre propriété. Que faites-vous ?',
+    scenario_hint: 'Expliquez-nous exactement comment vous géreriez cette situation, étape par étape.',
+    scenario_ph: 'Écrivez votre réponse ici...',
+    step7_label: 'Étape 7 de 7', step7_title: 'Dernière étape',
+    step7_sub: 'Presque terminé — deux dernières questions rapides.',
+    transport_label: 'Avez-vous une voiture ou un moyen de transport fiable pour vous rendre aux visites à travers Montréal ?',
+    trans_car: "Oui, j'ai une voiture",
+    trans_transit: 'Oui, le transport en commun me convient',
+    trans_no: "Non, j'aurais besoin d'aide pour cela",
+    extra_label: 'Y a-t-il autre chose que vous souhaitez nous faire savoir ?',
+    extra_ph: 'Optionnel — ce qui vous distingue ou du contexte supplémentaire...',
+    btn_continue: 'Continuer →', btn_back: '← Retour', btn_submit: 'Soumettre ma candidature →',
+    loading_msg: 'Envoi de votre candidature...',
+    result_title: 'Candidature envoyée !',
+    result_msg: "Merci d'avoir postulé pour rejoindre l'équipe Rentalium. Nous avons bien reçu votre candidature et vous contacterons sous peu pour planifier une formation si vous êtes sélectionné(e).",
+    powered: 'Rentalium Location',
+    alert_name: 'Veuillez entrer votre nom.',
+    alert_email: 'Veuillez entrer votre courriel.',
+    alert_avail: 'Veuillez indiquer votre disponibilité.',
+    alert_start: 'Veuillez indiquer quand vous pouvez commencer.',
+    alert_comm: 'Veuillez sélectionner votre expérience à commission.',
+    alert_motiv: 'Veuillez nous dire ce qui vous motive.',
+    alert_langs: 'Veuillez sélectionner au moins une langue.',
+    alert_resp: 'Veuillez indiquer votre temps de réponse habituel.',
+    alert_tech: 'Veuillez indiquer votre aisance technologique.',
+    alert_smartphone: 'Veuillez indiquer si vous avez un téléphone intelligent.',
+    alert_scenario: 'Veuillez répondre à la mise en situation.',
+    alert_transport: 'Veuillez indiquer votre moyen de transport.',
+    alert_error: 'Une erreur est survenue. Veuillez réessayer ou contacter le support.',
+  }
+};
+
+function applyLang() {
+  const t = T[lang];
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.dataset.i18nPh;
+    if (t[key] !== undefined) el.placeholder = t[key];
+  });
+  const startSel = document.getElementById('start');
+  const prevVal = startSel.value;
+  startSel.innerHTML = [
+    ['', t.start_opt0],
+    ['Immediately', t.start_imm],
+    ['Within 1 week', t.start_1w],
+    ['Within 2 weeks', t.start_2w],
+    ['Within 1 month', t.start_1m],
+    ['More than 1 month', t.start_more],
+  ].map(([v, label]) => `<option value="${escapeHtml(v)}">${escapeHtml(label)}</option>`).join('');
+  startSel.value = prevVal;
+}
+
+function chooseLang(l) {
+  lang = l;
+  applyLang();
+  currentStep = 1;
+  showStep(1);
+}
+
+function showStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-' + n).classList.add('active');
+  let pct;
+  const ind = document.getElementById('step-indicator');
+  if (n === 0) {
+    pct = 0;
+    ind.textContent = '';
+  } else if (n === 'loading' || n === 'result') {
+    pct = 100;
+    ind.textContent = '';
+  } else {
+    pct = Math.round((n / totalSteps) * 100);
+    ind.textContent = T[lang]['step' + n + '_label'] || '';
+  }
+  document.getElementById('progress').style.width = pct + '%';
+  window.scrollTo(0, 0);
+}
+
+function nextStep(from) {
+  const t = T[lang];
+  if (from === 1) {
+    if (!document.getElementById('name').value.trim()) return alert(t.alert_name);
+    if (!document.getElementById('email').value.trim()) return alert(t.alert_email);
+  }
+  if (from === 2) {
+    if (!document.querySelector('input[name="avail"]:checked')) return alert(t.alert_avail);
+    if (!document.getElementById('start').value) return alert(t.alert_start);
+  }
+  if (from === 3) {
+    if (!document.querySelector('input[name="comm"]:checked')) return alert(t.alert_comm);
+    if (!document.getElementById('motivation').value.trim()) return alert(t.alert_motiv);
+  }
+  if (from === 4) {
+    if (!document.querySelector('#languages input:checked')) return alert(t.alert_langs);
+    if (!document.querySelector('input[name="resp"]:checked')) return alert(t.alert_resp);
+  }
+  if (from === 5) {
+    if (!document.querySelector('input[name="tech"]:checked')) return alert(t.alert_tech);
+    if (!document.querySelector('input[name="phone_yn"]:checked')) return alert(t.alert_smartphone);
+  }
+  if (from === 6) {
+    if (!document.getElementById('scenario').value.trim()) return alert(t.alert_scenario);
+  }
+  currentStep = from + 1;
+  showStep(currentStep);
+}
+
+function prevStep(from) {
+  currentStep = from - 1;
+  showStep(currentStep);
+}
+
+function getRadioVal(name) {
+  const el = document.querySelector('input[name="' + name + '"]:checked');
+  return el ? el.value : 'Not answered';
+}
+
+function getCheckboxVals(groupId) {
+  const checked = document.querySelectorAll('#' + groupId + ' input:checked');
+  if (!checked.length) return 'Not answered';
+  return Array.from(checked).map(c => c.value).join(', ');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
+}
+
+async function submitForm() {
+  const t = T[lang];
+  if (!document.querySelector('input[name="trans"]:checked')) return alert(t.alert_transport);
+
+  const data = {
+    name: document.getElementById('name').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    availability: getRadioVal('avail'),
+    start_date: document.getElementById('start').value,
+    commission_exp: getRadioVal('comm'),
+    motivation: document.getElementById('motivation').value.trim(),
+    languages: getCheckboxVals('languages'),
+    response_time: getRadioVal('resp'),
+    tech_comfort: getRadioVal('tech'),
+    smartphone: getRadioVal('phone_yn'),
+    scenario: document.getElementById('scenario').value.trim(),
+    transport: getRadioVal('trans'),
+    extra: document.getElementById('extra').value.trim() || 'Nothing additional.'
+  };
+
+  showStep('loading');
+
+  try {
+    const response = await fetch('/api/agent-screenings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Submit failed');
+    document.getElementById('result-name').textContent = data.name;
+    applyLang();
+    showStep('result');
+  } catch (e) {
+    document.getElementById('step-loading').innerHTML =
+      `<div class="error-msg">${escapeHtml(T[lang].alert_error)}</div>`;
+  }
+}
+
+// Radio click handlers
+document.querySelectorAll('.radio-option').forEach(option => {
+  option.addEventListener('click', function() {
+    const input = this.querySelector('input[type="radio"]');
+    const group = this.closest('.radio-group');
+    group.querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
+    this.classList.add('selected');
+    input.checked = true;
+  });
+});
+
+// Checkbox click handlers
+document.querySelectorAll('.checkbox-option').forEach(option => {
+  option.addEventListener('click', function() {
+    const input = this.querySelector('input[type="checkbox"]');
+    input.checked = !input.checked;
+    this.classList.toggle('checked', input.checked);
+  });
+});
+</script>
+</body>
+</html>
