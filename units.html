@@ -1,13 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-TK70FDCLYG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-TK70FDCLYG');
+</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Available Units — Rentalium</title>
-<meta name="description" content="Browse currently available rental units. Filter by bedrooms, price, and neighborhood." />
+<title>Apartments for Rent in Montréal | Available Units — Rentalium</title>
+<meta name="description" content="Browse available apartments for rent in Montréal — Plateau, Downtown, Griffintown and more. Filter vetted rentals by bedrooms, price and neighbourhood, then book a showing with Rentalium." />
+<link rel="canonical" href="https://rentalium.ca/units.html" />
+<meta name="robots" content="index, follow" />
+<meta name="geo.region" content="CA-QC" />
+<meta name="geo.placename" content="Montréal" />
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="en_CA" />
+<meta property="og:site_name" content="Rentalium" />
+<meta property="og:url" content="https://rentalium.ca/units.html" />
+<meta property="og:title" content="Apartments for Rent in Montréal | Rentalium" />
+<meta property="og:description" content="Browse vetted, move-in-ready apartments for rent across Montréal. Filter by bedrooms, price and neighbourhood." />
+<meta property="og:image" content="https://rentalium.ca/hero-montreal.jpg" />
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Apartments for Rent in Montréal | Rentalium" />
+<meta name="twitter:description" content="Browse vetted, move-in-ready apartments for rent across Montréal." />
+<meta name="twitter:image" content="https://rentalium.ca/hero-montreal.jpg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <link rel="stylesheet" href="styles.css?v=fr5" />
@@ -18,7 +44,7 @@
 <header class="nav">
   <div class="container nav-inner">
     <a href="index.html" class="brand">
-      <span class="brand-mark"></span>
+      <img src="/favicon.svg" class="brand-icon" alt="">
       Rentalium
     </a>
     <nav class="nav-links">
@@ -26,6 +52,7 @@
       <a href="/unit-finder" class="active">Available units</a>
       <a href="/blog">Blog</a>
       <a href="index.html#contact">Contact</a>
+      <a href="/agent-apply">Join our team</a>
       <button class="lang-toggle" type="button" aria-label="Language">FR</button>
       <a href="mailto:hello@rentalium.example" class="btn btn-primary btn-sm">Contact agent</a>
     </nav>
@@ -35,7 +62,7 @@
 <!-- TEST FLOW (revertable): budget gate → full-screen map ─────────── -->
 <div class="budget-gate" id="budget-gate">
   <form class="budget-card" id="budget-form">
-    <div class="brand" style="justify-content:center;gap:8px;margin-bottom:4px;"><span class="brand-mark"></span> Rentalium</div>
+    <div class="brand" style="justify-content:center;gap:8px;margin-bottom:4px;"><img src="/favicon.svg" class="brand-icon" alt=""> Rentalium</div>
     <h2>What's your budget?</h2>
     <p>Tell us your monthly budget and we'll show every available unit that fits, on the map.</p>
     <label class="field" style="text-align:left;"><span>Monthly budget</span>
@@ -56,7 +83,7 @@
 
 <div class="fs-map-wrap" id="fs-map-wrap">
   <div class="fs-bar">
-    <a href="index.html" class="brand" style="gap:8px;"><span class="brand-mark"></span> Rentalium</a>
+    <a href="index.html" class="brand" style="gap:8px;"><img src="/favicon.svg" class="brand-icon" alt=""> Rentalium</a>
     <span class="fs-count" id="fs-count"></span>
     <button class="btn btn-ghost btn-sm" id="fs-change">Change budget</button>
   </div>
@@ -67,8 +94,8 @@
 <section class="page-header">
   <div class="container">
     <div class="eyebrow">Available units</div>
-    <h1>Available now.</h1>
-    <p>Every listing below is currently available for showings. Filter by bedrooms, price, or neighborhood to narrow your search.</p>
+    <h1>Apartments for rent in Montréal.</h1>
+    <p>Every listing below is a vetted, currently-available apartment for rent across Montréal — from the Plateau to Griffintown. Filter by bedrooms, price, or neighbourhood, then book a showing.</p>
   </div>
 </section>
 
@@ -137,7 +164,7 @@
 <footer>
   <div class="container footer-grid">
     <div class="brand">
-      <span class="brand-mark"></span>
+      <img src="/favicon.svg" class="brand-icon" alt="">
       Rentalium
     </div>
     <small>&copy; 2026 Rentalium. All rights reserved.</small>

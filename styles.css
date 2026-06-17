@@ -71,24 +71,16 @@ p { margin: 0 0 1em; color: var(--ink-muted); }
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: 'Fraunces', serif;
-  font-size: 1.25rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  font-family: 'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.44rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
 }
-.brand-mark {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  background: var(--ink);
-  position: relative;
-}
-.brand-mark::after {
-  content: "";
-  position: absolute;
-  inset: 6px;
-  border: 1.5px solid #fff;
-  border-radius: 2px;
+.brand-icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
 }
 .nav-links {
   display: flex;

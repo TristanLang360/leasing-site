@@ -1,11 +1,20 @@
 <!DOCTYPE html>
 <html lang="en-CA">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-TK70FDCLYG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-TK70FDCLYG');
+</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Montréal Leasing Agency | Rentalium — Apartment Rentals & Tenant Placement</title>
 <meta name="description" content="Rentalium is a boutique leasing agency in Montréal. We place renters in vetted apartments and fill landlords' units fast — across the Plateau, Downtown, Griffintown and beyond." />
 <link rel="canonical" href="https://rentalium.ca/" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="geo.region" content="CA-QC" />
 <meta name="geo.placename" content="Montréal" />
 <meta name="robots" content="index, follow" />
@@ -15,9 +24,19 @@
 <meta property="og:url" content="https://rentalium.ca/" />
 <meta property="og:title" content="Montréal Leasing Agency | Rentalium" />
 <meta property="og:description" content="A boutique Montréal leasing agency placing renters in vetted apartments and filling landlords' units fast." />
+<meta property="og:site_name" content="Rentalium" />
+<meta property="og:image" content="https://rentalium.ca/hero-montreal.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Rentalium — leasing agency in Montréal" />
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Montréal Leasing Agency | Rentalium" />
+<meta name="twitter:description" content="Boutique Montréal leasing agency — vetted apartments for renters, fast tenant placement for landlords." />
+<meta name="twitter:image" content="https://rentalium.ca/hero-montreal.jpg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css?v=fr5" />
 <script src="/i18n-public.js?v=fr5"></script>
 <!-- Local business structured data (RealEstateAgent). Replace address/phone with your real NAP. -->
@@ -30,7 +49,7 @@
   "url": "https://rentalium.ca/",
   "telephone": "+1-438-340-0510",
   "email": "hello@rentalium.ca",
-  "image": "https://rentalium.ca/og-cover.jpg",
+  "image": "https://rentalium.ca/hero-montreal.jpg",
   "priceRange": "$$",
   "knowsLanguage": ["en", "fr"],
   "areaServed": { "@type": "City", "name": "Montréal", "sameAs": "https://en.wikipedia.org/wiki/Montreal" },
@@ -55,7 +74,7 @@
 <header class="nav">
   <div class="container nav-inner">
     <a href="index.html" class="brand">
-      <span class="brand-mark"></span>
+      <img src="/favicon.svg" class="brand-icon" alt="">
       Rentalium
     </a>
     <nav class="nav-links">
@@ -64,6 +83,7 @@
       <a href="/unit-finder">Available units</a>
       <a href="/blog">Blog</a>
       <a href="#contact">Contact</a>
+      <a href="/agent-apply">Join our team</a>
       <button class="lang-toggle" type="button" aria-label="Language">FR</button>
       <a href="/unit-finder" class="btn btn-primary btn-sm">Browse rentals</a>
     </nav>
@@ -293,6 +313,22 @@
   </div>
 </section>
 
+<section id="careers" style="background: var(--surface); border-top: 1px solid var(--line);">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Careers</div>
+        <h2>Join Rentalium as<br/>a lease agent.</h2>
+        <p>We're growing. If you know Montréal, love working with people, and want to earn on every placement — we want to hear from you.</p>
+      </div>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start;">
+        <a href="/agent-apply" class="btn btn-primary">Apply now &rarr;</a>
+        <a href="/agent-apply" class="btn btn-ghost">Learn more</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="cta-band" id="contact">
   <div class="container">
     <div class="section-head" style="margin-bottom: 24px;">
@@ -312,7 +348,7 @@
 <footer>
   <div class="container footer-grid">
     <div class="brand">
-      <span class="brand-mark"></span>
+      <img src="/favicon.svg" class="brand-icon" alt="">
       Rentalium
     </div>
     <small>

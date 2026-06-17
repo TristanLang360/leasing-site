@@ -151,12 +151,22 @@ function haversineKm(lat1, lng1, lat2, lng2) {
 // ───────────────────────────────────────────────────────────────
 // Presentation: turn stored photo keys into URLs via the storage driver.
 // ───────────────────────────────────────────────────────────────
-function present(unit) {
+// Internal-only unit fields. These mirror the leasing spreadsheet but must
+// never reach the public site — only authenticated admin/agent users see them.
+const PRIVATE_UNIT_FIELDS = [
+  'entrance_code', 'janitor_number', 'notes', 'pictures_url', 'available_on',
+  'availability', 'date_updated', 'first_amount_date', 'first_amount', 'updated_amount_on',
+];
+function present(unit, includePrivate = false) {
   if (!unit) return null;
   const photos = (unit.photos || []).map((p) => ({
     id: p.id, url: storage.publicUrl(p.key), filename: p.key, kind: p.kind || 'image', sortOrder: p.sort_order,
   }));
-  return { ...unit, photos };
+  const out = { ...unit, photos };
+  if (!includePrivate) {
+    for (const f of PRIVATE_UNIT_FIELDS) delete out[f];
+  }
+  return out;
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -264,10 +274,23 @@ function parseUnitBody(b) {
     locker_available,
     locker_cost: locker_available === 'yes' ? num(b.locker_cost, null) : null,
     dogs_policy: ['yes', 'no', 'contact'].includes(b.dogs_policy) ? b.dogs_policy : 'no',
-    status: ['available', 'on_hold', 'unavailable', 'hidden'].includes(b.status) ? b.status : 'available',
+    status: ['available', 'on_hold', 'in_reno', 'unavailable', 'rented', 'hidden'].includes(b.status) ? b.status : 'available',
     lat: num(b.lat, null),
     lng: num(b.lng, null),
     building_id: num(b.building_id, null),
+    // Spreadsheet-mirroring fields. Free-text passthrough; the private ones are
+    // stripped from public responses by present().
+    size: (b.size || '').trim() || null,
+    entrance_code: (b.entrance_code || '').trim() || null,
+    janitor_number: (b.janitor_number || '').trim() || null,
+    notes: (b.notes || '').trim() || null,
+    pictures_url: (b.pictures_url || '').trim() || null,
+    availability: (b.availability || '').trim() || null,
+    available_on: (b.available_on || '').trim() || null,
+    date_updated: (b.date_updated || '').trim() || null,
+    first_amount_date: (b.first_amount_date || '').trim() || null,
+    first_amount: (b.first_amount || '').trim() || null,
+    updated_amount_on: (b.updated_amount_on || '').trim() || null,
   };
 }
 
@@ -393,14 +416,16 @@ app.delete('/api/users/:id', requireCap(can.manageUsers), wrap(async (req, res) 
 // ───────────────────────────────────────────────────────────────
 app.get('/api/units', wrap(async (req, res) => {
   const wantAll = req.query.all === '1';
-  if (wantAll && !(await currentUser(req))) return res.status(401).json({ error: 'Not authenticated' });
-  res.json((await repo.listUnits({ all: wantAll })).map(present));
+  const authed = !!(await currentUser(req));
+  if (wantAll && !authed) return res.status(401).json({ error: 'Not authenticated' });
+  res.json((await repo.listUnits({ all: wantAll })).map((u) => present(u, authed)));
 }));
 
 app.get('/api/units/:id', wrap(async (req, res) => {
   const unit = await repo.getUnit(req.params.id);
   if (!unit) return res.status(404).json({ error: 'Not found' });
-  res.json(present(unit));
+  const authed = !!(await currentUser(req));
+  res.json(present(unit, authed));
 }));
 
 app.get('/api/units/:id/nearby', requireAuth, wrap(async (req, res) => {
@@ -415,7 +440,7 @@ app.get('/api/units/:id/nearby', requireAuth, wrap(async (req, res) => {
     .map((u) => ({ unit: u, km: haversineKm(origin.lat, origin.lng, u.lat, u.lng) }))
     .sort((a, b) => a.km - b.km)
     .slice(0, limit)
-    .map(({ unit, km }) => ({ ...present(unit), distance_km: Math.round(km * 10) / 10 }));
+    .map(({ unit, km }) => ({ ...present(unit, true), distance_km: Math.round(km * 10) / 10 }));
   res.json({ origin: { id: origin.id, lat: origin.lat, lng: origin.lng }, nearby });
 }));
 
@@ -433,7 +458,7 @@ app.post('/api/units', requireCap(can.editUnits), wrap(async (req, res) => {
   }
   const unit = await repo.createUnit({ ...u, geocode_attempted });
   if (u.building_id == null) kickGeocode();
-  res.status(201).json(present(unit));
+  res.status(201).json(present(unit, true));
 }));
 
 app.put('/api/units/:id', requireCap(can.editUnits), wrap(async (req, res) => {
@@ -458,7 +483,7 @@ app.put('/api/units/:id', requireCap(can.editUnits), wrap(async (req, res) => {
   }
   const unit = await repo.updateUnit(existing.id, { ...u, lat, lng, geocode_attempted });
   if (!inherited) kickGeocode();
-  res.json(present(unit));
+  res.json(present(unit, true));
 }));
 
 app.delete('/api/units/:id', requireCap(can.deleteUnits), wrap(async (req, res) => {
@@ -1132,17 +1157,36 @@ app.delete('/api/posts/:id/cover', requireCap(can.blog), wrap(async (req, res) =
 }));
 
 // ── Server-rendered public blog (SEO-friendly) ─────────────────
-function renderShell({ title, description, canonical, head = '', body, active = '' }) {
+function renderShell({ title, description, canonical, head = '', body, active = '', ogType = 'website', ogImage = 'https://rentalium.ca/hero-montreal.jpg' }) {
   const navActive = (k) => (active === k ? ' class="active"' : '');
   return `<!DOCTYPE html>
 <html lang="en-CA">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-TK70FDCLYG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-TK70FDCLYG');
+</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${escHtml(title)}</title>
 <meta name="description" content="${escHtml(description)}" />
 ${canonical ? `<link rel="canonical" href="${escHtml(canonical)}" />` : ''}
 <meta name="geo.region" content="CA-QC" /><meta name="geo.placename" content="Montréal" />
+<meta property="og:type" content="${escHtml(ogType)}" />
+<meta property="og:locale" content="en_CA" />
+<meta property="og:site_name" content="Rentalium" />
+${canonical ? `<meta property="og:url" content="${escHtml(canonical)}" />` : ''}
+<meta property="og:title" content="${escHtml(title)}" />
+<meta property="og:description" content="${escHtml(description)}" />
+<meta property="og:image" content="${escHtml(ogImage)}" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="${escHtml(title)}" />
+<meta name="twitter:description" content="${escHtml(description)}" />
+<meta name="twitter:image" content="${escHtml(ogImage)}" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
@@ -1158,6 +1202,7 @@ ${head}
     <a href="/index.html#neighbourhoods">Neighbourhoods</a>
     <a href="/unit-finder"${navActive('units')}>Available units</a>
     <a href="/blog"${navActive('blog')}>Blog</a>
+    <a href="/agent-apply"${navActive('agent-apply')}>Join our team</a>
     <button class="lang-toggle" type="button" aria-label="Language">FR</button>
     <a href="/unit-finder" class="btn btn-primary btn-sm">Browse rentals</a>
   </nav>
@@ -1172,6 +1217,46 @@ ${body}
 </body>
 </html>`;
 }
+
+// ───────────────────────────────────────────────────────────────
+// SEO: robots.txt + dynamic XML sitemap (static pages + published posts).
+// ───────────────────────────────────────────────────────────────
+const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://rentalium.ca';
+
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain').send(
+    `User-agent: *\nAllow: /\nDisallow: /admin\n\nSitemap: ${SITE_ORIGIN}/sitemap.xml\n`);
+});
+
+app.get('/sitemap.xml', wrap(async (req, res) => {
+  const posts = await repo.listPosts({ publishedOnly: true });
+  const today = new Date().toISOString().slice(0, 10);
+  const urls = [
+    { loc: '/', changefreq: 'daily', priority: '1.0', lastmod: today },
+    { loc: '/units.html', changefreq: 'daily', priority: '0.9', lastmod: today },
+    { loc: '/blog', changefreq: 'weekly', priority: '0.7', lastmod: today },
+    { loc: '/agent-apply.html', changefreq: 'monthly', priority: '0.5', lastmod: today },
+    ...posts.map((p) => ({
+      loc: `/blog/${p.slug}`,
+      changefreq: 'monthly',
+      priority: '0.6',
+      lastmod: (() => {
+        const d = new Date(p.updated_at || p.published_at || p.created_at || today);
+        return isNaN(d) ? today : d.toISOString().slice(0, 10);
+      })(),
+    })),
+  ];
+  const body = `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+    urls.map((u) => `  <url>\n` +
+      `    <loc>${SITE_ORIGIN}${u.loc}</loc>\n` +
+      `    <lastmod>${u.lastmod}</lastmod>\n` +
+      `    <changefreq>${u.changefreq}</changefreq>\n` +
+      `    <priority>${u.priority}</priority>\n` +
+      `  </url>`).join('\n') +
+    `\n</urlset>\n`;
+  res.type('application/xml').send(body);
+}));
 
 app.get('/blog', wrap(async (req, res) => {
   const posts = await repo.listPosts({ publishedOnly: true });
@@ -1236,7 +1321,9 @@ app.get('/blog/:slug', wrap(async (req, res) => {
     description: desc,
     canonical: `https://rentalium.ca/blog/${post.slug}`,
     active: 'blog',
-    head: `<meta property="og:type" content="article" />\n<script type="application/ld+json">${JSON.stringify(ld)}</script>`,
+    ogType: 'article',
+    ogImage: post.cover_image ? storage.publicUrl(post.cover_image) : 'https://rentalium.ca/hero-montreal.jpg',
+    head: `<script type="application/ld+json">${JSON.stringify(ld)}</script>`,
     body,
   }));
 }));
@@ -1527,6 +1614,112 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
 }));
 
 // ───────────────────────────────────────────────────────────────
+// Agent application page + API
+// ───────────────────────────────────────────────────────────────
+app.get('/agent-apply', (req, res) => res.sendFile(path.join(__dirname, 'agent-apply.html')));
+
+// CV upload: PDF / Word only, 10 MB cap.
+const cvUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const ok = /^application\/(pdf|msword|vnd\.openxmlformats-officedocument\.wordprocessingml\.document)$/.test(file.mimetype);
+    cb(ok ? null : new Error('Only PDF or Word documents are accepted.'), ok);
+  },
+});
+
+// Public: submit an application to become a lease agent.
+app.post('/api/agent-applications', cvUpload.single('cv'), wrap(async (req, res) => {
+  const name    = String(req.body.name    || '').trim();
+  const email   = String(req.body.email   || '').trim().toLowerCase();
+  const phone   = String(req.body.phone   || '').trim() || null;
+  const message = String(req.body.message || '').trim() || null;
+
+  if (!name)    return res.status(400).json({ error: 'Full name is required.' });
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return res.status(400).json({ error: 'A valid email address is required.' });
+  if (!message) return res.status(400).json({ error: 'Please tell us why you want to join.' });
+  if (!req.file) return res.status(400).json({ error: 'A CV or résumé file is required.' });
+
+  // Reject if an active user or pending application already exists with this email.
+  if (await repo.getUserByEmail(email)) return res.status(409).json({ error: 'An account with that email already exists.' });
+  const existing = await repo.getAgentApplicationByEmail(email);
+  if (existing && existing.status === 'pending') return res.status(409).json({ error: 'An application for that email is already under review.' });
+
+  const cv_key = await storage.save({ buffer: req.file.buffer, originalname: req.file.originalname, mimetype: req.file.mimetype });
+  const appl = await repo.createAgentApplication({ name, email, phone, message, cv_key });
+  res.status(201).json({ ok: true, id: appl.id });
+}));
+
+// Master only: list all applications (filterable by status).
+app.get('/api/agent-applications', requireCap(can.manageUsers), wrap(async (req, res) => {
+  const status = ['pending', 'approved', 'rejected'].includes(req.query.status) ? req.query.status : undefined;
+  const list = (await repo.listAgentApplications({ status })).map((a) => ({
+    ...a,
+    cv_url: a.cv_key ? `/api/agent-applications/${a.id}/cv` : null,
+  }));
+  res.json(list);
+}));
+
+// Master only: download a CV file.
+app.get('/api/agent-applications/:id/cv', requireCap(can.manageUsers), wrap(async (req, res) => {
+  const appl = await repo.getAgentApplication(req.params.id);
+  if (!appl || !appl.cv_key) return res.status(404).json({ error: 'CV not found.' });
+  const buf = await storage.getBuffer(appl.cv_key);
+  const ext = path.extname(appl.cv_key).toLowerCase();
+  const mime = ext === '.pdf' ? 'application/pdf'
+    : ext === '.docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    : 'application/msword';
+  res.setHeader('Content-Type', mime);
+  res.setHeader('Content-Disposition', `attachment; filename="cv-${appl.name.replace(/[^a-z0-9]/gi, '-')}${ext}"`);
+  res.send(buf);
+}));
+
+// Master only: approve — auto-generates a temporary password for the new agent account.
+app.post('/api/agent-applications/:id/approve', requireCap(can.manageUsers), wrap(async (req, res) => {
+  const appl = await repo.getAgentApplication(req.params.id);
+  if (!appl) return res.status(404).json({ error: 'Application not found.' });
+  if (appl.status !== 'pending') return res.status(400).json({ error: `Application is already ${appl.status}.` });
+  if (await repo.getUserByEmail(appl.email)) return res.status(409).json({ error: 'A user with that email already exists.' });
+  const tempPassword = crypto.randomBytes(6).toString('base64url'); // e.g. "aB3xQ9kL"
+  const { salt, hash } = hashPassword(tempPassword);
+  const user = await repo.createUser({ email: appl.email, name: appl.name, role: 'agent', salt, hash });
+  await repo.updateAgentApplicationStatus(appl.id, 'approved');
+  res.json({ ok: true, tempPassword, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+}));
+
+// Master only: reject an application.
+app.post('/api/agent-applications/:id/reject', requireCap(can.manageUsers), wrap(async (req, res) => {
+  const appl = await repo.getAgentApplication(req.params.id);
+  if (!appl) return res.status(404).json({ error: 'Application not found.' });
+  if (appl.status !== 'pending') return res.status(400).json({ error: `Application is already ${appl.status}.` });
+  await repo.updateAgentApplicationStatus(appl.id, 'rejected');
+  res.json({ ok: true });
+}));
+
+// Public: submit the lease-agent pre-screen quiz (agent-screening.html). No
+// CV, no account creation — just a record the master can review in admin.
+app.post('/api/agent-screenings', wrap(async (req, res) => {
+  const b = req.body || {};
+  const name = String(b.name || '').trim();
+  const scenario = String(b.scenario || '').trim();
+  if (!name) return res.status(400).json({ error: 'Name is required.' });
+  if (!scenario) return res.status(400).json({ error: 'Scenario answer is required.' });
+  const str = (v) => (v == null ? null : String(v).trim() || null);
+  const screening = await repo.createAgentScreening({
+    name, scenario,
+    email: str(b.email), phone: str(b.phone), availability: str(b.availability),
+    start_date: str(b.start_date), commission_exp: str(b.commission_exp), duties_ok: str(b.duties_ok), motivation: str(b.motivation),
+    languages: str(b.languages), response_time: str(b.response_time), tech_comfort: str(b.tech_comfort),
+    smartphone: str(b.smartphone), transport: str(b.transport), extra: str(b.extra),
+  });
+  res.status(201).json({ ok: true, id: screening.id });
+}));
+
+// Master only: list pre-screen quiz submissions.
+app.get('/api/agent-screenings', requireCap(can.manageUsers), wrap(async (req, res) => {
+  res.json(await repo.listAgentScreenings());
+}));
+
 // Error handler + boot
 // ───────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {

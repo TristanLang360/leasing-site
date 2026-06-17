@@ -40,6 +40,21 @@ CREATE TABLE IF NOT EXISTS units (
   lat               DOUBLE PRECISION,
   lng               DOUBLE PRECISION,
   geocode_attempted INTEGER NOT NULL DEFAULT 0,
+  -- Spreadsheet-mirroring fields (source of truth = the leasing Google Sheet).
+  -- entrance_code, janitor_number, notes, pictures_url, available_on and the
+  -- amount/date tracking columns are INTERNAL: server present() strips them for
+  -- unauthenticated (public) callers.
+  size              TEXT,                    -- Quebec room count, e.g. "3.5"
+  entrance_code     TEXT,                    -- private
+  janitor_number    TEXT,                    -- private
+  notes             TEXT,                    -- private (internal notes)
+  pictures_url      TEXT,                    -- private (Drive folder link)
+  availability      TEXT,                    -- raw sheet label: Available/On Hold/In Reno/Not Available/Rented
+  available_on      TEXT,                    -- private
+  date_updated      TEXT,                    -- private
+  first_amount_date TEXT,                    -- private
+  first_amount      TEXT,                    -- private
+  updated_amount_on TEXT,                    -- private
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_units_building ON units(building_id);

@@ -10,6 +10,8 @@ import { CrmTab } from '@/components/crm-tab'
 import { BlogTab } from '@/components/blog-tab'
 import { NotificationBell } from '@/components/notification-bell'
 import { AgentsTab } from '@/components/agents-tab'
+import { ApplicationsTab } from '@/components/applications-tab'
+import { ScreeningsTab } from '@/components/screenings-tab'
 import { AccountTab } from '@/components/account-tab'
 import { OnboardingTour } from '@/components/onboarding-tour'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -105,6 +107,8 @@ export default function App() {
             {cap.calendar(me.role) && <TabsTrigger value="tasks">{cap.manageTasks(me.role) ? t('Tasks') : t('My tasks')}</TabsTrigger>}
             {cap.blog(me.role) && <TabsTrigger value="blog">{t('Blog')}</TabsTrigger>}
             {cap.manageUsers(me.role) && <TabsTrigger value="agents">{t('Agents')}</TabsTrigger>}
+            {cap.manageUsers(me.role) && <TabsTrigger value="applications">{t('Applications')}</TabsTrigger>}
+            {cap.manageUsers(me.role) && <TabsTrigger value="screenings">{t('Screenings')}</TabsTrigger>}
             <TabsTrigger value="account">{t('My account')}</TabsTrigger>
           </TabsList>
 
@@ -121,6 +125,12 @@ export default function App() {
           )}
           {cap.manageUsers(me.role) && (
             <TabsContent value="agents" className="mt-6"><AgentsTab me={me} /></TabsContent>
+          )}
+          {cap.manageUsers(me.role) && (
+            <TabsContent value="applications" className="mt-6"><ApplicationsTab /></TabsContent>
+          )}
+          {cap.manageUsers(me.role) && (
+            <TabsContent value="screenings" className="mt-6"><ScreeningsTab /></TabsContent>
           )}
           <TabsContent value="account" className="mt-6">
             <AccountTab me={me} onChanged={() => api.get<Me>('/api/me').then(setMe).catch(() => {})} />

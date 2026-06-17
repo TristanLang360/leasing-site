@@ -15,7 +15,16 @@
     'Contact': 'Contact',
     'Browse rentals': 'Voir les locations',
     'Contact agent': 'Contacter un agent',
+    'Join our team': 'Rejoindre notre équipe',
     'Staff': 'Personnel',
+
+    // CTA buttons (include the → arrow since it's part of the text node)
+    'Browse available apartments →': 'Voir les appartements disponibles →',
+    'List your unit →': 'Inscrire mon unité →',
+    'See available units →': 'Voir les unités disponibles →',
+    'View all units →': 'Voir toutes les unités →',
+    'Read more →': 'Lire la suite →',
+    'Back to homepage': 'Retour à l’accueil',
 
     // Hero
     'Leasing agency · Montréal': 'Agence de location · Montréal',
@@ -209,6 +218,60 @@
     '← Back to the blog': '← Retour au blogue',
     '← All posts': '← Tous les articles',
 
+    // Careers section (index.html)
+    'Careers': 'Carrières',
+    'Join Rentalium as': 'Rejoignez Rentalium en tant que',
+    'a lease agent.': 'agent de location.',
+    'We\'re growing. If you know Montréal, love working with people, and want to earn on every placement — we want to hear from you.':
+      'Nous grandissons. Si vous connaissez Montréal, aimez travailler avec les gens et souhaitez être rémunéré à chaque placement — nous voulons vous entendre.',
+    'Apply now →': 'Postuler maintenant →',
+    'Learn more': 'En savoir plus',
+
+    // Agent application page
+    'Join the team · Montréal': 'Rejoindre l’équipe · Montréal',
+    'Become a Rentalium lease agent.': 'Devenez agent de location Rentalium.',
+    'Why Rentalium': 'Pourquoi Rentalium',
+    'What you get as': 'Ce que vous obtenez en tant que',
+    'a Rentalium agent.': 'agent Rentalium.',
+    'We give our agents real listings, real clients, and a system that handles the admin — so you can focus on showing units and closing leases.':
+      'Nous offrons à nos agents de vraies annonces, de vrais clients et un système qui gère l’administration — pour que vous puissiez vous concentrer sur les visites et les baux.',
+    'Commission-based earnings': 'Rémunération à la commission',
+    'Earn a competitive commission on every unit you place. More placements, more income — no ceiling.':
+      'Gagnez une commission compétitive pour chaque unité placée. Plus de placements, plus de revenus — sans plafond.',
+    'Island-wide portfolio': 'Portefeuille sur toute l’île',
+    'Access to listings across Plateau, Downtown, Griffintown, Verdun, Mile End and beyond.':
+      'Accès aux annonces du Plateau, du Centre-ville, de Griffintown, de Verdun, du Mile End et au-delà.',
+    'Flexible schedule': 'Horaire flexible',
+    'Work when it suits you. Book your own showings and manage your pipeline from anywhere.':
+      'Travaillez quand cela vous convient. Réservez vos propres visites et gérez votre pipeline de partout.',
+    'Full training & support': 'Formation et soutien complets',
+    'Québec lease (bail) training, client scripts, and an admin platform built for agents.':
+      'Formation sur le bail québécois, scripts clients et une plateforme d’administration conçue pour les agents.',
+    'What we look for': 'Ce que nous recherchons',
+    'The right fit for': 'Le bon profil pour',
+    'Rentalium.': 'Rentalium.',
+    'Bilingual English & French (spoken)': 'Bilingue anglais et français (oral)',
+    'Knowledge of Montréal neighbourhoods': 'Connaissance des quartiers de Montréal',
+    'Strong communication and follow-through': 'Excellentes aptitudes en communication et suivi',
+    'Comfortable with digital tools and apps': 'À l’aise avec les outils numériques',
+    'Available for weekend showings': 'Disponible pour les visites de fin de semaine',
+    'Reliable transportation or transit access': 'Accès fiable à un transport ou aux transports en commun',
+    'Applications are reviewed within 3–5 business days. We\'ll reach out by email to schedule a short call if you\'re a fit.':
+      'Les candidatures sont examinées en 3 à 5 jours ouvrables. Nous vous contacterons par courriel pour planifier un bref appel si votre profil correspond.',
+    'Apply to join': 'Postuler pour rejoindre',
+    'Takes about 3 minutes. We review every application personally.': 'Environ 3 minutes. Nous examinons chaque candidature personnellement.',
+    'Full name': 'Nom complet',
+    'Phone number': 'Numéro de téléphone',
+    'Email address': 'Adresse courriel',
+    'Why do you want to join Rentalium?': 'Pourquoi voulez-vous rejoindre Rentalium ?',
+    'Confirm password': 'Confirmer le mot de passe',
+    'Repeat password': 'Répétez le mot de passe',
+    'Min. 8 characters': 'Min. 8 caractères',
+    'Submit application →': 'Soumettre la candidature →',
+    'Submitting…': 'Envoi en cours…',
+    'Application received!': 'Candidature reçue !',
+    'Back to homepage': 'Retour à l’accueil',
+
     // Dynamic (set by units.js / featured) — used via window.PUBLIC_LANG
     'Contact for price': 'Prix sur demande',
 
@@ -335,4 +398,10 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
   else run();
+
+  // Fix bfcache: if the browser restores a cached page (back/forward), re-check
+  // localStorage and reload if the language has changed since the page was cached.
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted && getLang() !== window.PUBLIC_LANG) location.reload();
+  });
 })();

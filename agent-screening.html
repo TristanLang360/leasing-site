@@ -463,14 +463,23 @@
       <div class="step" id="step-3">
         <div class="step-label" data-i18n="step3_label">Step 3 of 7</div>
         <div class="step-title" data-i18n="step3_title">Compensation comfort</div>
-        <div class="step-sub" data-i18n="step3_sub">Our agents work on a base + commission structure. Your income grows with performance.</div>
+        <div class="step-sub" data-i18n="step3_sub">This is a commission-only role. You earn 40% of the first month's rent each time a tenant you bring in signs a lease.</div>
         <div class="field">
-          <label data-i18n="comm_label">Have you worked in a commission-based role before?</label>
+          <label data-i18n="comm_label">This position pays commission only — are you comfortable with that?</label>
           <div class="radio-group" id="commission-exp">
-            <label class="radio-option"><input type="radio" name="comm" value="Yes, in real estate or leasing"><div class="radio-dot"></div><span data-i18n="comm_re">Yes, in real estate or leasing</span></label>
-            <label class="radio-option"><input type="radio" name="comm" value="Yes, in a different field (sales, etc.)"><div class="radio-dot"></div><span data-i18n="comm_other">Yes, in a different field (sales, etc.)</span></label>
-            <label class="radio-option"><input type="radio" name="comm" value="No, but I am comfortable with it"><div class="radio-dot"></div><span data-i18n="comm_no_ok">No, but I am comfortable with it</span></label>
+            <label class="radio-option"><input type="radio" name="comm" value="Yes, I am comfortable with commission only"><div class="radio-dot"></div><span data-i18n="comm_yes">Yes, I'm comfortable with commission only</span></label>
+            <label class="radio-option"><input type="radio" name="comm" value="Yes, I have done commission work before"><div class="radio-dot"></div><span data-i18n="comm_done">Yes, I've done commission work before</span></label>
+            <label class="radio-option"><input type="radio" name="comm" value="Not sure, I would like to learn more"><div class="radio-dot"></div><span data-i18n="comm_unsure">Not sure, I'd like to learn more</span></label>
             <label class="radio-option"><input type="radio" name="comm" value="No, I prefer a fixed salary only"><div class="radio-dot"></div><span data-i18n="comm_no">No, I prefer a fixed salary only</span></label>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="field">
+          <label data-i18n="duties_label">The job involves going to units to take photos, posting the listings online, and scheduling visits with prospective tenants. Are you comfortable doing this?</label>
+          <div class="radio-group" id="duties">
+            <label class="radio-option"><input type="radio" name="duties" value="Yes, I am comfortable with all of that"><div class="radio-dot"></div><span data-i18n="duties_yes">Yes, I'm comfortable with all of that</span></label>
+            <label class="radio-option"><input type="radio" name="duties" value="Mostly, but I would need some guidance"><div class="radio-dot"></div><span data-i18n="duties_mostly">Mostly, but I'd need some guidance</span></label>
+            <label class="radio-option"><input type="radio" name="duties" value="No, that is not for me"><div class="radio-dot"></div><span data-i18n="duties_no">No, that's not for me</span></label>
           </div>
         </div>
         <div class="sep"></div>
@@ -634,12 +643,16 @@ const T = {
     start_imm: 'Immediately', start_1w: 'Within 1 week', start_2w: 'Within 2 weeks',
     start_1m: 'Within 1 month', start_more: 'More than 1 month',
     step3_label: 'Step 3 of 7', step3_title: 'Compensation comfort',
-    step3_sub: 'Our agents work on a base + commission structure. Your income grows with performance.',
-    comm_label: 'Have you worked in a commission-based role before?',
-    comm_re: 'Yes, in real estate or leasing',
-    comm_other: 'Yes, in a different field (sales, etc.)',
-    comm_no_ok: 'No, but I am comfortable with it',
+    step3_sub: "This is a commission-only role. You earn 40% of the first month's rent each time a tenant you bring in signs a lease.",
+    comm_label: 'This position pays commission only — are you comfortable with that?',
+    comm_yes: "Yes, I'm comfortable with commission only",
+    comm_done: "Yes, I've done commission work before",
+    comm_unsure: "Not sure, I'd like to learn more",
     comm_no: 'No, I prefer a fixed salary only',
+    duties_label: 'The job involves going to units to take photos, posting the listings online, and scheduling visits with prospective tenants. Are you comfortable doing this?',
+    duties_yes: "Yes, I'm comfortable with all of that",
+    duties_mostly: "Mostly, but I'd need some guidance",
+    duties_no: "No, that's not for me",
     motiv_label: 'What motivates you most about this role?',
     motiv_hint: 'Be honest — there are no wrong answers here.',
     motiv_ph: 'e.g. I like meeting people, I want to earn based on my effort, I enjoy helping people find a home...',
@@ -681,7 +694,8 @@ const T = {
     alert_email: 'Please enter your email.',
     alert_avail: 'Please select your availability.',
     alert_start: 'Please select when you can start.',
-    alert_comm: 'Please select your commission experience.',
+    alert_comm: 'Please answer the commission question.',
+    alert_duties: 'Please answer whether you are comfortable with the job duties.',
     alert_motiv: 'Please tell us what motivates you.',
     alert_langs: 'Please select at least one language.',
     alert_resp: 'Please select your typical response time.',
@@ -708,12 +722,16 @@ const T = {
     start_imm: 'Immédiatement', start_1w: 'Dans 1 semaine', start_2w: 'Dans 2 semaines',
     start_1m: 'Dans 1 mois', start_more: "Plus d'un mois",
     step3_label: 'Étape 3 de 7', step3_title: 'Rémunération à la commission',
-    step3_sub: 'Nos agents travaillent avec un salaire de base et des commissions. Vos revenus croissent avec vos résultats.',
-    comm_label: 'Avez-vous déjà travaillé dans un rôle à commission ?',
-    comm_re: 'Oui, en immobilier ou en location',
-    comm_other: 'Oui, dans un autre domaine (ventes, etc.)',
-    comm_no_ok: "Non, mais je suis à l'aise avec ce modèle",
+    step3_sub: "Ce poste est rémunéré à la commission uniquement. Vous gagnez 40 % du premier mois de loyer chaque fois qu'un locataire que vous amenez signe un bail.",
+    comm_label: 'Ce poste est rémunéré à la commission uniquement — êtes-vous à l\'aise avec cela ?',
+    comm_yes: "Oui, je suis à l'aise avec la commission seulement",
+    comm_done: "Oui, j'ai déjà travaillé à commission",
+    comm_unsure: "Pas certain(e), j'aimerais en savoir plus",
     comm_no: 'Non, je préfère un salaire fixe',
+    duties_label: "Le travail consiste à se rendre aux logements pour prendre des photos, publier les annonces en ligne et planifier les visites avec les locataires potentiels. Êtes-vous à l'aise avec cela ?",
+    duties_yes: "Oui, je suis à l'aise avec tout cela",
+    duties_mostly: "En grande partie, mais j'aurais besoin d'encadrement",
+    duties_no: "Non, ce n'est pas pour moi",
     motiv_label: "Qu'est-ce qui vous motive le plus dans ce rôle ?",
     motiv_hint: "Soyez honnête — il n'y a pas de mauvaises réponses.",
     motiv_ph: "ex. J'aime rencontrer des gens, je veux être payé selon mes efforts, j'aime aider les gens à trouver un logement...",
@@ -755,7 +773,8 @@ const T = {
     alert_email: 'Veuillez entrer votre courriel.',
     alert_avail: 'Veuillez indiquer votre disponibilité.',
     alert_start: 'Veuillez indiquer quand vous pouvez commencer.',
-    alert_comm: 'Veuillez sélectionner votre expérience à commission.',
+    alert_comm: 'Veuillez répondre à la question sur la commission.',
+    alert_duties: "Veuillez indiquer si vous êtes à l'aise avec les tâches du poste.",
     alert_motiv: 'Veuillez nous dire ce qui vous motive.',
     alert_langs: 'Veuillez sélectionner au moins une langue.',
     alert_resp: 'Veuillez indiquer votre temps de réponse habituel.',
@@ -829,6 +848,7 @@ function nextStep(from) {
   }
   if (from === 3) {
     if (!document.querySelector('input[name="comm"]:checked')) return alert(t.alert_comm);
+    if (!document.querySelector('input[name="duties"]:checked')) return alert(t.alert_duties);
     if (!document.getElementById('motivation').value.trim()) return alert(t.alert_motiv);
   }
   if (from === 4) {
@@ -879,6 +899,7 @@ async function submitForm() {
     availability: getRadioVal('avail'),
     start_date: document.getElementById('start').value,
     commission_exp: getRadioVal('comm'),
+    duties_ok: getRadioVal('duties'),
     motivation: document.getElementById('motivation').value.trim(),
     languages: getCheckboxVals('languages'),
     response_time: getRadioVal('resp'),
