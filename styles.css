@@ -1099,6 +1099,12 @@ video.listing-shot { width: 100%; height: 100%; object-fit: cover; background-co
   /* On phones keep the nav to brand + the call-to-action button; the other
      links (incl. the current page's "active" link) are redundant here. */
   .nav-links a:not(.btn) { display: none; }
+  /* Tighten the remaining items so the CTA pill never overflows the viewport —
+     the French label ("Voir les locations") is wide, so shrink to fit. */
+  .brand { font-size: 1.15rem; gap: 8px; min-width: 0; }
+  .brand-icon { width: 28px; height: 28px; }
+  .nav-links { gap: 10px; }
+  .nav-links .btn.btn-sm { padding: 9px 14px; font-size: 0.82rem; }
   .container { padding: 0 16px; }
   .admin-row { grid-template-columns: 72px 1fr; }
   .row-actions { grid-column: span 2; justify-content: flex-end; }

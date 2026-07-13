@@ -208,6 +208,10 @@ app.get(/^\/admin(\/.*)?$/, (req, res) => {
   res.sendFile(ADMIN_INDEX);
 });
 
+// Staff sign-in lives inside the admin SPA; /login is a friendly alias so the
+// URL printed in the startup banner (and any bookmarks) resolves instead of 404ing.
+app.get('/login', (req, res) => res.redirect('/admin'));
+
 // Homepage. Served explicitly so it works on serverless hosts (e.g. Vercel)
 // that don't auto-map "/" to index.html. Falls through to static if missing.
 app.get('/', (req, res, next) => {

@@ -168,9 +168,15 @@
     'Tell us your monthly budget and we’ll show every available unit that fits, on the map.':
       'Indiquez votre budget mensuel et nous afficherons sur la carte chaque unité disponible qui convient.',
     'Monthly budget': 'Budget mensuel',
+    '$ / month': '$ / mois',
     'Bedrooms (optional)': 'Chambres (facultatif)',
     'Show units on the map →': 'Voir les unités sur la carte →',
     'Change budget': 'Changer le budget',
+
+    // Units page hero
+    'Apartments for rent in Montréal.': 'Appartements à louer à Montréal.',
+    'Every listing below is a vetted, currently-available apartment for rent across Montréal — from the Plateau to Griffintown. Filter by bedrooms, price, or neighbourhood, then book a showing.':
+      'Chaque annonce ci-dessous est un appartement vérifié, actuellement disponible à louer partout à Montréal — du Plateau à Griffintown. Filtrez par chambres, prix ou quartier, puis réservez une visite.',
 
     // Listing page
     '← Back to map': '← Retour à la carte',
@@ -323,8 +329,11 @@
       .replace(/\b(\d+)\s*beds?\b/g, function (m, n) { return n + ' chambre' + (Number(n) > 1 ? 's' : ''); })
       .replace(/\b(\d+)\s*baths?\b/g, function (m, n) { return n + ' sdb'; })
       .replace(/\b([\d,]+)\s*sqft\b/g, function (m, n) { return n.replace(/,/g, ' ') + ' pi²'; })
+      // "January 5, 2026" → "5 janvier 2026" (French date order) before the lone-month pass
+      .replace(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s*(\d{4})\b/g, function (m, mo, d, y) { return d + ' ' + MONTHS[mo] + ' ' + y; })
       .replace(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/g, function (m) { return MONTHS[m]; })
       .replace(/\bAvailable\b/g, 'Disponible')
+      .replace(/\bNow\b/g, 'Maintenant')
       .replace(/\bYes\b/g, 'Oui')
       .replace(/\bNo\b/g, 'Non');
   }

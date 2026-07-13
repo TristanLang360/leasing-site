@@ -127,20 +127,18 @@ they just read/write the bucket instead of disk. The implementation lives in
 | Value | Backing store |
 |-------|---------------|
 | `sqlite` *(default)* | `./rentalium.db` (fully working) |
-| `postgres` | Supabase/Postgres — **seam in place, not yet wired** |
+| `postgres` | Supabase/Postgres — **fully wired** (`lib/repo.postgres.js`) |
 
-Every data call goes through `lib/repo.js`, and every method is already `async`
-and `await`ed by the handlers — so finishing the Postgres move is a single,
-self-contained file. Steps:
+Every data call goes through `lib/repo.js`, and every method is `async` and
+`await`ed by the handlers. Both drivers are implemented, so switching is just a
+config flip. To run on Supabase/Postgres:
 
 1. `npm install pg`
 2. Apply `schema.postgres.sql` to your Supabase database
-3. Implement the methods in `lib/repo.postgres.js` (same signatures as
-   `lib/repo.sqlite.js`) using `pg` against `DATABASE_URL`
-4. Run with `DB_DRIVER=postgres DATABASE_URL=postgres://… npm start`
+3. Run with `DB_DRIVER=postgres DATABASE_URL=postgres://… npm start`
 
-Until step 3 is done, selecting `DB_DRIVER=postgres` fails fast with a reminder
-rather than silently doing nothing.
+Both `lib/repo.sqlite.js` and `lib/repo.postgres.js` share the same method
+signatures, so route code never changes between drivers.
 
 ## Notes
 
