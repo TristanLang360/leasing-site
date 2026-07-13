@@ -95,6 +95,10 @@ p { margin: 0 0 1em; color: var(--ink-muted); }
 }
 .nav-links a:hover { color: var(--ink); }
 .nav-links a.active { color: var(--ink); }
+/* The CTA is a button, not a nav link — keep its own (white) text colour and
+   don't let the muted nav-link colour above out-specify it. */
+.nav-links a.btn-primary { color: #fff; }
+.nav-links a.btn-primary:hover { color: #fff; }
 
 /* ---------- Buttons ---------- */
 .btn {
