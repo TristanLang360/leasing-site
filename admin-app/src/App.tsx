@@ -12,6 +12,7 @@ import { NotificationBell } from '@/components/notification-bell'
 import { AgentsTab } from '@/components/agents-tab'
 import { ApplicationsTab } from '@/components/applications-tab'
 import { ScreeningsTab } from '@/components/screenings-tab'
+import { LandlordsTab } from '@/components/landlords-tab'
 import { AccountTab } from '@/components/account-tab'
 import { OnboardingTour } from '@/components/onboarding-tour'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -109,6 +110,7 @@ export default function App() {
             {cap.manageUsers(me.role) && <TabsTrigger value="agents">{t('Agents')}</TabsTrigger>}
             {cap.manageUsers(me.role) && <TabsTrigger value="applications">{t('Applications')}</TabsTrigger>}
             {cap.manageUsers(me.role) && <TabsTrigger value="screenings">{t('Screenings')}</TabsTrigger>}
+            {cap.manageUsers(me.role) && <TabsTrigger value="landlords">{t('Landlords')}</TabsTrigger>}
             <TabsTrigger value="account">{t('My account')}</TabsTrigger>
           </TabsList>
 
@@ -131,6 +133,9 @@ export default function App() {
           )}
           {cap.manageUsers(me.role) && (
             <TabsContent value="screenings" className="mt-6"><ScreeningsTab /></TabsContent>
+          )}
+          {cap.manageUsers(me.role) && (
+            <TabsContent value="landlords" className="mt-6"><LandlordsTab /></TabsContent>
           )}
           <TabsContent value="account" className="mt-6">
             <AccountTab me={me} onChanged={() => api.get<Me>('/api/me').then(setMe).catch(() => {})} />

@@ -11,6 +11,7 @@
     'Services': 'Services',
     'Neighbourhoods': 'Quartiers',
     'Available units': 'Unités disponibles',
+    'List your unit': 'Inscrire mon unité',
     'Blog': 'Blogue',
     'Contact': 'Contact',
     'Browse rentals': 'Voir les locations',

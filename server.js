@@ -1239,6 +1239,7 @@ app.get('/sitemap.xml', wrap(async (req, res) => {
     { loc: '/', changefreq: 'daily', priority: '1.0', lastmod: today },
     { loc: '/units.html', changefreq: 'daily', priority: '0.9', lastmod: today },
     { loc: '/blog', changefreq: 'weekly', priority: '0.7', lastmod: today },
+    { loc: '/landlord-intake.html', changefreq: 'monthly', priority: '0.7', lastmod: today },
     { loc: '/agent-apply.html', changefreq: 'monthly', priority: '0.5', lastmod: today },
     ...posts.map((p) => ({
       loc: `/blog/${p.slug}`,
@@ -1722,6 +1723,50 @@ app.post('/api/agent-screenings', wrap(async (req, res) => {
 // Master only: list pre-screen quiz submissions.
 app.get('/api/agent-screenings', requireCap(can.manageUsers), wrap(async (req, res) => {
   res.json(await repo.listAgentScreenings());
+}));
+
+// ───────────────────────────────────────────────────────────────
+// Landlord intake — public "list your unit" form (landlord-intake.html).
+// Saves the submission for the admin Landlords tab and emails a summary
+// (via Resend) to the notify address. No auth.
+// ───────────────────────────────────────────────────────────────
+const { sendLandlordIntakeEmail } = require('./lib/mailer');
+
+app.post('/api/landlord-intakes', wrap(async (req, res) => {
+  const b = req.body || {};
+  const str = (v) => (v == null ? null : String(v).trim() || null);
+  const full_name = String(b.full_name || '').trim();
+  const email = String(b.email || '').trim();
+  if (!full_name) return res.status(400).json({ error: 'Owner name is required.' });
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return res.status(400).json({ error: 'A valid email is required.' });
+  const intake = await repo.createLandlordIntake({
+    full_name, email,
+    phone: str(b.phone), mailing_address: str(b.mailing_address), role: str(b.role), based_in: str(b.based_in),
+    address: str(b.address), city: str(b.city), postal_code: str(b.postal_code), neighborhood: str(b.neighborhood),
+    property_type: str(b.property_type), size: str(b.size), bedrooms: str(b.bedrooms), bathrooms: str(b.bathrooms),
+    sqft: str(b.sqft), floor: str(b.floor), furnished: str(b.furnished),
+    desired_rent: str(b.desired_rent), open_to_valuation: str(b.open_to_valuation), lease_type: str(b.lease_type),
+    lease_term: str(b.lease_term), lease_start_date: str(b.lease_start_date), rent_due_day: str(b.rent_due_day),
+    occupancy: str(b.occupancy), lowest_rent_12mo: str(b.lowest_rent_12mo),
+    parking_available: str(b.parking_available), parking_count: str(b.parking_count), parking_type: str(b.parking_type),
+    parking_included: str(b.parking_included), parking_fee: str(b.parking_fee),
+    storage_available: str(b.storage_available), storage_included: str(b.storage_included), storage_fee: str(b.storage_fee),
+    appliances_included: str(b.appliances_included), appliances_deposit: str(b.appliances_deposit), appliances_notes: str(b.appliances_notes),
+    heating_included: str(b.heating_included), heating_type: str(b.heating_type), electricity_included: str(b.electricity_included),
+    hot_water_included: str(b.hot_water_included), gas_service: str(b.gas_service), internet_included: str(b.internet_included),
+    other_included: str(b.other_included),
+    smoking_allowed: str(b.smoking_allowed), pets_allowed: str(b.pets_allowed), other_restrictions: str(b.other_restrictions),
+    highlights: str(b.highlights), services_interested: str(b.services_interested), wants_management: str(b.wants_management),
+    notes: str(b.notes), lang: str(b.lang),
+  });
+  // Fire the notification email; never let an email failure fail the submission.
+  try { await sendLandlordIntakeEmail(intake); } catch (e) { console.error('[landlord-intake] email error:', e.message); }
+  res.status(201).json({ ok: true, id: intake.id });
+}));
+
+// Master only: list landlord intake submissions.
+app.get('/api/landlord-intakes', requireCap(can.manageUsers), wrap(async (req, res) => {
+  res.json(await repo.listLandlordIntakes());
 }));
 
 // Error handler + boot

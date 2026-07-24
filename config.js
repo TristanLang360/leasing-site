@@ -40,6 +40,15 @@ module.exports = {
     sms: process.env.CONTACT_SMS || '+14383400510',
   },
 
+  // Email notifications (Resend HTTP API). Optional — if RESEND_API_KEY is
+  // unset, the app still runs and simply skips sending (logs a note).
+  notify: {
+    resendKey: process.env.RESEND_API_KEY || '',
+    from: process.env.RESEND_FROM || 'Rentalium <onboarding@resend.dev>',
+    // Where landlord-intake summaries are emailed. Falls back to the master account.
+    to: process.env.LANDLORD_NOTIFY_EMAIL || process.env.MASTER_EMAIL || 'admin@rentalium.local',
+  },
+
   session: {
     cookie: 'rentalium_sess',
     days: 14,
