@@ -1166,7 +1166,7 @@ app.delete('/api/posts/:id/cover', requireCap(can.blog), wrap(async (req, res) =
 function renderShell({ title, description, canonical, head = '', body, active = '', ogType = 'website', ogImage = 'https://rentalium.ca/hero-montreal.jpg' }) {
   const navActive = (k) => (active === k ? ' class="active"' : '');
   return `<!DOCTYPE html>
-<html lang="en-CA">
+<html lang="fr-CA">
 <head>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-TK70FDCLYG"></script>
@@ -1183,7 +1183,8 @@ function renderShell({ title, description, canonical, head = '', body, active = 
 ${canonical ? `<link rel="canonical" href="${escHtml(canonical)}" />` : ''}
 <meta name="geo.region" content="CA-QC" /><meta name="geo.placename" content="Montréal" />
 <meta property="og:type" content="${escHtml(ogType)}" />
-<meta property="og:locale" content="en_CA" />
+<meta property="og:locale" content="fr_CA" />
+<meta property="og:locale:alternate" content="en_CA" />
 <meta property="og:site_name" content="Rentalium" />
 ${canonical ? `<meta property="og:url" content="${escHtml(canonical)}" />` : ''}
 <meta property="og:title" content="${escHtml(title)}" />
@@ -1197,7 +1198,7 @@ ${canonical ? `<meta property="og:url" content="${escHtml(canonical)}" />` : ''}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Marcellus&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/styles.css?v=noir6" />
-<script src="/i18n-public.js?v=fr5"></script>
+<script src="/i18n-public.js?v=fr6"></script>
 <script src="/nav.js?v=1" defer></script>
 ${head}
 </head>

@@ -383,6 +383,17 @@
   }
 
   window.PUBLIC_LANG = getLang();
+  document.documentElement.setAttribute('lang', window.PUBLIC_LANG === 'fr' ? 'fr-CA' : 'en-CA');
+  // French is the primary language: the pages are authored in English and
+  // translated here, so hide the page until that's done to avoid a flash of
+  // English. The timeout guarantees the page is never left hidden.
+  if (window.PUBLIC_LANG === 'fr') {
+    document.documentElement.classList.add('i18n-pending');
+    var hide = document.createElement('style');
+    hide.textContent = 'html.i18n-pending body{visibility:hidden}';
+    document.head.appendChild(hide);
+    setTimeout(function () { document.documentElement.classList.remove('i18n-pending'); }, 1500);
+  }
   // Lets dynamically-rendered content (units.js cards/popups) be re-translated.
   window.translatePublic = function (root) {
     if (window.PUBLIC_LANG === 'fr') translate(root || document.body);
@@ -401,9 +412,10 @@
       translate(document.body);
       var t = FR[document.title.trim()];
       if (t) document.title = t;
-      document.documentElement.setAttribute('lang', 'fr');
+      document.documentElement.setAttribute('lang', 'fr-CA');
     }
     wireToggle();
+    document.documentElement.classList.remove('i18n-pending');
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
