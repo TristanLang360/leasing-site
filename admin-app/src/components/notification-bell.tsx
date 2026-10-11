@@ -1,3 +1,4 @@
+import { Bell } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { api, type AppNotification } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -43,7 +44,7 @@ export function NotificationBell() {
   return (
     <DropdownMenu onOpenChange={onOpenChange}>
       <DropdownMenuTrigger className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'relative')} aria-label="Notifications">
-        <span className="text-base leading-none">🔔</span>
+        <Bell className="size-4" />
         {unread > 0 && (
           <span className="absolute -right-0.5 -top-0.5 grid min-w-4 place-items-center rounded-full bg-rose-600 px-1 text-[10px] font-semibold text-white">
             {unread > 9 ? '9+' : unread}
