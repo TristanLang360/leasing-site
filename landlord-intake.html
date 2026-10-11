@@ -6,26 +6,29 @@
 <title>List Your Unit — Rentalium</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f4f4f5;
-    --card: #ffffff;
-    --fg: #09090b;
-    --muted: #71717a;
-    --border: #e4e4e7;
-    --input-border: #d4d4d8;
-    --primary: #18181b;
-    --primary-fg: #fafafa;
-    --accent: #f4f4f5;
-    --ring: rgba(24,24,27,0.12);
-    --radius: 8px;
+    /* Maison Noir */
+    --bg: #0b0b0c;
+    --card: #131315;
+    --fg: #f3eee4;
+    --muted: #a39e93;
+    --border: rgba(201,169,110,0.22);
+    --input-border: rgba(201,169,110,0.45);
+    --primary: #c9a96e;
+    --primary-fg: #0b0b0c;
+    --accent: rgba(201,169,110,0.08);
+    --ring: rgba(201,169,110,0.25);
+    --radius: 2px;
+    --serif: 'Marcellus', 'Times New Roman', serif;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    color-scheme: dark;
     background: var(--bg);
     color: var(--fg);
     min-height: 100vh;
@@ -65,12 +68,12 @@
     border: 1px solid var(--border);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
   }
 
   /* Progress */
   .progress-track { height: 3px; background: var(--border); }
-  .progress-fill { height: 3px; background: var(--fg); transition: width 0.35s ease; width: 0%; }
+  .progress-fill { height: 3px; background: var(--primary); transition: width 0.35s ease; width: 0%; }
 
   /* Card body */
   .card-body { padding: 2.25rem; }
@@ -117,9 +120,9 @@
   .hint { font-size: 12px; color: var(--muted); margin-bottom: 6px; line-height: 1.5; }
   .note {
     font-size: 12px;
-    color: #92400e;
-    background: #fffbeb;
-    border: 1px solid #fde68a;
+    color: #e3c891;
+    background: rgba(201,169,110,0.08);
+    border: 1px solid rgba(201,169,110,0.3);
     border-radius: var(--radius);
     padding: 8px 11px;
     margin-top: 8px;
@@ -155,7 +158,7 @@
     border-color: var(--primary);
     box-shadow: 0 0 0 3px var(--ring);
   }
-  input::placeholder, textarea::placeholder { color: #a1a1aa; }
+  input::placeholder, textarea::placeholder { color: #6f6a61; }
   textarea {
     height: auto;
     min-height: 96px;
@@ -208,7 +211,7 @@
     content: '';
     width: 5px;
     height: 5px;
-    background: white;
+    background: var(--primary-fg);
     border-radius: 50%;
     display: block;
   }
@@ -275,7 +278,7 @@
     outline: none;
   }
   .btn-primary { background: var(--primary); color: var(--primary-fg); }
-  .btn-primary:hover { background: #27272a; }
+  .btn-primary:hover { background: #d8bc86; }
   .btn-primary:focus-visible { box-shadow: 0 0 0 3px var(--ring); }
   .btn-outline {
     background: transparent;
@@ -296,7 +299,7 @@
     gap: 8px;
     padding: 1.5rem 1rem;
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 2px;
     background: var(--card);
     cursor: pointer;
     font-family: inherit;
@@ -336,8 +339,8 @@
   .result-check {
     width: 52px;
     height: 52px;
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
+    background: rgba(201,169,110,0.1);
+    border: 1px solid var(--primary);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -366,9 +369,9 @@
 
   /* Error */
   .error-msg {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    color: #991b1b;
+    background: rgba(224,138,131,0.1);
+    border: 1px solid rgba(224,138,131,0.4);
+    color: #f0b1ab;
     padding: 11px 13px;
     border-radius: var(--radius);
     font-size: 13px;
@@ -376,7 +379,7 @@
   }
 
   /* Powered */
-  .powered { text-align: center; font-size: 12px; color: #a1a1aa; margin-top: 1rem; }
+  .powered { text-align: center; font-size: 12px; color: #6f6a61; margin-top: 1rem; }
 
   /* Mobile: card fills the full width of the screen */
   @media (max-width: 640px) {
@@ -397,6 +400,19 @@
     .lang-cards { grid-template-columns: 1fr; }
     .grid2 { grid-template-columns: 1fr; }
   }
+
+  /* Maison Noir finishing */
+  body { background: radial-gradient(1000px 500px at 50% -10%, rgba(201,169,110,0.10), transparent 60%), var(--bg); }
+  .logo { font-family: var(--serif); font-weight: 400; font-size: 15px; letter-spacing: 0.3em; text-transform: uppercase; }
+  .logo img { filter: invert(73%) sepia(32%) saturate(520%) hue-rotate(358deg) brightness(92%); }
+  .step-title, .lang-title, .result-title { font-family: var(--serif); font-weight: 400; font-size: 24px; letter-spacing: 0; }
+  .step-label { color: var(--primary); letter-spacing: 0.24em; }
+  .card { border-radius: 2px; }
+  .btn { text-transform: uppercase; letter-spacing: 0.18em; font-size: 11px; font-weight: 600; height: 44px; padding: 0 20px; }
+  .btn-outline { color: var(--primary); border-color: var(--primary); }
+  input, select, textarea { color: var(--fg); background-color: var(--bg); }
+  select option { background: var(--card); color: var(--fg); }
+  .result-check svg, .result-check svg * { stroke: var(--primary); }
 </style>
 </head>
 <body>

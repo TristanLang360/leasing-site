@@ -1193,8 +1193,8 @@ ${canonical ? `<meta property="og:url" content="${escHtml(canonical)}" />` : ''}
 <meta name="twitter:image" content="${escHtml(ogImage)}" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=fr5" />
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/styles.css?v=noir1" />
 <script src="/i18n-public.js?v=fr5"></script>
 ${head}
 </head>
