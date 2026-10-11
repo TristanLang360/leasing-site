@@ -277,6 +277,9 @@
     'Submit application →': 'Soumettre la candidature →',
     // Editorial homepage
     'From listing': 'De l’annonce',
+    'Our portfolio': 'Notre portfolio',
+    'See all': 'Voir tout',
+    'Portfolio': 'Portfolio',
     'To move-in': 'À l’emménagement',
     'Find your next apartment': 'Trouver votre prochain appartement',
     'Email': 'Courriel',

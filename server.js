@@ -1201,8 +1201,8 @@ ${canonical ? `<meta property="og:url" content="${escHtml(canonical)}" />` : ''}
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/400.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/500.css" />
-<link rel="stylesheet" href="/styles.css?v=ed2" />
-<script src="/i18n-public.js?v=fr7"></script>
+<link rel="stylesheet" href="/styles.css?v=ed3" />
+<script src="/i18n-public.js?v=fr8"></script>
 <script src="/nav.js?v=2" defer></script>
 ${head}
 </head>

@@ -42,8 +42,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/400.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/500.css" />
-<link rel="stylesheet" href="styles.css?v=ed2" />
-<script src="/i18n-public.js?v=fr7"></script>
+<link rel="stylesheet" href="styles.css?v=ed3" />
+<script src="/i18n-public.js?v=fr8"></script>
 <script src="/nav.js?v=2" defer></script>
 <script>
   // Scroll/intro animations: hide animated elements until reveal.js runs; never
@@ -170,14 +170,21 @@
     </div>
   </section>
 
-  <!-- Available units (portfolio grid) -->
+  <!-- Portfolio: greyscale building photography -->
   <section class="home-portfolio">
     <div class="container">
       <div class="head" data-reveal>
-        <h2>Available units</h2>
-        <a href="/unit-finder" class="btn btn-ghost btn-sm">View all units</a>
+        <h2>Our portfolio</h2>
+        <a href="/unit-finder" class="btn btn-ghost btn-sm">See all</a>
       </div>
-      <div class="pf-grid" id="featured-grid" data-stagger="130"></div>
+      <div class="pf-grid" data-stagger="300">
+        <a class="pf-item" href="/unit-finder" aria-label="Portfolio"><div class="ph" style="background-position: 15% 22%; background-size: 260%"></div></a>
+        <a class="pf-item" href="/unit-finder" aria-label="Portfolio"><div class="ph" style="background-position: 80% 40%; background-size: 300%"></div></a>
+        <a class="pf-item" href="/unit-finder" aria-label="Portfolio"><div class="ph" style="background-position: 50% 58%; background-size: 300%"></div></a>
+        <a class="pf-item" href="/unit-finder" aria-label="Portfolio"><div class="ph" style="background-position: 92% 18%; background-size: 260%"></div></a>
+        <a class="pf-item" href="/unit-finder" aria-label="Portfolio"><div class="ph" style="background-position: 4% 92%; background-size: 240%"></div></a>
+        <a class="pf-item" href="/unit-finder" aria-label="Portfolio"><div class="ph" style="background-position: 34% 32%; background-size: 280%"></div></a>
+      </div>
     </div>
   </section>
 
@@ -300,43 +307,6 @@
   </div>
 </footer>
 
-<script>
-  // Available units grid — 6 most recent priced units.
-  (async () => {
-    try {
-      const r = await fetch('/api/units');
-      if (!r.ok) return;
-      const all = await r.json();
-      const grid = document.getElementById('featured-grid');
-      const FR = window.PUBLIC_LANG === 'fr';
-      const fmtPrice = (n) => Number(n) > 0
-        ? (FR ? Number(n).toLocaleString('fr-CA') + ' $ / mois' : '$' + Number(n).toLocaleString('en-US') + ' / mo')
-        : (FR ? 'Prix sur demande' : 'Contact for price');
-      const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;" }[c]));
-      const slugify = (s) => String(s ?? '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
-      const unitHref = (u) => `/units/${u.id}/${slugify(u.title) || 'listing'}`;
-      const priced = all.filter((u) => Number(u.price) > 0);
-      // Units with photos first, so the grid shows real photography when available.
-      const pick = (priced.length ? priced : all).slice().sort((a, b) => (b.photos?.length ? 1 : 0) - (a.photos?.length ? 1 : 0)).slice(0, 6);
-      grid.innerHTML = pick.map((u) => {
-        const img = (u.photos || []).find((p) => p.kind !== 'video');
-        return `
-          <a class="pf-item" data-reveal href="${unitHref(u)}">
-            <div class="ph">${img ? `<img src="${esc(img.url)}" alt="${esc(u.address)}" loading="lazy">` : ''}</div>
-            <div class="cap"><span>${esc(u.address)}</span><span>${fmtPrice(u.price)}</span></div>
-          </a>`;
-      }).join('');
-      // Stagger + reveal the freshly inserted items.
-      [...grid.children].forEach((el, i) => {
-        el.style.transitionDelay = ((i % 3) * 300) + 'ms';
-        if ('IntersectionObserver' in window) {
-          const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { el.classList.add('in'); io.disconnect(); } }), { threshold: 0.1 });
-          io.observe(el);
-        } else el.classList.add('in');
-      });
-    } catch (e) {}
-  })();
-</script>
 
 </body>
 </html>
