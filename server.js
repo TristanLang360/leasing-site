@@ -1181,9 +1181,9 @@ function renderShell({ title, description, canonical, head = '', body, active = 
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${escHtml(title)}</title>
-<link rel="icon" href="/favicon.ico" sizes="any" />
-<link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="icon" href="/favicon.ico?v=3" sizes="any" />
+<link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" />
 <link rel="manifest" href="/site.webmanifest" />
 <meta name="description" content="${escHtml(description)}" />
 ${canonical ? `<link rel="canonical" href="${escHtml(canonical)}" />` : ''}
