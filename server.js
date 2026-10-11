@@ -1163,7 +1163,7 @@ app.delete('/api/posts/:id/cover', requireCap(can.blog), wrap(async (req, res) =
 }));
 
 // ── Server-rendered public blog (SEO-friendly) ─────────────────
-function renderShell({ title, description, canonical, head = '', body, active = '', ogType = 'website', ogImage = 'https://rentalium.ca/hero-montreal.jpg' }) {
+function renderShell({ title, description, canonical, head = '', body, active = '', ogType = 'website', ogImage = 'https://rentalium.ca/img/hero.jpg' }) {
   const navActive = (k) => (active === k ? ' class="active"' : '');
   return `<!DOCTYPE html>
 <html lang="fr-CA">
@@ -1201,7 +1201,7 @@ ${canonical ? `<meta property="og:url" content="${escHtml(canonical)}" />` : ''}
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/400.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/500.css" />
-<link rel="stylesheet" href="/styles.css?v=ed3" />
+<link rel="stylesheet" href="/styles.css?v=ed4" />
 <script src="/i18n-public.js?v=fr8"></script>
 <script src="/nav.js?v=2" defer></script>
 ${head}
@@ -1335,7 +1335,7 @@ app.get('/blog/:slug', wrap(async (req, res) => {
     canonical: `https://rentalium.ca/blog/${post.slug}`,
     active: 'blog',
     ogType: 'article',
-    ogImage: post.cover_image ? storage.publicUrl(post.cover_image) : 'https://rentalium.ca/hero-montreal.jpg',
+    ogImage: post.cover_image ? storage.publicUrl(post.cover_image) : 'https://rentalium.ca/img/hero.jpg',
     head: `<script type="application/ld+json">${JSON.stringify(ld)}</script>`,
     body,
   }));
