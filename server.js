@@ -1206,7 +1206,7 @@ ${canonical ? `<meta property="og:url" content="${escHtml(canonical)}" />` : ''}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/400.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/500.css" />
 <link rel="stylesheet" href="/styles.css?v=ed6" />
-<script src="/i18n-public.js?v=fr8"></script>
+<script src="/i18n-public.js?v=fr9"></script>
 <script src="/nav.js?v=2" defer></script>
 ${head}
 </head>
@@ -1749,10 +1749,13 @@ app.post('/api/landlord-intakes', wrap(async (req, res) => {
   const str = (v) => (v == null ? null : String(v).trim() || null);
   const full_name = String(b.full_name || '').trim();
   const email = String(b.email || '').trim();
+  const phoneDigits = String(b.phone || '').replace(/\D/g, '');
   if (!full_name) return res.status(400).json({ error: 'Owner name is required.' });
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return res.status(400).json({ error: 'A valid email is required.' });
+  // Owners can be reached by email or phone — require one, validate the email if given.
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return res.status(400).json({ error: 'Please check the email address.' });
+  if (!email && phoneDigits.length < 7) return res.status(400).json({ error: 'An email or phone number is required.' });
   const intake = await repo.createLandlordIntake({
-    full_name, email,
+    full_name, email: email || null,
     phone: str(b.phone), mailing_address: str(b.mailing_address), role: str(b.role), based_in: str(b.based_in),
     address: str(b.address), city: str(b.city), postal_code: str(b.postal_code), neighborhood: str(b.neighborhood),
     property_type: str(b.property_type), size: str(b.size), bedrooms: str(b.bedrooms), bathrooms: str(b.bathrooms),

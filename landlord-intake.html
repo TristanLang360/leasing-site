@@ -11,1314 +11,330 @@
   gtag('config', 'G-CX5YJ35XRX');
   gtag('config', 'G-TK70FDCLYG'); // previous Analytics property, kept so its data continues
 </script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>List Your Unit — Rentalium</title>
+<meta name="description" content="List your Montréal rental unit with Rentalium in two minutes. We market it, screen tenants and prepare the Québec lease." />
+<link rel="canonical" href="https://rentalium.ca/landlord-intake" />
 <link rel="icon" href="/favicon.ico?v=3" sizes="any" />
 <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" />
 <link rel="manifest" href="/site.webmanifest" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/400.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/500.css">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/400.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/500.css" />
+<link rel="stylesheet" href="/styles.css?v=ed6" />
+<script src="/i18n-public.js?v=fr9"></script>
+<script src="/nav.js?v=2" defer></script>
 <style>
-  :root {
-    /* Editorial light theme (matches the main site) */
-    --bg: #f5f5f3;
-    --card: #ffffff;
-    --fg: #111111;
-    --muted: #5c5c5c;
-    --border: #e2e2e2;
-    --input-border: #cfcfcf;
-    --primary: #161616;
-    --primary-fg: #ffffff;
-    --accent: #f5f5f3;
-    --ring: rgba(17,17,17,0.10);
-    --radius: 0px;
-    --display: 'Open Sauce One', 'Helvetica Neue', Arial, sans-serif;
+  /* Owner listing form — one short page */
+  .li-wrap { max-width: 720px; margin: 0 auto; padding: 64px var(--gutter) 96px; min-height: calc(100vh - 260px); }
+  .li-head h1 { font-size: clamp(2rem, 4vw, 2.8rem); margin: 0 0 12px; }
+  .li-head p { margin: 0 0 8px; color: var(--ink-muted); font-size: 1.02rem; }
+  .li-perks { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 18px 0 40px; padding: 0; list-style: none; color: var(--ink); font-size: 0.92rem; }
+  .li-perks li::before { content: "✓"; margin-right: 8px; color: var(--accent); }
+  .li-card { border: 1px solid var(--line); background: #fff; padding: 36px 36px 8px; margin-bottom: 20px; }
+  .li-card h2 { font-size: 1.35rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .li-card .sub { margin: 0 0 24px; font-size: 0.92rem; color: var(--ink-muted); }
+  .f { margin-bottom: 26px; }
+  .f > label, .f > .lbl { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 10px; color: var(--ink); }
+  .f .opt { font-weight: 400; color: var(--ink-muted); }
+  .f input[type=text], .f input[type=email], .f input[type=tel], .f input[type=number], .f input[type=date], .f textarea {
+    width: 100%; font: inherit; font-size: 1rem; color: var(--ink); background: #fff;
+    border: 1px solid #cfcfcf; border-radius: 0; padding: 13px 14px; outline: none;
+    transition: border-color 150ms, box-shadow 150ms;
   }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Open Sauce One', 'Helvetica Neue', Arial, sans-serif;
-    color-scheme: light;
-    background: var(--bg);
-    color: var(--fg);
-    min-height: 100vh;
-    padding: 2rem 1rem 3rem;
-    -webkit-font-smoothing: antialiased;
+  .f textarea { min-height: 110px; resize: vertical; }
+  .f input:focus, .f textarea:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(17,17,17,0.08); }
+  .f.has-error input, .f.has-error textarea { border-color: #b3261e; }
+  .f .err { display: none; margin-top: 8px; font-size: 0.86rem; color: #b3261e; }
+  .f.has-error .err { display: block; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  .money { position: relative; }
+  .money input { padding-right: 70px; }
+  .money span { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--ink-muted); font-size: 0.92rem; pointer-events: none; }
+  /* tap chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font: inherit; font-size: 0.95rem; color: var(--ink); background: #fff;
+    border: 1px solid #cfcfcf; border-radius: 0; padding: 11px 16px; min-height: 44px; cursor: pointer;
+    transition: background 150ms, border-color 150ms, color 150ms;
   }
-
-  .wrapper { max-width: 625px; margin: 0 auto; }
-
-  /* Top bar */
-  .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.25rem;
-    min-height: 28px;
+  .chip:hover { border-color: var(--ink); }
+  .chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .date-pick { margin-top: 10px; }
+  .date-pick[hidden] { display: none; }
+  .li-submit { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
+  .li-submit .btn { width: 100%; justify-content: center; padding: 18px 24px; font-size: 0.9rem; }
+  .li-submit .fine { font-size: 0.84rem; color: var(--ink-muted); text-align: center; margin: 0; }
+  .li-alert { display: none; border: 1px solid #f0c8c6; background: #fdf0ef; color: #9b2a22; padding: 12px 14px; font-size: 0.92rem; }
+  .li-alert.on { display: block; }
+  .li-done { text-align: center; padding: 40px 0; }
+  .li-done .mark { width: 56px; height: 56px; margin: 0 auto 22px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: #fff; font-size: 1.4rem; }
+  .li-done h1 { font-size: clamp(1.9rem, 4vw, 2.5rem); margin: 0 0 12px; }
+  .li-done p { color: var(--ink-muted); max-width: 460px; margin: 0 auto 28px; }
+  @media (max-width: 560px) {
+    .li-wrap { padding-top: 40px; }
+    .li-card { padding: 26px 20px 4px; }
+    .row2 { grid-template-columns: 1fr; }
   }
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--fg);
-    text-decoration: none;
-  }
-  .logo img { width: 20px; height: 20px; }
-  .step-indicator {
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 500;
-  }
-
-  /* Card */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
-  }
-
-  /* Progress */
-  .progress-track { height: 3px; background: var(--border); }
-  .progress-fill { height: 3px; background: var(--primary); transition: width 0.35s ease; width: 0%; }
-
-  /* Card body */
-  .card-body { padding: 2.25rem; }
-
-  /* Steps */
-  .step { display: none; }
-  .step.active { display: block; }
-
-  /* Step header */
-  .step-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    margin-bottom: 6px;
-  }
-  .step-title {
-    font-size: 19px;
-    font-weight: 600;
-    color: var(--fg);
-    margin-bottom: 4px;
-    line-height: 1.3;
-  }
-  .step-sub {
-    font-size: 14px;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-  }
-
-  /* Separator */
-  .sep { height: 1px; background: var(--border); margin: 1.5rem 0; }
-
-  /* Field */
-  .field { margin-bottom: 1.125rem; }
-  .field > label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--fg);
-    margin-bottom: 6px;
-  }
-  .hint { font-size: 12px; color: var(--muted); margin-bottom: 6px; line-height: 1.5; }
-  .note {
-    font-size: 12px;
-    color: #e3c891;
-    background: rgba(201,169,110,0.08);
-    border: 1px solid rgba(201,169,110,0.3);
-    border-radius: var(--radius);
-    padding: 8px 11px;
-    margin-top: 8px;
-    line-height: 1.5;
-  }
-
-  /* Compact two-column rows */
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .hidden { display: none; }
-
-  /* Inputs */
-  input[type="text"],
-  input[type="email"],
-  input[type="tel"],
-  input[type="number"],
-  input[type="date"],
-  select,
-  textarea {
-    width: 100%;
-    height: 38px;
-    padding: 0 11px;
-    border: 1px solid var(--input-border);
-    border-radius: var(--radius);
-    font-size: 14px;
-    color: var(--fg);
-    background: var(--card);
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    -webkit-appearance: none;
-  }
-  input:focus, select:focus, textarea:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--ring);
-  }
-  input::placeholder, textarea::placeholder { color: #6f6a61; }
-  textarea {
-    height: auto;
-    min-height: 96px;
-    padding: 9px 11px;
-    resize: vertical;
-    line-height: 1.6;
-  }
-  select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 11px center;
-    cursor: pointer;
-    padding-right: 32px;
-  }
-
-  /* Radio options */
-  .radio-group { display: flex; flex-direction: column; gap: 7px; }
-  .radio-group.horizontal { flex-direction: row; flex-wrap: wrap; }
-  .radio-group.horizontal .radio-option { flex: 1; min-width: 120px; }
-  .radio-option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 13px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: border-color 0.12s, background 0.12s;
-    user-select: none;
-  }
-  .radio-option:hover { border-color: var(--input-border); background: var(--accent); }
-  .radio-option.selected { border-color: var(--primary); background: var(--accent); }
-  .radio-option input[type="radio"] { display: none; }
-  .radio-dot {
-    width: 16px;
-    height: 16px;
-    border: 1.5px solid var(--input-border);
-    border-radius: 50%;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: border-color 0.12s, background 0.12s;
-  }
-  .radio-option.selected .radio-dot {
-    border-color: var(--primary);
-    background: var(--primary);
-  }
-  .radio-option.selected .radio-dot::after {
-    content: '';
-    width: 5px;
-    height: 5px;
-    background: var(--primary-fg);
-    border-radius: 50%;
-    display: block;
-  }
-  .radio-option span { font-size: 14px; color: var(--fg); }
-
-  /* Checkbox options */
-  .checkbox-group { display: flex; flex-direction: column; gap: 7px; }
-  .checkbox-option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 13px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: border-color 0.12s, background 0.12s;
-    user-select: none;
-  }
-  .checkbox-option:hover { border-color: var(--input-border); background: var(--accent); }
-  .checkbox-option.checked { border-color: var(--primary); background: var(--accent); }
-  .checkbox-option input[type="checkbox"] { display: none; }
-  .check-box {
-    width: 16px;
-    height: 16px;
-    border: 1.5px solid var(--input-border);
-    border-radius: 4px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.12s;
-  }
-  .checkbox-option.checked .check-box {
-    border-color: var(--primary);
-    background: var(--primary);
-  }
-  .checkbox-option.checked .check-box svg { display: block; }
-  .check-box svg { display: none; width: 10px; height: 10px; }
-  .checkbox-option span { font-size: 14px; color: var(--fg); }
-
-  /* Buttons */
-  .btn-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1.5rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--border);
-  }
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    height: 38px;
-    padding: 0 16px;
-    border-radius: var(--radius);
-    font-size: 14px;
-    font-weight: 500;
-    font-family: inherit;
-    cursor: pointer;
-    border: none;
-    transition: all 0.12s;
-    white-space: nowrap;
-    outline: none;
-  }
-  .btn-primary { background: var(--primary); color: var(--primary-fg); }
-  .btn-primary:hover { background: #d8bc86; }
-  .btn-primary:focus-visible { box-shadow: 0 0 0 3px var(--ring); }
-  .btn-outline {
-    background: transparent;
-    color: var(--fg);
-    border: 1px solid var(--border);
-  }
-  .btn-outline:hover { background: var(--accent); }
-
-  /* Language picker */
-  .lang-screen { padding: 0.25rem 0; }
-  .lang-title { font-size: 19px; font-weight: 600; text-align: center; margin-bottom: 4px; }
-  .lang-sub { font-size: 14px; color: var(--muted); text-align: center; margin-bottom: 1.5rem; }
-  .lang-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .lang-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 1.5rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    background: var(--card);
-    cursor: pointer;
-    font-family: inherit;
-    text-align: center;
-    transition: border-color 0.12s, box-shadow 0.12s, background 0.12s;
-    outline: none;
-  }
-  .lang-card:hover {
-    border-color: var(--primary);
-    background: var(--accent);
-    box-shadow: 0 0 0 3px var(--ring);
-  }
-  .lang-card:focus-visible {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--ring);
-  }
-  .lang-flag { font-size: 2rem; line-height: 1; }
-  .lang-name { font-size: 15px; font-weight: 600; color: var(--fg); }
-  .lang-cta { font-size: 12px; color: var(--muted); }
-
-  /* Loading */
-  .loading { text-align: center; padding: 3rem 0 2rem; }
-  .spinner {
-    width: 32px;
-    height: 32px;
-    border: 2.5px solid var(--border);
-    border-top-color: var(--fg);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    margin: 0 auto 1rem;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading p { font-size: 14px; color: var(--muted); }
-
-  /* Result */
-  .result-wrap { text-align: center; padding: 2.5rem 1rem 2rem; }
-  .result-check {
-    width: 52px;
-    height: 52px;
-    background: rgba(201,169,110,0.1);
-    border: 1px solid var(--primary);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.25rem;
-  }
-  .result-check svg { width: 24px; height: 24px; }
-  .result-title { font-size: 18px; font-weight: 600; color: var(--fg); margin-bottom: 10px; }
-  .result-name {
-    display: inline-block;
-    font-size: 13px;
-    color: var(--muted);
-    background: var(--accent);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    padding: 2px 10px;
-    margin-bottom: 1.25rem;
-  }
-  .result-msg {
-    font-size: 14px;
-    color: var(--muted);
-    line-height: 1.75;
-    max-width: 360px;
-    margin: 0 auto;
-  }
-
-  /* Error */
-  .error-msg {
-    background: rgba(224,138,131,0.1);
-    border: 1px solid rgba(224,138,131,0.4);
-    color: #f0b1ab;
-    padding: 11px 13px;
-    border-radius: var(--radius);
-    font-size: 13px;
-    margin-top: 0.75rem;
-  }
-
-  /* Powered */
-  .powered { text-align: center; font-size: 12px; color: #6f6a61; margin-top: 1rem; }
-
-  /* Mobile: card fills the full width of the screen */
-  @media (max-width: 640px) {
-    body { padding: 0 0 2rem; min-height: 100vh; }
-    .wrapper { max-width: 100%; }
-    .topbar { margin: 0; padding: 1rem 1.1rem; }
-    .card {
-      border-radius: 0;
-      border-left: none;
-      border-right: none;
-      box-shadow: none;
-    }
-    .card-body { padding: 1.5rem 1.25rem 2rem; }
-    .lang-cards { gap: 8px; }
-  }
-
-  @media (max-width: 380px) {
-    .lang-cards { grid-template-columns: 1fr; }
-    .grid2 { grid-template-columns: 1fr; }
-  }
-
-  /* Editorial finishing */
-  .logo { font-family: 'Marcellus', 'Times New Roman', serif; font-weight: 400; font-size: 18px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg); }
-  .step-title, .lang-title, .result-title { font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: -0.01em; line-height: 1.15; }
-  .step-label { color: var(--muted); letter-spacing: 0.1em; }
-  .card { border-radius: 0; box-shadow: none; }
-  .btn { text-transform: uppercase; letter-spacing: 0.06em; font-size: 12px; font-weight: 500; height: 44px; padding: 0 20px; }
-  .btn-primary:hover { background: #333; }
-  .btn-outline { color: var(--fg); border-color: #44507a; }
-  .note { color: #44507a; background: #f0f2f8; border-color: #d7dcea; }
-  .result-check { background: #f5f5f3; border-color: var(--fg); }
-  .result-check svg, .result-check svg * { stroke: var(--fg); }
-  .error-msg { background: #fdf0ef; border-color: #f3c9c6; color: #9b2a22; }
 </style>
 </head>
 <body>
-
-<div class="wrapper">
-
-  <div class="topbar">
-    <a href="/" class="logo"> Rentalium
-    </a>
-    <div class="step-indicator" id="step-indicator"></div>
+<header class="nav">
+  <div class="container nav-inner">
+    <a href="/" class="brand">Rentalium</a>
+    <nav class="nav-links">
+      <a href="/#services">Services</a>
+      <a href="/unit-finder">Available units</a>
+      <a href="/landlord-intake" class="active">List your unit</a>
+      <a href="/blog">Blog</a>
+      <a href="/unit-finder" class="btn btn-primary btn-sm">Browse rentals</a>
+      <button class="lang-toggle" type="button" aria-label="Language">FR</button>
+    </nav>
   </div>
+</header>
 
-  <div class="card">
-    <div class="progress-track">
-      <div class="progress-fill" id="progress"></div>
+<main class="li-wrap">
+  <form id="li-form" novalidate>
+    <div class="li-head">
+      <h1>List your unit</h1>
+      <p>Two minutes, no commitment. We'll call you back within one business day to go over the details.</p>
+      <ul class="li-perks">
+        <li>Free to list</li>
+        <li>You pay only once it's leased</li>
+        <li>Screening &amp; Québec lease handled</li>
+      </ul>
     </div>
 
-    <div class="card-body">
+    <section class="li-card">
+      <h2>Your unit</h2>
+      <p class="sub">Only the address is required.</p>
 
-      <!-- Step 0: Language picker -->
-      <div class="step active" id="step-0">
-        <div class="lang-screen">
-          <div class="lang-title">Inscrivez votre unité avec Rentalium</div>
-          <div class="lang-sub">List your unit with Rentalium</div>
-          <div class="lang-cards">
-            <button class="lang-card" onclick="chooseLang('fr')">
-              <div class="lang-flag">🇨🇦</div>
-              <div class="lang-name">Français</div>
-              <div class="lang-cta">Continuer en français</div>
-            </button>
-            <button class="lang-card" onclick="chooseLang('en')">
-              <div class="lang-flag">🇨🇦</div>
-              <div class="lang-name">English</div>
-              <div class="lang-cta">Continue in English</div>
-            </button>
+      <div class="f" id="f-address">
+        <label for="address">Unit address</label>
+        <input type="text" id="address" autocomplete="street-address" placeholder="e.g. 4521 Rue Saint-Denis, apt. 3" />
+        <div class="err">Please enter the unit's address.</div>
+      </div>
+
+      <div class="f">
+        <span class="lbl">Type <span class="opt">(optional)</span></span>
+        <div class="chips" data-single="property_type">
+          <button type="button" class="chip" data-v="Apartment">Apartment</button>
+          <button type="button" class="chip" data-v="Condo">Condo</button>
+          <button type="button" class="chip" data-v="House / plex">House / plex</button>
+          <button type="button" class="chip" data-v="Room">Room</button>
+          <button type="button" class="chip" data-v="Commercial">Commercial</button>
+        </div>
+      </div>
+
+      <div class="f">
+        <span class="lbl">Bedrooms <span class="opt">(optional)</span></span>
+        <div class="chips" data-single="bedrooms">
+          <button type="button" class="chip" data-v="Studio">Studio</button>
+          <button type="button" class="chip" data-v="1">1</button>
+          <button type="button" class="chip" data-v="2">2</button>
+          <button type="button" class="chip" data-v="3">3</button>
+          <button type="button" class="chip" data-v="4+">4+</button>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="f">
+          <label for="desired_rent">Monthly rent <span class="opt">(optional)</span></label>
+          <div class="money">
+            <input type="number" id="desired_rent" inputmode="numeric" min="0" step="25" placeholder="1500" />
+            <span>$ / month</span>
+          </div>
+        </div>
+        <div class="f">
+          <span class="lbl">Available <span class="opt">(optional)</span></span>
+          <div class="chips" data-single="availability">
+            <button type="button" class="chip" data-v="Now">Now</button>
+            <button type="button" class="chip" data-v="date">Pick a date</button>
+          </div>
+          <div class="date-pick" id="date-pick" hidden>
+            <input type="date" id="lease_start_date" aria-label="Available from" />
           </div>
         </div>
       </div>
 
-      <!-- Step 1: Owner & contact -->
-      <div class="step" id="step-1">
-        <div class="step-label" data-i18n="step1_label">Step 1 of 7</div>
-        <div class="step-title" data-i18n="step1_title">About you</div>
-        <div class="step-sub" data-i18n="step1_sub">We'll use this to prepare the lease (bail) and to reach you about your unit.</div>
-        <div class="field">
-          <label data-i18n="fullname_label">Owner's full legal name</label>
-          <div class="hint" data-i18n="fullname_hint">The name that will appear on the lease as the lessor (landlord).</div>
-          <input type="text" id="full_name" data-i18n-ph="fullname_ph" placeholder="First and last name" />
-        </div>
-        <div class="field">
-          <label data-i18n="email_label">Email address</label>
-          <input type="email" id="email" data-i18n-ph="email_ph" placeholder="your@email.com" />
-        </div>
-        <div class="field">
-          <label data-i18n="phone_label">Phone number</label>
-          <input type="tel" id="phone" placeholder="+1 514-xxx-xxxx" />
-        </div>
-        <div class="field">
-          <label data-i18n="mailing_label">Mailing address</label>
-          <div class="hint" data-i18n="mailing_hint">The lessor's address is required on the Québec lease — a foreign address is fine.</div>
-          <textarea id="mailing_address" data-i18n-ph="mailing_ph" placeholder="Street, city, postal/ZIP code, country" style="min-height:64px;"></textarea>
-        </div>
-        <div class="field">
-          <label data-i18n="role_label">You are…</label>
-          <div class="radio-group" id="role">
-            <label class="radio-option"><input type="radio" name="role" value="Owner"><div class="radio-dot"></div><span data-i18n="role_owner">The owner</span></label>
-            <label class="radio-option"><input type="radio" name="role" value="Authorized representative"><div class="radio-dot"></div><span data-i18n="role_rep">An authorized representative of the owner</span></label>
-            <label class="radio-option"><input type="radio" name="role" value="Property manager"><div class="radio-dot"></div><span data-i18n="role_mgr">A property manager</span></label>
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="basedin_label">Where are you currently based? <span data-i18n="optional">(optional)</span></label>
-          <input type="text" id="based_in" data-i18n-ph="basedin_ph" placeholder="e.g. Berlin, Germany" />
-        </div>
-        <div class="btn-nav">
-          <div></div>
-          <button class="btn btn-primary" onclick="nextStep(1)" data-i18n="btn_continue">Continue →</button>
+      <div class="f">
+        <span class="lbl">Included or allowed <span class="opt">(optional — tap all that apply)</span></span>
+        <div class="chips" data-multi="extras">
+          <button type="button" class="chip" data-v="parking">Parking</button>
+          <button type="button" class="chip" data-v="storage">Storage / locker</button>
+          <button type="button" class="chip" data-v="appliances">Appliances</button>
+          <button type="button" class="chip" data-v="heating">Heating included</button>
+          <button type="button" class="chip" data-v="pets">Pets allowed</button>
+          <button type="button" class="chip" data-v="furnished">Furnished</button>
         </div>
       </div>
 
-      <!-- Step 2: The dwelling -->
-      <div class="step" id="step-2">
-        <div class="step-label" data-i18n="step2_label">Step 2 of 7</div>
-        <div class="step-title" data-i18n="step2_title">The property</div>
-        <div class="step-sub" data-i18n="step2_sub">Tell us where the unit is and its layout — this drives both the lease and the listing.</div>
-        <div class="field">
-          <label data-i18n="address_label">Property address (with unit #)</label>
-          <input type="text" id="address" data-i18n-ph="address_ph" placeholder="e.g. 3887 Rue Clark, apt 2" />
+      <div class="f">
+        <label for="notes">Anything else? <span class="opt">(optional)</span></label>
+        <textarea id="notes" placeholder="Renovations, view, current tenant's move-out date, best times to visit…"></textarea>
+      </div>
+    </section>
+
+    <section class="li-card">
+      <h2>How can we reach you?</h2>
+      <p class="sub">Your name, and an email or a phone number.</p>
+
+      <div class="f" id="f-name">
+        <label for="full_name">Your name</label>
+        <input type="text" id="full_name" autocomplete="name" />
+        <div class="err">Please enter your name.</div>
+      </div>
+      <div class="row2">
+        <div class="f" id="f-email">
+          <label for="email">Email</label>
+          <input type="email" id="email" autocomplete="email" inputmode="email" />
+          <div class="err" id="email-err">Please check the email address.</div>
         </div>
-        <div class="grid2">
-          <div class="field">
-            <label data-i18n="city_label">City</label>
-            <input type="text" id="city" value="Montréal" />
-          </div>
-          <div class="field">
-            <label data-i18n="postal_label">Postal code</label>
-            <input type="text" id="postal_code" placeholder="H2X 2R7" />
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="neighborhood_label">Neighbourhood <span data-i18n="optional">(optional)</span></label>
-          <input type="text" id="neighborhood" data-i18n-ph="neighborhood_ph" placeholder="e.g. Le Plateau-Mont-Royal" />
-        </div>
-        <div class="field">
-          <label data-i18n="ptype_label">Property type</label>
-          <div class="radio-group" id="property_type">
-            <label class="radio-option"><input type="radio" name="ptype" value="Condo"><div class="radio-dot"></div><span data-i18n="ptype_condo">Condo</span></label>
-            <label class="radio-option"><input type="radio" name="ptype" value="Apartment in a plex"><div class="radio-dot"></div><span data-i18n="ptype_plex">Apartment in a plex (duplex/triplex…)</span></label>
-            <label class="radio-option"><input type="radio" name="ptype" value="House"><div class="radio-dot"></div><span data-i18n="ptype_house">House</span></label>
-            <label class="radio-option"><input type="radio" name="ptype" value="Loft"><div class="radio-dot"></div><span data-i18n="ptype_loft">Loft</span></label>
-            <label class="radio-option"><input type="radio" name="ptype" value="Other"><div class="radio-dot"></div><span data-i18n="ptype_other">Other</span></label>
-          </div>
-        </div>
-        <div class="grid2">
-          <div class="field">
-            <label data-i18n="size_label">Size (rooms)</label>
-            <div class="hint" data-i18n="size_hint">Québec count, e.g. 4½</div>
-            <input type="text" id="size" placeholder="4½" />
-          </div>
-          <div class="field">
-            <label data-i18n="sqft_label">Area (sq ft) <span data-i18n="optional">(optional)</span></label>
-            <input type="number" id="sqft" placeholder="750" />
-          </div>
-        </div>
-        <div class="grid2">
-          <div class="field">
-            <label data-i18n="bedrooms_label">Bedrooms</label>
-            <input type="number" id="bedrooms" placeholder="2" />
-          </div>
-          <div class="field">
-            <label data-i18n="bathrooms_label">Bathrooms</label>
-            <input type="number" id="bathrooms" placeholder="1" />
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="floor_label">Floor / storey <span data-i18n="optional">(optional)</span></label>
-          <input type="text" id="floor" data-i18n-ph="floor_ph" placeholder="e.g. 2nd floor" />
-        </div>
-        <div class="field">
-          <label data-i18n="furnished_label">Is it furnished?</label>
-          <div class="radio-group horizontal" id="furnished">
-            <label class="radio-option"><input type="radio" name="furnished" value="Unfurnished"><div class="radio-dot"></div><span data-i18n="furnished_no">Unfurnished</span></label>
-            <label class="radio-option"><input type="radio" name="furnished" value="Furnished"><div class="radio-dot"></div><span data-i18n="furnished_yes">Furnished</span></label>
-            <label class="radio-option"><input type="radio" name="furnished" value="Semi-furnished"><div class="radio-dot"></div><span data-i18n="furnished_semi">Semi-furnished</span></label>
-          </div>
-        </div>
-        <div class="btn-nav">
-          <button class="btn btn-outline" onclick="prevStep(2)" data-i18n="btn_back">← Back</button>
-          <button class="btn btn-primary" onclick="nextStep(2)" data-i18n="btn_continue">Continue →</button>
+        <div class="f" id="f-phone">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" autocomplete="tel" inputmode="tel" />
+          <div class="err">Add an email or a phone number so we can reach you.</div>
         </div>
       </div>
+    </section>
 
-      <!-- Step 3: Lease term & rent -->
-      <div class="step" id="step-3">
-        <div class="step-label" data-i18n="step3_label">Step 3 of 7</div>
-        <div class="step-title" data-i18n="step3_title">Rent &amp; lease term</div>
-        <div class="step-sub" data-i18n="step3_sub">What you're looking to get, and the term you have in mind.</div>
-        <div class="field">
-          <label data-i18n="rent_label">How much are you looking to get per month? (CAD)</label>
-          <div class="hint" data-i18n="rent_hint">Enter your target rent. Not sure? Leave it blank and check the box below.</div>
-          <input type="number" id="desired_rent" data-i18n-ph="rent_ph" placeholder="e.g. 1850" />
-        </div>
-        <div class="field">
-          <div class="checkbox-group" id="open_to_valuation">
-            <label class="checkbox-option"><input type="checkbox" value="Yes"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="valuation_label">I'd like Rentalium's assessment of the achievable market rent</span></label>
-          </div>
-        </div>
-        <div class="sep"></div>
-        <div class="field">
-          <label data-i18n="lease_type_label">Lease type</label>
-          <div class="radio-group horizontal" id="lease_type">
-            <label class="radio-option"><input type="radio" name="lease_type" value="Fixed term"><div class="radio-dot"></div><span data-i18n="lease_fixed">Fixed term</span></label>
-            <label class="radio-option"><input type="radio" name="lease_type" value="Indeterminate"><div class="radio-dot"></div><span data-i18n="lease_indet">Indeterminate</span></label>
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="lease_term_label">Desired term</label>
-          <div class="radio-group horizontal" id="lease_term">
-            <label class="radio-option"><input type="radio" name="lease_term" value="12 months"><div class="radio-dot"></div><span data-i18n="term_12">12 months</span></label>
-            <label class="radio-option"><input type="radio" name="lease_term" value="Other"><div class="radio-dot"></div><span data-i18n="term_other">Other</span></label>
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="start_date_label">Available from</label>
-          <input type="date" id="lease_start_date" />
-        </div>
-        <div class="field">
-          <label data-i18n="due_day_label">Day rent is due each month <span data-i18n="optional">(optional)</span></label>
-          <input type="text" id="rent_due_day" value="1st of the month" />
-        </div>
-        <div class="field">
-          <label data-i18n="occupancy_label">Current occupancy</label>
-          <div class="radio-group" id="occupancy">
-            <label class="radio-option"><input type="radio" name="occupancy" value="Vacant now"><div class="radio-dot"></div><span data-i18n="occ_vacant">Vacant now — available for immediate occupancy</span></label>
-            <label class="radio-option"><input type="radio" name="occupancy" value="Tenant leaving soon"><div class="radio-dot"></div><span data-i18n="occ_leaving">A tenant is living there and will be leaving</span></label>
-            <label class="radio-option"><input type="radio" name="occupancy" value="Owner-occupied"><div class="radio-dot"></div><span data-i18n="occ_owner">Owner-occupied</span></label>
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="lowest_rent_label">Lowest rent paid in the last 12 months <span data-i18n="optional">(optional)</span></label>
-          <div class="hint" data-i18n="lowest_rent_hint">Required disclosure on the Québec lease (section G). Leave blank if unknown — we'll help.</div>
-          <input type="number" id="lowest_rent_12mo" data-i18n-ph="lowest_rent_ph" placeholder="e.g. 1700" />
-        </div>
-        <div class="btn-nav">
-          <button class="btn btn-outline" onclick="prevStep(3)" data-i18n="btn_back">← Back</button>
-          <button class="btn btn-primary" onclick="nextStep(3)" data-i18n="btn_continue">Continue →</button>
-        </div>
-      </div>
+    <div class="li-alert" id="li-alert" role="alert"></div>
+    <div class="li-submit">
+      <button type="submit" class="btn btn-primary" id="li-send">Send my unit &rarr;</button>
+      <p class="fine">No commitment. We only use your details to contact you about this unit.</p>
+    </div>
+  </form>
 
-      <!-- Step 4: Parking & storage -->
-      <div class="step" id="step-4">
-        <div class="step-label" data-i18n="step4_label">Step 4 of 7</div>
-        <div class="step-title" data-i18n="step4_title">Parking &amp; storage</div>
-        <div class="step-sub" data-i18n="step4_sub">Whether parking or a locker come with the unit, and if they cost extra.</div>
-        <div class="field">
-          <label data-i18n="parking_label">Is parking available?</label>
-          <div class="radio-group horizontal" id="parking_available">
-            <label class="radio-option"><input type="radio" name="parking" value="Yes"><div class="radio-dot"></div><span data-i18n="opt_yes">Yes</span></label>
-            <label class="radio-option"><input type="radio" name="parking" value="No"><div class="radio-dot"></div><span data-i18n="opt_no">No</span></label>
-          </div>
-        </div>
-        <div id="parking-sub" class="hidden">
-          <div class="field">
-            <label data-i18n="parking_count_label">How many spots?</label>
-            <input type="number" id="parking_count" placeholder="1" />
-          </div>
-          <div class="field">
-            <label data-i18n="parking_type_label">Type of parking</label>
-            <div class="radio-group horizontal" id="parking_type">
-              <label class="radio-option"><input type="radio" name="parking_type" value="Indoor / garage"><div class="radio-dot"></div><span data-i18n="parking_indoor">Indoor / garage</span></label>
-              <label class="radio-option"><input type="radio" name="parking_type" value="Outdoor / driveway"><div class="radio-dot"></div><span data-i18n="parking_outdoor">Outdoor / driveway</span></label>
-              <label class="radio-option"><input type="radio" name="parking_type" value="Both"><div class="radio-dot"></div><span data-i18n="parking_both">Both</span></label>
-            </div>
-          </div>
-          <div class="field">
-            <label data-i18n="parking_incl_label">Is parking included in the rent, or an extra fee?</label>
-            <div class="radio-group horizontal" id="parking_included">
-              <label class="radio-option"><input type="radio" name="parking_incl" value="Included in rent"><div class="radio-dot"></div><span data-i18n="incl_rent">Included in rent</span></label>
-              <label class="radio-option"><input type="radio" name="parking_incl" value="Extra monthly fee"><div class="radio-dot"></div><span data-i18n="incl_fee">Extra monthly fee</span></label>
-            </div>
-          </div>
-          <div id="parking-fee-field" class="field hidden">
-            <label data-i18n="parking_fee_label">Monthly parking fee (CAD)</label>
-            <input type="number" id="parking_fee" placeholder="e.g. 75" />
-          </div>
-        </div>
-        <div class="sep"></div>
-        <div class="field">
-          <label data-i18n="storage_label">Is a storage locker included?</label>
-          <div class="radio-group horizontal" id="storage_available">
-            <label class="radio-option"><input type="radio" name="storage" value="Yes"><div class="radio-dot"></div><span data-i18n="opt_yes">Yes</span></label>
-            <label class="radio-option"><input type="radio" name="storage" value="No"><div class="radio-dot"></div><span data-i18n="opt_no">No</span></label>
-          </div>
-        </div>
-        <div id="storage-sub" class="hidden">
-          <div class="field">
-            <label data-i18n="storage_incl_label">Is the locker included in the rent, or an extra fee?</label>
-            <div class="radio-group horizontal" id="storage_included">
-              <label class="radio-option"><input type="radio" name="storage_incl" value="Included in rent"><div class="radio-dot"></div><span data-i18n="incl_rent">Included in rent</span></label>
-              <label class="radio-option"><input type="radio" name="storage_incl" value="Extra fee"><div class="radio-dot"></div><span data-i18n="incl_fee">Extra monthly fee</span></label>
-            </div>
-          </div>
-          <div id="storage-fee-field" class="field hidden">
-            <label data-i18n="storage_fee_label">Monthly locker fee (CAD)</label>
-            <input type="number" id="storage_fee" placeholder="e.g. 25" />
-          </div>
-        </div>
-        <div class="btn-nav">
-          <button class="btn btn-outline" onclick="prevStep(4)" data-i18n="btn_back">← Back</button>
-          <button class="btn btn-primary" onclick="nextStep(4)" data-i18n="btn_continue">Continue →</button>
-        </div>
-      </div>
+  <div class="li-done" id="li-done" hidden>
+    <div class="mark">✓</div>
+    <h1>Thank you, we've got it.</h1>
+    <p>A Rentalium agent will contact you within one business day to confirm the details and next steps.</p>
+    <a href="/" class="btn btn-ghost">Back to homepage</a>
+  </div>
+</main>
 
-      <!-- Step 5: Appliances -->
-      <div class="step" id="step-5">
-        <div class="step-label" data-i18n="step5_label">Step 5 of 7</div>
-        <div class="step-title" data-i18n="step5_title">Appliances</div>
-        <div class="step-sub" data-i18n="step5_sub">Which appliances stay with the unit for the tenant.</div>
-        <div class="field">
-          <label data-i18n="appliances_label">Appliances included with the unit</label>
-          <div class="checkbox-group" id="appliances_included">
-            <label class="checkbox-option"><input type="checkbox" value="Refrigerator"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="appl_fridge">Refrigerator</span></label>
-            <label class="checkbox-option"><input type="checkbox" value="Stove / oven"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="appl_stove">Stove / oven</span></label>
-            <label class="checkbox-option"><input type="checkbox" value="Dishwasher"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="appl_dishwasher">Dishwasher</span></label>
-            <label class="checkbox-option"><input type="checkbox" value="Washer"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="appl_washer">Washer</span></label>
-            <label class="checkbox-option"><input type="checkbox" value="Dryer"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="appl_dryer">Dryer</span></label>
-            <label class="checkbox-option"><input type="checkbox" value="Microwave"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="appl_microwave">Microwave</span></label>
-            <label class="checkbox-option"><input type="checkbox" value="Range hood"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="appl_hood">Range hood</span></label>
-            <label class="checkbox-option"><input type="checkbox" value="None"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="appl_none">None</span></label>
-          </div>
-        </div>
-        <div class="sep"></div>
-        <div class="field">
-          <label data-i18n="appl_deposit_label">Would you want a deposit for the appliances?</label>
-          <div class="radio-group horizontal" id="appliances_deposit">
-            <label class="radio-option"><input type="radio" name="appl_deposit" value="Yes"><div class="radio-dot"></div><span data-i18n="opt_yes">Yes</span></label>
-            <label class="radio-option"><input type="radio" name="appl_deposit" value="No"><div class="radio-dot"></div><span data-i18n="opt_no">No</span></label>
-          </div>
-          <div class="note" data-i18n="appl_deposit_note">Note — in Québec, a landlord may not require any deposit beyond the first month's rent (including for appliances or keys). We'll advise you on this.</div>
-        </div>
-        <div class="field">
-          <label data-i18n="appl_notes_label">Notes on the appliances <span data-i18n="optional">(optional)</span></label>
-          <textarea id="appliances_notes" data-i18n-ph="appl_notes_ph" placeholder="e.g. condition, who handles repairs, brand/age..."></textarea>
-        </div>
-        <div class="btn-nav">
-          <button class="btn btn-outline" onclick="prevStep(5)" data-i18n="btn_back">← Back</button>
-          <button class="btn btn-primary" onclick="nextStep(5)" data-i18n="btn_continue">Continue →</button>
-        </div>
-      </div>
-
-      <!-- Step 6: Utilities & heating -->
-      <div class="step" id="step-6">
-        <div class="step-label" data-i18n="step6_label">Step 6 of 7</div>
-        <div class="step-title" data-i18n="step6_title">Utilities &amp; heating</div>
-        <div class="step-sub" data-i18n="step6_sub">Who pays for what — this goes straight onto the lease.</div>
-        <div class="field">
-          <label data-i18n="heating_incl_label">Is heating included in the rent?</label>
-          <div class="radio-group horizontal" id="heating_included">
-            <label class="radio-option"><input type="radio" name="heating_incl" value="Included in rent"><div class="radio-dot"></div><span data-i18n="heat_incl">Included in rent</span></label>
-            <label class="radio-option"><input type="radio" name="heating_incl" value="Paid by tenant"><div class="radio-dot"></div><span data-i18n="heat_tenant">Paid by tenant</span></label>
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="heating_type_label">Heating type</label>
-          <div class="radio-group horizontal" id="heating_type">
-            <label class="radio-option"><input type="radio" name="heating_type" value="Electric"><div class="radio-dot"></div><span data-i18n="heat_electric">Electric</span></label>
-            <label class="radio-option"><input type="radio" name="heating_type" value="Gas"><div class="radio-dot"></div><span data-i18n="heat_gas">Gas</span></label>
-            <label class="radio-option"><input type="radio" name="heating_type" value="Dual-energy"><div class="radio-dot"></div><span data-i18n="heat_dual">Dual-energy</span></label>
-            <label class="radio-option"><input type="radio" name="heating_type" value="Other"><div class="radio-dot"></div><span data-i18n="heat_other">Other</span></label>
-          </div>
-        </div>
-        <div class="sep"></div>
-        <div class="field">
-          <label data-i18n="elec_label">Electricity (Hydro-Québec)</label>
-          <div class="radio-group" id="electricity_included">
-            <label class="radio-option"><input type="radio" name="elec" value="Included in rent"><div class="radio-dot"></div><span data-i18n="elec_incl">Included in the rent</span></label>
-            <label class="radio-option"><input type="radio" name="elec" value="Tenant's own account"><div class="radio-dot"></div><span data-i18n="elec_tenant">Paid by tenant (their own Hydro-Québec account)</span></label>
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="hotwater_label">Is hot water included?</label>
-          <div class="radio-group horizontal" id="hot_water_included">
-            <label class="radio-option"><input type="radio" name="hotwater" value="Yes"><div class="radio-dot"></div><span data-i18n="opt_yes">Yes</span></label>
-            <label class="radio-option"><input type="radio" name="hotwater" value="No"><div class="radio-dot"></div><span data-i18n="opt_no">No</span></label>
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="gas_label">Gas service</label>
-          <div class="radio-group" id="gas_service">
-            <label class="radio-option"><input type="radio" name="gas" value="No gas"><div class="radio-dot"></div><span data-i18n="gas_none">No gas at the unit</span></label>
-            <label class="radio-option"><input type="radio" name="gas" value="Included in rent"><div class="radio-dot"></div><span data-i18n="gas_incl">Gas included in the rent</span></label>
-            <label class="radio-option"><input type="radio" name="gas" value="Paid by tenant"><div class="radio-dot"></div><span data-i18n="gas_tenant">Gas paid by tenant</span></label>
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="internet_label">Is internet included?</label>
-          <div class="radio-group horizontal" id="internet_included">
-            <label class="radio-option"><input type="radio" name="internet" value="Yes"><div class="radio-dot"></div><span data-i18n="opt_yes">Yes</span></label>
-            <label class="radio-option"><input type="radio" name="internet" value="No"><div class="radio-dot"></div><span data-i18n="opt_no">No</span></label>
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="other_incl_label">Anything else included in the rent?</label>
-          <div class="checkbox-group" id="other_included">
-            <label class="checkbox-option"><input type="checkbox" value="Snow removal"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="other_snow">Snow removal</span></label>
-            <label class="checkbox-option"><input type="checkbox" value="Water / sewer"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="other_water">Water / sewer</span></label>
-            <label class="checkbox-option"><input type="checkbox" value="Air conditioning"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="other_ac">Air conditioning</span></label>
-            <label class="checkbox-option"><input type="checkbox" value="None"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="other_none">None of the above</span></label>
-          </div>
-        </div>
-        <div class="btn-nav">
-          <button class="btn btn-outline" onclick="prevStep(6)" data-i18n="btn_back">← Back</button>
-          <button class="btn btn-primary" onclick="nextStep(6)" data-i18n="btn_continue">Continue →</button>
-        </div>
-      </div>
-
-      <!-- Step 7: Restrictions, marketing & services -->
-      <div class="step" id="step-7">
-        <div class="step-label" data-i18n="step7_label">Step 7 of 7</div>
-        <div class="step-title" data-i18n="step7_title">Rules, marketing &amp; services</div>
-        <div class="step-sub" data-i18n="step7_sub">A few final details so we can lease and market your unit the way you want.</div>
-        <div class="field">
-          <label data-i18n="smoking_label">Is smoking allowed?</label>
-          <div class="radio-group horizontal" id="smoking_allowed">
-            <label class="radio-option"><input type="radio" name="smoking" value="Yes"><div class="radio-dot"></div><span data-i18n="opt_yes">Yes</span></label>
-            <label class="radio-option"><input type="radio" name="smoking" value="No"><div class="radio-dot"></div><span data-i18n="opt_no">No</span></label>
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="pets_label">Are pets allowed?</label>
-          <div class="radio-group horizontal" id="pets_allowed">
-            <label class="radio-option"><input type="radio" name="pets" value="Yes"><div class="radio-dot"></div><span data-i18n="opt_yes">Yes</span></label>
-            <label class="radio-option"><input type="radio" name="pets" value="No"><div class="radio-dot"></div><span data-i18n="opt_no">No</span></label>
-            <label class="radio-option"><input type="radio" name="pets" value="Case-by-case"><div class="radio-dot"></div><span data-i18n="pets_case">Case-by-case</span></label>
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="restrictions_label">Other rules or building by-laws <span data-i18n="optional">(optional)</span></label>
-          <textarea id="other_restrictions" data-i18n-ph="restrictions_ph" placeholder="e.g. condo by-laws, quiet hours, no short-term rentals..."></textarea>
-        </div>
-        <div class="sep"></div>
-        <div class="field">
-          <label data-i18n="highlights_label">What are the best features to advertise? <span data-i18n="optional">(optional)</span></label>
-          <textarea id="highlights" data-i18n-ph="highlights_ph" placeholder="e.g. renovated kitchen, south-facing balcony, near metro Laurier, exposed brick..."></textarea>
-        </div>
-        <div class="field">
-          <label data-i18n="services_label">Which services are you interested in?</label>
-          <div class="checkbox-group" id="services_interested">
-            <label class="checkbox-option"><input type="checkbox" value="Full-service leasing"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="svc_full">Full-service leasing (end-to-end)</span></label>
-            <label class="checkbox-option"><input type="checkbox" value="Tenant screening"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="svc_screening">Tenant screening &amp; credit checks</span></label>
-            <label class="checkbox-option"><input type="checkbox" value="Showings"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="svc_showings">Showings &amp; visits</span></label>
-            <label class="checkbox-option"><input type="checkbox" value="Lease preparation"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="svc_lease">Lease (bail) preparation</span></label>
-            <label class="checkbox-option"><input type="checkbox" value="Ongoing management"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span data-i18n="svc_mgmt">Ongoing property management</span></label>
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="mgmt_label">Do you want property management during the tenancy?</label>
-          <div class="radio-group horizontal" id="wants_management">
-            <label class="radio-option"><input type="radio" name="mgmt" value="Yes"><div class="radio-dot"></div><span data-i18n="opt_yes">Yes</span></label>
-            <label class="radio-option"><input type="radio" name="mgmt" value="No"><div class="radio-dot"></div><span data-i18n="opt_no">No</span></label>
-            <label class="radio-option"><input type="radio" name="mgmt" value="Maybe"><div class="radio-dot"></div><span data-i18n="mgmt_maybe">Maybe — tell me more</span></label>
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="notes_label">Anything else we should know? <span data-i18n="optional">(optional)</span></label>
-          <textarea id="notes" data-i18n-ph="notes_ph" placeholder="Questions, timeline, special circumstances..."></textarea>
-        </div>
-        <div class="btn-nav">
-          <button class="btn btn-outline" onclick="prevStep(7)" data-i18n="btn_back">← Back</button>
-          <button class="btn btn-primary" id="submit-btn" onclick="submitForm()" data-i18n="btn_submit">Submit →</button>
-        </div>
-      </div>
-
-      <!-- Loading -->
-      <div class="step" id="step-loading">
-        <div class="loading">
-          <div class="spinner"></div>
-          <p data-i18n="loading_msg">Sending your property details...</p>
-        </div>
-      </div>
-
-      <!-- Result -->
-      <div class="step" id="step-result">
-        <div class="result-wrap">
-          <div class="result-check">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </div>
-          <div class="result-title" data-i18n="result_title">Thank you!</div>
-          <div class="result-name" id="result-name"></div>
-          <p class="result-msg" data-i18n="result_msg">We've received your unit details. A Rentalium leasing specialist will review everything and get back to you shortly with an assessment of the achievable rent and next steps.</p>
-        </div>
-        <div class="powered" data-i18n="powered">Rentalium Leasing</div>
-      </div>
-
-    </div><!-- /card-body -->
-  </div><!-- /card -->
-
-</div><!-- /wrapper -->
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="brand">Rentalium</div>
+    <small>
+      Rentalium &middot; Leasing agency in Montréal, QC &middot;
+      <a href="tel:+14383400510" style="color: inherit;">+1 (438) 340-0510</a> &middot;
+      <a href="mailto:hello@rentalium.ca" style="color: inherit;">hello@rentalium.ca</a>
+    </small>
+  </div>
+</footer>
 
 <script>
-let lang = 'en';
-let currentStep = 0;
-const totalSteps = 7;
+(function () {
+  var FR = window.PUBLIC_LANG === 'fr';
+  var form = document.getElementById('li-form');
+  var picked = { property_type: '', bedrooms: '', availability: '' };
+  var extras = {};
 
-const T = {
-  en: {
-    step1_label: 'Step 1 of 7', step1_title: 'About you',
-    step1_sub: "We'll use this to prepare the lease (bail) and to reach you about your unit.",
-    fullname_label: "Owner's full legal name",
-    fullname_hint: 'The name that will appear on the lease as the lessor (landlord).',
-    fullname_ph: 'First and last name',
-    email_label: 'Email address', email_ph: 'your@email.com',
-    phone_label: 'Phone number',
-    mailing_label: 'Mailing address',
-    mailing_hint: "The lessor's address is required on the Québec lease — a foreign address is fine.",
-    mailing_ph: 'Street, city, postal/ZIP code, country',
-    role_label: 'You are…',
-    role_owner: 'The owner',
-    role_rep: 'An authorized representative of the owner',
-    role_mgr: 'A property manager',
-    basedin_label: 'Where are you currently based?', basedin_ph: 'e.g. Berlin, Germany',
-    optional: '(optional)',
-    step2_label: 'Step 2 of 7', step2_title: 'The property',
-    step2_sub: 'Tell us where the unit is and its layout — this drives both the lease and the listing.',
-    address_label: 'Property address (with unit #)', address_ph: 'e.g. 3887 Rue Clark, apt 2',
-    city_label: 'City', postal_label: 'Postal code',
-    neighborhood_label: 'Neighbourhood', neighborhood_ph: 'e.g. Le Plateau-Mont-Royal',
-    ptype_label: 'Property type',
-    ptype_condo: 'Condo', ptype_plex: 'Apartment in a plex (duplex/triplex…)',
-    ptype_house: 'House', ptype_loft: 'Loft', ptype_other: 'Other',
-    size_label: 'Size (rooms)', size_hint: 'Québec count, e.g. 4½',
-    sqft_label: 'Area (sq ft)',
-    bedrooms_label: 'Bedrooms', bathrooms_label: 'Bathrooms',
-    floor_label: 'Floor / storey', floor_ph: 'e.g. 2nd floor',
-    furnished_label: 'Is it furnished?',
-    furnished_no: 'Unfurnished', furnished_yes: 'Furnished', furnished_semi: 'Semi-furnished',
-    step3_label: 'Step 3 of 7', step3_title: 'Rent & lease term',
-    step3_sub: "What you're looking to get, and the term you have in mind.",
-    rent_label: 'How much are you looking to get per month? (CAD)',
-    rent_hint: 'Enter your target rent. Not sure? Leave it blank and check the box below.',
-    rent_ph: 'e.g. 1850',
-    valuation_label: "I'd like Rentalium's assessment of the achievable market rent",
-    lease_type_label: 'Lease type', lease_fixed: 'Fixed term', lease_indet: 'Indeterminate',
-    lease_term_label: 'Desired term', term_12: '12 months', term_other: 'Other',
-    start_date_label: 'Available from',
-    due_day_label: 'Day rent is due each month',
-    occupancy_label: 'Current occupancy',
-    occ_vacant: 'Vacant now — available for immediate occupancy',
-    occ_leaving: 'A tenant is living there and will be leaving',
-    occ_owner: 'Owner-occupied',
-    lowest_rent_label: 'Lowest rent paid in the last 12 months',
-    lowest_rent_hint: "Required disclosure on the Québec lease (section G). Leave blank if unknown — we'll help.",
-    lowest_rent_ph: 'e.g. 1700',
-    step4_label: 'Step 4 of 7', step4_title: 'Parking & storage',
-    step4_sub: 'Whether parking or a locker come with the unit, and if they cost extra.',
-    parking_label: 'Is parking available?',
-    parking_count_label: 'How many spots?',
-    parking_type_label: 'Type of parking',
-    parking_indoor: 'Indoor / garage', parking_outdoor: 'Outdoor / driveway', parking_both: 'Both',
-    parking_incl_label: 'Is parking included in the rent, or an extra fee?',
-    incl_rent: 'Included in rent', incl_fee: 'Extra monthly fee',
-    parking_fee_label: 'Monthly parking fee (CAD)',
-    storage_label: 'Is a storage locker included?',
-    storage_incl_label: 'Is the locker included in the rent, or an extra fee?',
-    storage_fee_label: 'Monthly locker fee (CAD)',
-    step5_label: 'Step 5 of 7', step5_title: 'Appliances',
-    step5_sub: 'Which appliances stay with the unit for the tenant.',
-    appliances_label: 'Appliances included with the unit',
-    appl_fridge: 'Refrigerator', appl_stove: 'Stove / oven', appl_dishwasher: 'Dishwasher',
-    appl_washer: 'Washer', appl_dryer: 'Dryer', appl_microwave: 'Microwave',
-    appl_hood: 'Range hood', appl_none: 'None',
-    appl_deposit_label: 'Would you want a deposit for the appliances?',
-    appl_deposit_note: "Note — in Québec, a landlord may not require any deposit beyond the first month's rent (including for appliances or keys). We'll advise you on this.",
-    appl_notes_label: 'Notes on the appliances',
-    appl_notes_ph: 'e.g. condition, who handles repairs, brand/age...',
-    step6_label: 'Step 6 of 7', step6_title: 'Utilities & heating',
-    step6_sub: 'Who pays for what — this goes straight onto the lease.',
-    heating_incl_label: 'Is heating included in the rent?',
-    heat_incl: 'Included in rent', heat_tenant: 'Paid by tenant',
-    heating_type_label: 'Heating type',
-    heat_electric: 'Electric', heat_gas: 'Gas', heat_dual: 'Dual-energy', heat_other: 'Other',
-    elec_label: 'Electricity (Hydro-Québec)',
-    elec_incl: 'Included in the rent', elec_tenant: "Paid by tenant (their own Hydro-Québec account)",
-    hotwater_label: 'Is hot water included?',
-    gas_label: 'Gas service',
-    gas_none: 'No gas at the unit', gas_incl: 'Gas included in the rent', gas_tenant: 'Gas paid by tenant',
-    internet_label: 'Is internet included?',
-    other_incl_label: 'Anything else included in the rent?',
-    other_snow: 'Snow removal', other_water: 'Water / sewer', other_ac: 'Air conditioning', other_none: 'None of the above',
-    step7_label: 'Step 7 of 7', step7_title: 'Rules, marketing & services',
-    step7_sub: 'A few final details so we can lease and market your unit the way you want.',
-    smoking_label: 'Is smoking allowed?',
-    pets_label: 'Are pets allowed?', pets_case: 'Case-by-case',
-    restrictions_label: 'Other rules or building by-laws',
-    restrictions_ph: 'e.g. condo by-laws, quiet hours, no short-term rentals...',
-    highlights_label: 'What are the best features to advertise?',
-    highlights_ph: 'e.g. renovated kitchen, south-facing balcony, near metro Laurier, exposed brick...',
-    services_label: 'Which services are you interested in?',
-    svc_full: 'Full-service leasing (end-to-end)',
-    svc_screening: 'Tenant screening & credit checks',
-    svc_showings: 'Showings & visits',
-    svc_lease: 'Lease (bail) preparation',
-    svc_mgmt: 'Ongoing property management',
-    mgmt_label: 'Do you want property management during the tenancy?',
-    mgmt_maybe: 'Maybe — tell me more',
-    notes_label: 'Anything else we should know?',
-    notes_ph: 'Questions, timeline, special circumstances...',
-    opt_yes: 'Yes', opt_no: 'No',
-    btn_continue: 'Continue →', btn_back: '← Back', btn_submit: 'Submit →',
-    loading_msg: 'Sending your property details...',
-    result_title: 'Thank you!',
-    result_msg: "We've received your unit details. A Rentalium leasing specialist will review everything and get back to you shortly with an assessment of the achievable rent and next steps.",
-    powered: 'Rentalium Leasing',
-    alert_fullname: 'Please enter the owner\'s full name.',
-    alert_email: 'Please enter a valid email address.',
-    alert_mailing: 'Please enter a mailing address.',
-    alert_address: 'Please enter the property address.',
-    alert_start_date: 'Please select the date the unit is available from.',
-    alert_error: 'Something went wrong submitting your details. Please try again or email hello@rentalium.ca.',
-  },
-  fr: {
-    step1_label: 'Étape 1 de 7', step1_title: 'À propos de vous',
-    step1_sub: 'Ces renseignements servent à préparer le bail et à vous joindre au sujet de votre unité.',
-    fullname_label: 'Nom légal complet du propriétaire',
-    fullname_hint: 'Le nom qui figurera au bail à titre de locateur (propriétaire).',
-    fullname_ph: 'Prénom et nom',
-    email_label: 'Adresse courriel', email_ph: 'votre@courriel.com',
-    phone_label: 'Numéro de téléphone',
-    mailing_label: 'Adresse postale',
-    mailing_hint: "L'adresse du locateur est obligatoire sur le bail québécois — une adresse à l'étranger convient.",
-    mailing_ph: 'Rue, ville, code postal, pays',
-    role_label: 'Vous êtes…',
-    role_owner: 'Le propriétaire',
-    role_rep: 'Un représentant autorisé du propriétaire',
-    role_mgr: 'Un gestionnaire immobilier',
-    basedin_label: 'Où résidez-vous actuellement ?', basedin_ph: 'ex. Berlin, Allemagne',
-    optional: '(facultatif)',
-    step2_label: 'Étape 2 de 7', step2_title: 'La propriété',
-    step2_sub: "Dites-nous où se trouve l'unité et sa configuration — cela sert au bail et à l'annonce.",
-    address_label: "Adresse de la propriété (avec n° d'unité)", address_ph: 'ex. 3887 Rue Clark, app 2',
-    city_label: 'Ville', postal_label: 'Code postal',
-    neighborhood_label: 'Quartier', neighborhood_ph: 'ex. Le Plateau-Mont-Royal',
-    ptype_label: 'Type de propriété',
-    ptype_condo: 'Condo', ptype_plex: 'Appartement dans un plex (duplex/triplex…)',
-    ptype_house: 'Maison', ptype_loft: 'Loft', ptype_other: 'Autre',
-    size_label: 'Grandeur (pièces)', size_hint: 'Décompte québécois, ex. 4½',
-    sqft_label: 'Superficie (pi²)',
-    bedrooms_label: 'Chambres', bathrooms_label: 'Salles de bain',
-    floor_label: 'Étage', floor_ph: 'ex. 2e étage',
-    furnished_label: 'Est-ce meublé ?',
-    furnished_no: 'Non meublé', furnished_yes: 'Meublé', furnished_semi: 'Semi-meublé',
-    step3_label: 'Étape 3 de 7', step3_title: 'Loyer et durée du bail',
-    step3_sub: 'Ce que vous souhaitez obtenir, et la durée envisagée.',
-    rent_label: 'Combien souhaitez-vous obtenir par mois ? (CAD)',
-    rent_hint: 'Indiquez le loyer visé. Incertain ? Laissez vide et cochez la case ci-dessous.',
-    rent_ph: 'ex. 1850',
-    valuation_label: "J'aimerais l'évaluation de Rentalium du loyer réalisable sur le marché",
-    lease_type_label: 'Type de bail', lease_fixed: 'Durée fixe', lease_indet: 'Durée indéterminée',
-    lease_term_label: 'Durée souhaitée', term_12: '12 mois', term_other: 'Autre',
-    start_date_label: 'Disponible à partir du',
-    due_day_label: 'Jour où le loyer est dû chaque mois',
-    occupancy_label: 'Occupation actuelle',
-    occ_vacant: 'Libre maintenant — disponible immédiatement',
-    occ_leaving: 'Un locataire y habite et va quitter',
-    occ_owner: 'Occupé par le propriétaire',
-    lowest_rent_label: 'Loyer le plus bas payé au cours des 12 derniers mois',
-    lowest_rent_hint: 'Mention obligatoire au bail québécois (section G). Laissez vide si inconnu — nous vous aiderons.',
-    lowest_rent_ph: 'ex. 1700',
-    step4_label: 'Étape 4 de 7', step4_title: 'Stationnement et rangement',
-    step4_sub: "Si un stationnement ou un casier accompagne l'unité, et s'ils coûtent en sus.",
-    parking_label: 'Un stationnement est-il disponible ?',
-    parking_count_label: 'Combien de places ?',
-    parking_type_label: 'Type de stationnement',
-    parking_indoor: 'Intérieur / garage', parking_outdoor: 'Extérieur / entrée', parking_both: 'Les deux',
-    parking_incl_label: 'Le stationnement est-il inclus dans le loyer ou en sus ?',
-    incl_rent: 'Inclus dans le loyer', incl_fee: 'Frais mensuel en sus',
-    parking_fee_label: 'Frais mensuel de stationnement (CAD)',
-    storage_label: 'Un casier de rangement est-il inclus ?',
-    storage_incl_label: 'Le casier est-il inclus dans le loyer ou en sus ?',
-    storage_fee_label: 'Frais mensuel de casier (CAD)',
-    step5_label: 'Étape 5 de 7', step5_title: 'Électroménagers',
-    step5_sub: "Quels électroménagers restent dans l'unité pour le locataire.",
-    appliances_label: "Électroménagers inclus avec l'unité",
-    appl_fridge: 'Réfrigérateur', appl_stove: 'Cuisinière / four', appl_dishwasher: 'Lave-vaisselle',
-    appl_washer: 'Laveuse', appl_dryer: 'Sécheuse', appl_microwave: 'Micro-ondes',
-    appl_hood: 'Hotte', appl_none: 'Aucun',
-    appl_deposit_label: 'Voudriez-vous un dépôt pour les électroménagers ?',
-    appl_deposit_note: "Note — au Québec, un locateur ne peut exiger aucun dépôt au-delà du premier mois de loyer (y compris pour les électroménagers ou les clés). Nous vous conseillerons à ce sujet.",
-    appl_notes_label: 'Notes sur les électroménagers',
-    appl_notes_ph: 'ex. état, qui s\'occupe des réparations, marque/âge...',
-    step6_label: 'Étape 6 de 7', step6_title: 'Services et chauffage',
-    step6_sub: 'Qui paie quoi — cela figure directement au bail.',
-    heating_incl_label: 'Le chauffage est-il inclus dans le loyer ?',
-    heat_incl: 'Inclus dans le loyer', heat_tenant: 'Payé par le locataire',
-    heating_type_label: 'Type de chauffage',
-    heat_electric: 'Électrique', heat_gas: 'Gaz', heat_dual: 'Biénergie', heat_other: 'Autre',
-    elec_label: 'Électricité (Hydro-Québec)',
-    elec_incl: 'Incluse dans le loyer', elec_tenant: 'Payée par le locataire (son propre compte Hydro-Québec)',
-    hotwater_label: "L'eau chaude est-elle incluse ?",
-    gas_label: 'Service de gaz',
-    gas_none: "Pas de gaz à l'unité", gas_incl: 'Gaz inclus dans le loyer', gas_tenant: 'Gaz payé par le locataire',
-    internet_label: "L'internet est-il inclus ?",
-    other_incl_label: "Autre chose d'inclus dans le loyer ?",
-    other_snow: 'Déneigement', other_water: 'Eau / égouts', other_ac: 'Climatisation', other_none: 'Aucun de ces éléments',
-    step7_label: 'Étape 7 de 7', step7_title: 'Règles, marketing et services',
-    step7_sub: 'Quelques derniers détails pour louer et annoncer votre unité selon vos souhaits.',
-    smoking_label: 'Fumer est-il permis ?',
-    pets_label: 'Les animaux sont-ils permis ?', pets_case: 'Cas par cas',
-    restrictions_label: "Autres règles ou règlements de l'immeuble",
-    restrictions_ph: 'ex. règlements de copropriété, heures de silence, pas de location court terme...',
-    highlights_label: 'Quels sont les meilleurs atouts à mettre en valeur ?',
-    highlights_ph: 'ex. cuisine rénovée, balcon plein sud, près du métro Laurier, brique apparente...',
-    services_label: 'Quels services vous intéressent ?',
-    svc_full: 'Location clé en main (de A à Z)',
-    svc_screening: 'Sélection des locataires et vérification de crédit',
-    svc_showings: 'Visites',
-    svc_lease: 'Préparation du bail',
-    svc_mgmt: 'Gestion immobilière continue',
-    mgmt_label: 'Souhaitez-vous une gestion immobilière pendant la location ?',
-    mgmt_maybe: 'Peut-être — dites-m\'en plus',
-    notes_label: "Autre chose que nous devrions savoir ?",
-    notes_ph: 'Questions, échéancier, circonstances particulières...',
-    opt_yes: 'Oui', opt_no: 'Non',
-    btn_continue: 'Continuer →', btn_back: '← Retour', btn_submit: 'Soumettre →',
-    loading_msg: "Envoi des détails de votre propriété...",
-    result_title: 'Merci !',
-    result_msg: "Nous avons bien reçu les détails de votre unité. Un spécialiste en location de Rentalium examinera le tout et vous reviendra sous peu avec une évaluation du loyer réalisable et les prochaines étapes.",
-    powered: 'Rentalium Location',
-    alert_fullname: 'Veuillez entrer le nom complet du propriétaire.',
-    alert_email: 'Veuillez entrer une adresse courriel valide.',
-    alert_mailing: 'Veuillez entrer une adresse postale.',
-    alert_address: 'Veuillez entrer l\'adresse de la propriété.',
-    alert_start_date: 'Veuillez indiquer la date de disponibilité de l\'unité.',
-    alert_error: 'Une erreur est survenue. Veuillez réessayer ou écrire à hello@rentalium.ca.',
-  }
-};
-
-function applyLang() {
-  const t = T[lang];
-  document.documentElement.lang = lang;
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.dataset.i18n;
-    if (t[key] !== undefined) el.textContent = t[key];
-  });
-  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-    const key = el.dataset.i18nPh;
-    if (t[key] !== undefined) el.placeholder = t[key];
-  });
-}
-
-function chooseLang(l) {
-  lang = l;
-  applyLang();
-  currentStep = 1;
-  showStep(1);
-}
-
-function showStep(n) {
-  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-  document.getElementById('step-' + n).classList.add('active');
-  let pct;
-  const ind = document.getElementById('step-indicator');
-  if (n === 0) {
-    pct = 0;
-    ind.textContent = '';
-  } else if (n === 'loading' || n === 'result') {
-    pct = 100;
-    ind.textContent = '';
-  } else {
-    pct = Math.round((n / totalSteps) * 100);
-    ind.textContent = T[lang]['step' + n + '_label'] || '';
-  }
-  document.getElementById('progress').style.width = pct + '%';
-  window.scrollTo(0, 0);
-}
-
-function isValidEmail(v) {
-  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v);
-}
-
-function nextStep(from) {
-  const t = T[lang];
-  if (from === 1) {
-    if (!document.getElementById('full_name').value.trim()) return alert(t.alert_fullname);
-    if (!isValidEmail(document.getElementById('email').value.trim())) return alert(t.alert_email);
-    if (!document.getElementById('mailing_address').value.trim()) return alert(t.alert_mailing);
-  }
-  if (from === 2) {
-    if (!document.getElementById('address').value.trim()) return alert(t.alert_address);
-  }
-  if (from === 3) {
-    if (!document.getElementById('lease_start_date').value) return alert(t.alert_start_date);
-  }
-  currentStep = from + 1;
-  showStep(currentStep);
-}
-
-function prevStep(from) {
-  currentStep = from - 1;
-  showStep(currentStep);
-}
-
-function getRadioVal(name) {
-  const el = document.querySelector('input[name="' + name + '"]:checked');
-  return el ? el.value : '';
-}
-
-function getCheckboxVals(groupId) {
-  const checked = document.querySelectorAll('#' + groupId + ' input:checked');
-  if (!checked.length) return '';
-  return Array.from(checked).map(c => c.value).join(', ');
-}
-
-function val(id) {
-  return document.getElementById(id).value.trim();
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = String(str);
-  return div.innerHTML;
-}
-
-// Show/hide conditional fields based on current selections.
-function handleConditionals() {
-  const parkingYes = getRadioVal('parking') === 'Yes';
-  document.getElementById('parking-sub').classList.toggle('hidden', !parkingYes);
-  const parkingFee = parkingYes && getRadioVal('parking_incl') === 'Extra monthly fee';
-  document.getElementById('parking-fee-field').classList.toggle('hidden', !parkingFee);
-
-  const storageYes = getRadioVal('storage') === 'Yes';
-  document.getElementById('storage-sub').classList.toggle('hidden', !storageYes);
-  const storageFee = storageYes && getRadioVal('storage_incl') === 'Extra fee';
-  document.getElementById('storage-fee-field').classList.toggle('hidden', !storageFee);
-}
-
-async function submitForm() {
-  const data = {
-    full_name: val('full_name'),
-    email: val('email'),
-    phone: val('phone'),
-    mailing_address: val('mailing_address'),
-    role: getRadioVal('role'),
-    based_in: val('based_in'),
-    address: val('address'),
-    city: val('city'),
-    postal_code: val('postal_code'),
-    neighborhood: val('neighborhood'),
-    property_type: getRadioVal('ptype'),
-    size: val('size'),
-    bedrooms: val('bedrooms'),
-    bathrooms: val('bathrooms'),
-    sqft: val('sqft'),
-    floor: val('floor'),
-    furnished: getRadioVal('furnished'),
-    desired_rent: val('desired_rent'),
-    open_to_valuation: getCheckboxVals('open_to_valuation') ? 'Yes' : 'No',
-    lease_type: getRadioVal('lease_type'),
-    lease_term: getRadioVal('lease_term'),
-    lease_start_date: val('lease_start_date'),
-    rent_due_day: val('rent_due_day'),
-    occupancy: getRadioVal('occupancy'),
-    lowest_rent_12mo: val('lowest_rent_12mo'),
-    parking_available: getRadioVal('parking'),
-    parking_count: val('parking_count'),
-    parking_type: getRadioVal('parking_type'),
-    parking_included: getRadioVal('parking_incl'),
-    parking_fee: val('parking_fee'),
-    storage_available: getRadioVal('storage'),
-    storage_included: getRadioVal('storage_incl'),
-    storage_fee: val('storage_fee'),
-    appliances_included: getCheckboxVals('appliances_included'),
-    appliances_deposit: getRadioVal('appl_deposit'),
-    appliances_notes: val('appliances_notes'),
-    heating_included: getRadioVal('heating_incl'),
-    heating_type: getRadioVal('heating_type'),
-    electricity_included: getRadioVal('elec'),
-    hot_water_included: getRadioVal('hotwater'),
-    gas_service: getRadioVal('gas'),
-    internet_included: getRadioVal('internet'),
-    other_included: getCheckboxVals('other_included'),
-    smoking_allowed: getRadioVal('smoking'),
-    pets_allowed: getRadioVal('pets'),
-    other_restrictions: val('other_restrictions'),
-    highlights: val('highlights'),
-    services_interested: getCheckboxVals('services_interested'),
-    wants_management: getRadioVal('mgmt'),
-    notes: val('notes'),
-    lang: lang,
-  };
-
-  showStep('loading');
-
-  try {
-    const response = await fetch('/api/landlord-intakes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+  // Single-choice chips (tap again to clear)
+  document.querySelectorAll('[data-single]').forEach(function (group) {
+    var key = group.getAttribute('data-single');
+    group.querySelectorAll('.chip').forEach(function (chip) {
+      chip.setAttribute('aria-pressed', 'false');
+      chip.addEventListener('click', function () {
+        var on = chip.getAttribute('aria-pressed') !== 'true';
+        group.querySelectorAll('.chip').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
+        chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+        picked[key] = on ? chip.getAttribute('data-v') : '';
+        if (key === 'availability') {
+          var dp = document.getElementById('date-pick');
+          dp.hidden = picked.availability !== 'date';
+          if (!dp.hidden) document.getElementById('lease_start_date').focus();
+        }
+      });
     });
-    if (!response.ok) throw new Error('Submit failed');
-    document.getElementById('result-name').textContent = data.address || data.full_name;
-    applyLang();
-    showStep('result');
-  } catch (e) {
-    document.getElementById('step-loading').innerHTML =
-      `<div class="error-msg">${escapeHtml(T[lang].alert_error)}</div>`;
+  });
+  // Multi-choice chips
+  document.querySelectorAll('[data-multi] .chip').forEach(function (chip) {
+    chip.setAttribute('aria-pressed', 'false');
+    chip.addEventListener('click', function () {
+      var on = chip.getAttribute('aria-pressed') !== 'true';
+      chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+      extras[chip.getAttribute('data-v')] = on;
+    });
+  });
+
+  function val(id) { return document.getElementById(id).value.trim(); }
+  function setErr(id, on) { document.getElementById(id).classList.toggle('has-error', on); }
+  // Clear a field's error as soon as the person edits it.
+  ['address', 'full_name', 'email', 'phone'].forEach(function (id) {
+    document.getElementById(id).addEventListener('input', function () {
+      setErr({ address: 'f-address', full_name: 'f-name', email: 'f-email', phone: 'f-phone' }[id], false);
+      if (id === 'email' || id === 'phone') { setErr('f-email', false); setErr('f-phone', false); }
+    });
+  });
+
+  function validate() {
+    var ok = true, first = null;
+    var email = val('email'), phoneDigits = val('phone').replace(/\D/g, '');
+    if (!val('address')) { setErr('f-address', true); ok = false; first = first || 'address'; }
+    if (!val('full_name')) { setErr('f-name', true); ok = false; first = first || 'full_name'; }
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setErr('f-email', true); ok = false; first = first || 'email'; }
+    else if (!email && phoneDigits.length < 7) { setErr('f-phone', true); ok = false; first = first || 'phone'; }
+    if (first) document.getElementById(first).focus();
+    return ok;
   }
-}
 
-// Radio click handlers
-document.querySelectorAll('.radio-option').forEach(option => {
-  option.addEventListener('click', function() {
-    const input = this.querySelector('input[type="radio"]');
-    const group = this.closest('.radio-group');
-    group.querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
-    this.classList.add('selected');
-    input.checked = true;
-    handleConditionals();
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var alertBox = document.getElementById('li-alert');
+    alertBox.classList.remove('on');
+    if (!validate()) return;
+    var start = picked.availability === 'Now' ? (FR ? 'Maintenant' : 'Now')
+      : picked.availability === 'date' ? val('lease_start_date') : '';
+    var data = {
+      full_name: val('full_name'),
+      email: val('email'),
+      phone: val('phone'),
+      address: val('address'),
+      property_type: picked.property_type,
+      bedrooms: picked.bedrooms,
+      desired_rent: val('desired_rent'),
+      lease_start_date: start,
+      parking_available: extras.parking ? 'Yes' : '',
+      storage_available: extras.storage ? 'Yes' : '',
+      appliances_included: extras.appliances ? 'Yes' : '',
+      heating_included: extras.heating ? 'Yes' : '',
+      pets_allowed: extras.pets ? 'Yes' : '',
+      furnished: extras.furnished ? 'Yes' : '',
+      notes: val('notes'),
+      lang: FR ? 'fr' : 'en',
+    };
+    var btn = document.getElementById('li-send');
+    var label = btn.innerHTML;
+    btn.disabled = true;
+    btn.textContent = FR ? 'Envoi…' : 'Sending…';
+    try {
+      var r = await fetch('/api/landlord-intakes', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
+      });
+      if (!r.ok) {
+        var j = await r.json().catch(function () { return {}; });
+        throw new Error(j.error || '');
+      }
+      form.hidden = true;
+      document.getElementById('li-done').hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (window.gtag) gtag('event', 'generate_lead', { form: 'landlord_intake' });
+    } catch (err) {
+      alertBox.textContent = FR
+        ? 'Désolé, l’envoi n’a pas fonctionné. Réessayez, ou écrivez-nous à hello@rentalium.ca.'
+        : 'Sorry, that didn’t go through. Please try again, or email us at hello@rentalium.ca.';
+      alertBox.classList.add('on');
+      btn.disabled = false;
+      btn.innerHTML = label;
+    }
   });
-});
-
-// Checkbox click handlers
-document.querySelectorAll('.checkbox-option').forEach(option => {
-  option.addEventListener('click', function() {
-    const input = this.querySelector('input[type="checkbox"]');
-    input.checked = !input.checked;
-    this.classList.toggle('checked', input.checked);
-  });
-});
+})();
 </script>
 </body>
 </html>
