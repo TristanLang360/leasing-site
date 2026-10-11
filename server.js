@@ -159,7 +159,9 @@ const PRIVATE_UNIT_FIELDS = [
 ];
 function present(unit, includePrivate = false) {
   if (!unit) return null;
-  const photos = (unit.photos || []).map((p) => ({
+  // The public site skips photos whose file is missing, so the unit falls back
+  // to the placeholder image instead of a broken one. Staff still see them.
+  const photos = (unit.photos || []).filter((p) => includePrivate || storage.exists(p.key)).map((p) => ({
     id: p.id, url: storage.publicUrl(p.key), filename: p.key, kind: p.kind || 'image', sortOrder: p.sort_order,
   }));
   const out = { ...unit, photos };
@@ -1194,7 +1196,7 @@ ${canonical ? `<meta property="og:url" content="${escHtml(canonical)}" />` : ''}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Marcellus&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=noir4" />
+<link rel="stylesheet" href="/styles.css?v=noir5" />
 <script src="/i18n-public.js?v=fr5"></script>
 <script src="/nav.js?v=1" defer></script>
 ${head}
@@ -1409,7 +1411,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
         <button type="button" class="lb-arrow lb-next" aria-label="Next">&rsaquo;</button>
         <div class="lb-counter"><span id="lb-cur">1</span> / <span id="lb-total">1</span></div>
       </div>` : ''}`
-    : `<div class="listing-noimg">No photos yet — contact us for more details.</div>`;
+    : `<div class="listing-noimg"><span>No photos yet — contact us for more details.</span></div>`;
 
   const facts = [beds, `${u.baths} bath${u.baths > 1 ? 's' : ''}`]
     .concat(u.sqft ? [`${u.sqft.toLocaleString()} sqft`] : [])
