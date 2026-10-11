@@ -1571,3 +1571,10 @@ h1, h2, h3 { text-wrap: balance; }
 
   .listing-noimg { aspect-ratio: 4 / 5; }
 }
+
+/* Tablet: the header only has room for the language toggle + main button
+   (other links stay reachable from the page body and footer) */
+@media (max-width: 900px) {
+  .nav-links a:not(.btn) { display: none; }
+  .nav-links { gap: 12px; }
+}

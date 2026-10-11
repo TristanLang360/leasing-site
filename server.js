@@ -1199,7 +1199,7 @@ ${canonical ? `<meta property="og:url" content="${escHtml(canonical)}" />` : ''}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Marcellus&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=noir7" />
+<link rel="stylesheet" href="/styles.css?v=noir8" />
 <script src="/i18n-public.js?v=fr7"></script>
 <script src="/nav.js?v=1" defer></script>
 ${head}
