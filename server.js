@@ -1201,7 +1201,7 @@ ${canonical ? `<meta property="og:url" content="${escHtml(canonical)}" />` : ''}
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/400.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/500.css" />
-<link rel="stylesheet" href="/styles.css?v=ed4" />
+<link rel="stylesheet" href="/styles.css?v=ed5" />
 <script src="/i18n-public.js?v=fr8"></script>
 <script src="/nav.js?v=2" defer></script>
 ${head}
@@ -1449,7 +1449,7 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
     : '';
   const mapScript = located
     ? `<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script>(function(){var m=L.map('listing-map',{scrollWheelZoom:false}).setView([${u.lat},${u.lng}],15);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(m);L.marker([${u.lat},${u.lng}]).addTo(m);})();</script>`
+<script>(function(){var m=L.map('listing-map',{scrollWheelZoom:false}).setView([${u.lat},${u.lng}],15);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(m);L.marker([${u.lat},${u.lng}],{icon:L.divIcon({className:'unit-dot-wrap',html:'<span class="unit-dot"></span>',iconSize:[22,22],iconAnchor:[11,11]})}).addTo(m);})();</script>`
     : '';
 
   const body = `

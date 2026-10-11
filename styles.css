@@ -1268,7 +1268,45 @@ footer .brand { color: #fff; }
 .budget-card { background: #fff; border: 1px solid var(--line); border-radius: 0; box-shadow: var(--shadow-md); }
 .fs-bar { background: #fff; border-bottom: 1px solid var(--line); }
 .units-map, .listing-map, .drawer-map { border-color: var(--line); border-radius: 0; }
-.leaflet-tile-pane { filter: grayscale(0.85) contrast(1.05); }
+/* ---------- Maps: monochrome editorial style ---------- */
+.leaflet-container { background: #eeeeec; font-family: var(--sans); }
+.leaflet-tile-pane { filter: grayscale(1) brightness(1.06) contrast(0.88); }
+/* price tags (units map) — collapse to dots when zoomed out */
+.price-pin-wrap { background: none; border: 0; }
+.price-pin {
+  position: absolute; left: 0; top: 0; transform: translate(-50%, -100%);
+  display: inline-block; white-space: nowrap; padding: 5px 9px;
+  background: var(--ink); color: #fff; font: 500 12px/1 var(--sans); letter-spacing: 0.01em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18); transition: background 150ms, transform 150ms;
+}
+.price-pin::after {
+  content: ""; position: absolute; left: 50%; bottom: -5px; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: var(--ink); border-bottom: 0; transition: border-color 150ms;
+}
+.leaflet-marker-icon:hover .price-pin, .leaflet-marker-icon:focus .price-pin { background: var(--accent); transform: translate(-50%, -100%) scale(1.06); }
+.leaflet-marker-icon:hover .price-pin::after { border-top-color: var(--accent); }
+.map-zoomed-out .price-pin {
+  width: 11px; height: 11px; padding: 0; font-size: 0; border-radius: 50%;
+  border: 2px solid #fff; transform: translate(-50%, -50%);
+}
+.map-zoomed-out .price-pin::after { display: none; }
+.map-zoomed-out .leaflet-marker-icon:hover .price-pin { transform: translate(-50%, -50%) scale(1.4); }
+/* listing page: one dot with a soft ring */
+.unit-dot-wrap { background: none; border: 0; }
+.unit-dot { display: block; width: 22px; height: 22px; border-radius: 50%; background: var(--ink); border: 4px solid #fff; box-shadow: 0 0 0 10px rgba(17,17,17,0.12), 0 2px 8px rgba(0,0,0,0.25); }
+/* popups */
+.leaflet-popup-content-wrapper { border-radius: 0 !important; box-shadow: 0 12px 32px rgba(0,0,0,0.14) !important; border: 1px solid var(--line); }
+.leaflet-popup-tip { box-shadow: none !important; border: 1px solid var(--line); }
+.leaflet-popup-content { margin: 14px 16px !important; font: 400 14px/1.5 var(--sans) !important; color: var(--ink); }
+.leaflet-popup-content strong { font-weight: 500; }
+.leaflet-popup-content .map-popup-link { display: inline-block; margin-top: 6px; color: var(--accent); font-weight: 500; }
+.leaflet-container a.leaflet-popup-close-button { color: var(--ink-muted); top: 4px; right: 4px; }
+/* controls */
+.leaflet-bar { border: 1px solid var(--line) !important; border-radius: 0 !important; box-shadow: none !important; }
+.leaflet-bar a { border-radius: 0 !important; color: var(--ink) !important; border-bottom-color: var(--line) !important; font-weight: 400; }
+.leaflet-bar a:hover { background: var(--surface) !important; }
+.leaflet-control-attribution { background: rgba(255,255,255,0.75) !important; color: #8a8a8a !important; font-size: 10px !important; }
+.leaflet-control-attribution a { color: #8a8a8a !important; }
 .map-popup-link { color: var(--accent); }
 
 /* ---------- Listing page ---------- */

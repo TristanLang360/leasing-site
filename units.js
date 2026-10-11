@@ -50,6 +50,27 @@ function showGate() {
   document.body.classList.remove('fs-active');
 }
 
+// Map styling: monochrome tiles (CSS) + price-tag markers that collapse to
+// dots when zoomed out, so hundreds of units stay readable.
+const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const shortPrice = (n) => Number(n) > 0
+  ? (FR ? Number(n).toLocaleString('fr-CA') + ' $' : '$' + Number(n).toLocaleString('en-US'))
+  : '•';
+function priceIcon(u) {
+  return L.divIcon({
+    className: 'price-pin-wrap',
+    html: `<span class="price-pin">${escapeHtml(shortPrice(u.price))}</span>`,
+    iconSize: null,
+    iconAnchor: [0, 0],
+    popupAnchor: [0, -14],
+  });
+}
+function trackZoom(m) {
+  const set = () => m.getContainer().classList.toggle('map-zoomed-out', m.getZoom() < 13);
+  m.on('zoomend', set);
+  set();
+}
+
 function showFsMap(budget, beds) {
   gateBudget = budget;
   gateBeds = beds || '';
@@ -57,9 +78,10 @@ function showFsMap(budget, beds) {
   document.body.classList.add('fs-active');
   if (!fsMap && typeof L !== 'undefined') {
     fsMap = L.map('fs-map', { scrollWheelZoom: true }).setView([45.5019, -73.5674], 11);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer(TILE_URL, {
       maxZoom: 19, attribution: '&copy; OpenStreetMap contributors',
     }).addTo(fsMap);
+    trackZoom(fsMap);
     fsLayer = L.layerGroup().addTo(fsMap);
   }
   setTimeout(() => { if (fsMap) fsMap.invalidateSize(); }, 60);
@@ -82,7 +104,7 @@ function renderFsMap(budget, beds) {
   });
   const pts = [];
   within.forEach((u) => {
-    const m = L.marker([u.lat, u.lng]);
+    const m = L.marker([u.lat, u.lng], { icon: priceIcon(u), riseOnHover: true });
     m.bindPopup(
       `<strong>${escapeHtml(u.address)}</strong><br>${fmtBeds(u.beds)} · ${fmtPrice(u.price)}<br>` +
       `<a href="${unitHref(u)}" class="map-popup-link">${FR ? 'Voir l’annonce →' : 'View listing →'}</a>`
@@ -182,10 +204,11 @@ function initMap() {
   const el = document.getElementById('units-map');
   if (!el || typeof L === 'undefined') return;
   map = L.map(el, { scrollWheelZoom: false }).setView([45.5019, -73.5674], 12); // Montréal
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  L.tileLayer(TILE_URL, {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors',
   }).addTo(map);
+  trackZoom(map);
   markerLayer = L.layerGroup().addTo(map);
 
   const toggle = document.getElementById('toggle-map');
@@ -206,7 +229,7 @@ function renderMap(list) {
   const pts = [];
   list.forEach((u) => {
     if (u.lat == null || u.lng == null) return;
-    const m = L.marker([u.lat, u.lng]);
+    const m = L.marker([u.lat, u.lng], { icon: priceIcon(u), riseOnHover: true });
     m.bindPopup(
       `<strong>${escapeHtml(u.title)}</strong><br>${escapeHtml(u.address)}<br>` +
       `${fmtBeds(u.beds)} · ${fmtPrice(u.price)}<br>` +
