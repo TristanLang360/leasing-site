@@ -1138,7 +1138,7 @@ video.listing-shot { width: 100%; height: 100%; object-fit: cover; background-co
    Display + text: Open Sauce One. Wordmark: Marcellus.
    Layered on the base rules above so page markup, i18n and JS keep working.
    ================================================================ */
-html { background: var(--bg); color-scheme: light; scroll-behavior: smooth; }
+html { background: var(--bg); color-scheme: light; }
 body { font-family: var(--sans); font-weight: 400; color: var(--ink); -webkit-font-smoothing: antialiased; }
 ::selection { background: var(--ink); color: #fff; }
 h1, h2, h3, h4 { font-family: var(--display); font-weight: 400; letter-spacing: -0.015em; line-height: 1.08; color: var(--ink); text-wrap: balance; }
@@ -1404,23 +1404,55 @@ footer .brand { color: #fff; }
 
 /* ================================================================
    SCROLL ANIMATIONS (driven by /reveal.js; inert without JS)
+   Timings follow the reference: long power4-style ease-outs, ~1s rises,
+   staggered 0.3s, under inertial (Lenis) scrolling.
    ================================================================ */
-.js-reveal [data-reveal] { opacity: 0; transform: translateY(40px); transition: opacity 1s var(--ease), transform 1s var(--ease); }
+:root {
+  --out4: cubic-bezier(0.23, 1, 0.32, 1);      /* ≈ GSAP power4.out */
+  --out2: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* ≈ GSAP power2.out */
+}
+/* Lenis smooth scrolling */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
+
+.js-reveal [data-reveal] { opacity: 0; transform: translateY(90px); transition: opacity 1.1s var(--out4), transform 1.4s var(--out4); }
 .js-reveal [data-reveal].in { opacity: 1; transform: none; }
-.js-reveal [data-reveal="fade"] { transform: none; }
-.js-reveal [data-reveal="ink"] { opacity: 1; transform: none; color: #c4c4c4 !important; transition: color 1.4s var(--ease); }
+.js-reveal [data-reveal="fade"] { transform: none; transition: opacity 1.6s var(--out2); }
+.js-reveal [data-reveal="ink"] { opacity: 1; transform: none; color: #c4c4c4 !important; transition: color 1.8s var(--out2); }
 .js-reveal [data-reveal="ink"] *:not(.btn) { color: inherit !important; }
 .js-reveal [data-reveal="ink"].in { color: var(--ink) !important; }
-.js-reveal [data-reveal="ink"] .btn { opacity: 0.35; transition: opacity 1.4s var(--ease); }
+.js-reveal [data-reveal="ink"] .btn { opacity: 0.35; transition: opacity 1.8s var(--out2); }
 .js-reveal [data-reveal="ink"].in .btn { opacity: 1; }
-.js-reveal .home-hero .frame img { transform: scale(1.08); opacity: 0; transition: transform 1.8s var(--ease), opacity 1.2s var(--ease); }
-.js-reveal .home-hero.in .frame img { transform: none; opacity: 1; }
+.js-reveal .pf-grid [data-reveal], .js-reveal .pf-item[data-reveal] { transform: translateY(50%); }
+.js-reveal .areas-row [data-reveal] { transform: translateX(-50%); }
+.js-reveal .areas-row [data-reveal].in, .js-reveal .pf-item[data-reveal].in { transform: none; }
+
 /* masked letter slide-up for the giant statement */
-.split .ch { display: inline-block; transform: translateY(105%); transition: transform 0.9s var(--ease); }
+.split .ch { display: inline-block; transform: translateY(105%); transition: transform 0.55s var(--out2); }
 .split-wrap { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.08em; }
 .split.in .ch { transform: none; }
+
+/* Page-load intro: hero shrinks from full-screen into its frame, header slides
+   down, intro rises. html.intro-pending is set inline and removed by reveal.js. */
+.home-hero .frame {
+  margin-left: 0; width: 100%;
+  transition: width 2.2s var(--out4), height 2.2s var(--out4), margin 2.2s var(--out4), transform 2.2s var(--out4);
+}
+.home .nav { transition: transform 2.6s var(--out4), opacity 2.6s var(--out4); }
+.home-intro .grid { transition: transform 2.6s var(--out4), opacity 2.6s var(--out4); }
+.intro-pending .home-hero .frame {
+  width: 100vw; height: 100vh; height: 100svh;
+  margin-left: calc((100% - 100vw) / 2);
+  transform: translateY(-101px);
+}
+.intro-pending .home .nav { transform: translateY(-100%); opacity: 0; }
+.intro-pending .home-intro .grid { transform: translateY(120px); opacity: 0; }
+
 @media (prefers-reduced-motion: reduce) {
-  .js-reveal [data-reveal], .js-reveal [data-reveal].in, .split .ch, .js-reveal .home-hero .frame img { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .js-reveal [data-reveal], .js-reveal [data-reveal].in, .split .ch { opacity: 1 !important; transform: none !important; transition: none !important; }
   .js-reveal [data-reveal="ink"] { color: var(--ink) !important; }
 }
 

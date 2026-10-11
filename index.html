@@ -42,11 +42,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/400.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/500.css" />
-<link rel="stylesheet" href="styles.css?v=ed1" />
+<link rel="stylesheet" href="styles.css?v=ed2" />
 <script src="/i18n-public.js?v=fr7"></script>
 <script src="/nav.js?v=2" defer></script>
-<script>document.documentElement.classList.add('js-reveal');setTimeout(function(){if(!window.__revealReady)document.documentElement.classList.remove('js-reveal')},3000);</script>
-<script src="/reveal.js?v=1" defer></script>
+<script>
+  // Scroll/intro animations: hide animated elements until reveal.js runs; never
+  // leave the page hidden if it fails to load.
+  (function (r) {
+    r.classList.add('js-reveal', 'intro-pending');
+    setTimeout(function () { if (!window.__revealReady) r.classList.remove('js-reveal'); }, 3000);
+    setTimeout(function () { r.classList.remove('intro-pending'); }, 5000);
+  })(document.documentElement);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script>
+<script src="/reveal.js?v=2" defer></script>
 <!-- Local business structured data (RealEstateAgent). Replace address/phone with your real NAP. -->
 <script type="application/ld+json">
 {
@@ -203,7 +212,7 @@
   <section id="neighbourhoods" class="home-areas">
     <div class="container">
       <div class="eyebrow" data-reveal>Neighbourhoods we lease</div>
-      <div class="areas-row" data-stagger="70">
+      <div class="areas-row" data-stagger="120">
         <a href="/unit-finder">Plateau-Mont-Royal</a>
         <a href="/unit-finder">Downtown / Ville-Marie</a>
         <a href="/unit-finder">Griffintown</a>
@@ -319,7 +328,7 @@
       }).join('');
       // Stagger + reveal the freshly inserted items.
       [...grid.children].forEach((el, i) => {
-        el.style.transitionDelay = (i * 130) + 'ms';
+        el.style.transitionDelay = ((i % 3) * 300) + 'ms';
         if ('IntersectionObserver' in window) {
           const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { el.classList.add('in'); io.disconnect(); } }), { threshold: 0.1 });
           io.observe(el);
