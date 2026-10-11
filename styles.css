@@ -1525,3 +1525,49 @@ footer .brand { font-size: 1.05rem; }
   background: rgba(11, 11, 12, 0.75); border: 1px solid var(--line);
   padding: 10px 16px; font-size: 0.78rem; letter-spacing: 0.08em; color: var(--ink-muted);
 }
+
+/* ================================================================
+   Mobile polish (design review 2026-10-11)
+   ================================================================ */
+/* Headings: balanced line breaks instead of orphaned words */
+h1, h2, h3 { text-wrap: balance; }
+
+/* Join-our-team: no emoji as decoration, a gold rule instead */
+.perk-icon { font-size: 0 !important; display: block; width: 32px; height: 1px; background: var(--accent); margin-bottom: 22px !important; }
+/* The CV drop zone is a <label>; keep it out of the gold field-label style */
+.form-field label.cv-upload-label { color: var(--ink-muted) !important; font-size: 0.9rem !important; letter-spacing: 0; text-transform: none; font-weight: 400 !important; }
+.form-field label.cv-upload-label strong { color: var(--accent); font-weight: 600; }
+.cv-upload-icon { display: none; }
+
+/* Listing without photos: the note sits under the artwork, not over its text */
+.listing-noimg { background-size: auto calc(100% - 76px); background-position: center 14px; padding: 20px; }
+
+@media (max-width: 560px) {
+  /* iOS zooms into any field under 16px; keep them at 16px */
+  input, select, textarea, .filters input, .filters select, .field input, .field select, .field textarea,
+  .form-field input, .form-field textarea, .form-field select { font-size: 16px !important; }
+
+  /* Header: 44px tap targets, legible CTA */
+  .nav-links { gap: 8px; }
+  .lang-toggle { min-width: 44px; min-height: 40px; font-size: 0.72rem; padding: 0 10px; }
+  .nav-links .btn.btn-sm { min-height: 40px; padding: 0 12px; font-size: 0.66rem; letter-spacing: 0.12em; }
+  .brand { padding: 12px 0; }
+
+  /* Small caps labels: nothing under ~11.5px on a phone */
+  .eyebrow { font-size: 0.72rem; letter-spacing: 0.24em; }
+  .stat .lbl, .unit-addr, .post-meta, .hero-badge .k, .listing-specs dt, .field > span, .field > legend,
+  .service-card .num, .results-meta { font-size: 0.72rem; }
+  .unit-tag { font-size: 0.68rem; letter-spacing: 0.2em; }
+  .btn-sm { font-size: 0.7rem; }
+  .stat .lbl { letter-spacing: 0.18em; }
+
+  /* Forced desktop line breaks in section titles leave orphans on phones */
+  .section-head h2 br, .cta-band h2 br { display: none; }
+
+  /* Comfortable tap targets for inline links and map controls */
+  .post-readmore { display: inline-block; padding: 12px 0; }
+  .footer-grid small a { display: inline-block; padding: 10px 0; }
+  .leaflet-touch .leaflet-bar a { width: 40px !important; height: 40px !important; line-height: 40px !important; }
+
+  .listing-noimg { aspect-ratio: 4 / 5; }
+}
