@@ -1198,10 +1198,12 @@ ${canonical ? `<meta property="og:url" content="${escHtml(canonical)}" />` : ''}
 <meta name="twitter:image" content="${escHtml(ogImage)}" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Marcellus&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=noir8" />
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/400.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/500.css" />
+<link rel="stylesheet" href="/styles.css?v=ed1" />
 <script src="/i18n-public.js?v=fr7"></script>
-<script src="/nav.js?v=1" defer></script>
+<script src="/nav.js?v=2" defer></script>
 ${head}
 </head>
 <body>

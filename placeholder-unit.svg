@@ -1,22 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1500" preserveAspectRatio="xMidYMid slice">
-  <!-- Placeholder for units without photos: Maison Noir palette, gold line-art greystone facade -->
+  <!-- Placeholder for units without photos: light editorial palette, ink line-art greystone facade -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0.4" y2="1">
-      <stop offset="0" stop-color="#1c1a17"/>
-      <stop offset="0.55" stop-color="#121214"/>
-      <stop offset="1" stop-color="#0b0b0c"/>
+      <stop offset="0" stop-color="#f6f6f4"/>
+      <stop offset="0.55" stop-color="#efefec"/>
+      <stop offset="1" stop-color="#e8e8e4"/>
     </linearGradient>
     <radialGradient id="glow" cx="0.5" cy="0.36" r="0.55">
-      <stop offset="0" stop-color="#c9a96e" stop-opacity="0.10"/>
-      <stop offset="1" stop-color="#c9a96e" stop-opacity="0"/>
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
     </radialGradient>
   </defs>
   <rect width="1200" height="1500" fill="url(#bg)"/>
   <rect width="1200" height="1500" fill="url(#glow)"/>
-  <rect x="40" y="40" width="1120" height="1420" fill="none" stroke="#c9a96e" stroke-opacity="0.22" stroke-width="2"/>
+  <rect x="40" y="40" width="1120" height="1420" fill="none" stroke="#111111" stroke-opacity="0.08" stroke-width="2"/>
 
   <!-- Greystone facade -->
-  <g fill="none" stroke="#c9a96e" stroke-opacity="0.55" stroke-width="3" stroke-linejoin="round" transform="translate(0,-140)">
+  <g fill="none" stroke="#111111" stroke-opacity="0.38" stroke-width="3" stroke-linejoin="round" transform="translate(0,-140)">
     <path d="M330 1090 V470 H870 V1090"/>
     <path d="M310 470 H890 M318 452 H882 M330 470 L340 452 M870 470 L860 452"/>
     <path d="M330 520 H870" stroke-opacity="0.25"/>
@@ -35,12 +35,12 @@
   </g>
 
   <!-- Wordmark + caption -->
-  <text x="600" y="1095" text-anchor="middle" fill="#f3eee4" fill-opacity="0.9"
+  <text x="600" y="1095" text-anchor="middle" fill="#111111" fill-opacity="0.85"
         font-family="Marcellus, 'Didot', 'Bodoni 72', Georgia, 'Times New Roman', serif"
         font-size="64" letter-spacing="22">RENTALIUM</text>
-  <path d="M520 1135 H680" stroke="#c9a96e" stroke-opacity="0.6" stroke-width="2"/>
-  <text x="600" y="1190" text-anchor="middle" fill="#c9a96e"
+  <path d="M520 1135 H680" stroke="#111111" stroke-opacity="0.35" stroke-width="2"/>
+  <text x="600" y="1190" text-anchor="middle" fill="#44507a"
         font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="30" font-weight="600" letter-spacing="9">PHOTOS À VENIR</text>
-  <text x="600" y="1236" text-anchor="middle" fill="#a39e93"
+  <text x="600" y="1236" text-anchor="middle" fill="#7a7a7a"
         font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="26" letter-spacing="8">PHOTOS COMING SOON</text>
 </svg>

@@ -275,6 +275,14 @@
     'Repeat password': 'Répétez le mot de passe',
     'Min. 8 characters': 'Min. 8 caractères',
     'Submit application →': 'Soumettre la candidature →',
+    // Editorial homepage
+    'From listing': 'De l’annonce',
+    'To move-in': 'À l’emménagement',
+    'Find your next apartment': 'Trouver votre prochain appartement',
+    'Email': 'Courriel',
+    'Montréal skyline at dusk': 'Horizon de Montréal au crépuscule',
+    'Boutique leasing agency in Montréal — vetted apartments for renters, fast tenant placement for landlords.':
+      'Agence de location boutique à Montréal — des appartements vérifiés pour les locataires, un placement rapide pour les propriétaires.',
     "You don't need a real-estate licence to apply — but you do need to be bilingual, client-focused, and genuinely excited about Montréal's rental market.": "Aucun permis de courtier n'est requis pour postuler — mais vous devez être bilingue, axé sur le client et sincèrement enthousiaste face au marché locatif montréalais.",
     "Tell us a bit about yourself, your experience with real estate or sales, and why Montréal's rental market interests you…": "Parlez-nous un peu de vous, de votre expérience en immobilier ou en vente, et de ce qui vous attire dans le marché locatif montréalais…",
     'Choose a file': 'Choisir un fichier',
@@ -308,8 +316,8 @@
   // Whole-element HTML overrides for elements with inline markup whose word
   // order differs in French. Keyed by a stable CSS selector.
   var HTML = {
-    '.hero h1': 'L’agence de location montréalaise pour des logements qui partent <span class="accent">vite</span>.',
-    '.hero-lede': 'Rentalium est une agence boutique <strong>de location à Montréal</strong>. Nous plaçons les locataires dans des appartements vérifiés et louons vite les unités des propriétaires — du Plateau au centre-ville, à Griffintown, au Sud-Ouest et au-delà.',
+    '.hero h1, .home-intro h1': 'L’agence de location montréalaise pour des logements qui partent <span class="accent">vite</span>.',
+    '.hero-lede, .home-intro .lede': 'Rentalium est une agence boutique <strong>de location à Montréal</strong>. Nous plaçons les locataires dans des appartements vérifiés et louons vite les unités des propriétaires — du Plateau au centre-ville, à Griffintown, au Sud-Ouest et au-delà.',
   };
 
   function getLang() {
