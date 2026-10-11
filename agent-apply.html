@@ -25,451 +25,256 @@
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/400.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/500.css" />
-<link rel="stylesheet" href="styles.css?v=ed7" />
-<script src="/i18n-public.js?v=fr11"></script>
+<link rel="stylesheet" href="/styles.css?v=ed8" />
+<script src="/i18n-public.js?v=fr12"></script>
 <script src="/nav.js?v=2" defer></script>
-<style>
-  .agent-hero {
-    padding: 80px 0 60px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--line);
-  }
-  .agent-hero .eyebrow { margin-bottom: 12px; }
-  .agent-hero h1 { max-width: 640px; margin-bottom: 20px; }
-  .agent-hero p { max-width: 560px; font-size: 1.1rem; }
-
-  .perks-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 20px;
-    margin-top: 40px;
-  }
-  .perk-card {
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 28px 24px;
-  }
-  .perk-icon {
-    font-size: 1.6rem;
-    margin-bottom: 12px;
-    display: block;
-  }
-  .perk-card h3 { font-size: 1.05rem; margin-bottom: 6px; }
-  .perk-card p { font-size: 0.9rem; margin: 0; }
-
-  .apply-section {
-    padding: 72px 0;
-  }
-  .apply-layout {
-    display: grid;
-    grid-template-columns: 1fr 480px;
-    gap: 60px;
-    align-items: start;
-  }
-  @media (max-width: 860px) {
-    .apply-layout { grid-template-columns: 1fr; gap: 40px; }
-  }
-
-  .apply-sidebar h2 { margin-bottom: 16px; }
-  .apply-sidebar p { margin-bottom: 16px; }
-  .apply-sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 24px;
-  }
-  .apply-sidebar ul li {
-    padding: 8px 0;
-    border-bottom: 1px solid var(--line);
-    font-size: 0.95rem;
-    color: var(--ink-muted);
-    display: flex;
-    gap: 10px;
-  }
-  .apply-sidebar ul li::before { content: '✓'; color: var(--accent); font-weight: 600; flex-shrink: 0; }
-
-  .apply-form-card {
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 36px 32px;
-    box-shadow: var(--shadow-md);
-  }
-  .apply-form-card h2 { font-size: 1.4rem; margin-bottom: 4px; }
-  .apply-form-card > p { font-size: 0.9rem; margin-bottom: 24px; }
-
-  .form-field { margin-bottom: 18px; }
-  .form-field label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    margin-bottom: 6px;
-    color: var(--ink);
-  }
-  .form-field input,
-  .form-field textarea,
-  .form-field select {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    font-family: inherit;
-    font-size: 0.95rem;
-    color: var(--ink);
-    background: var(--bg);
-    transition: border-color var(--t), box-shadow var(--t);
-    outline: none;
-  }
-  .form-field input:focus,
-  .form-field textarea:focus,
-  .form-field select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(138, 106, 59, 0.12);
-  }
-  .form-field textarea { resize: vertical; min-height: 110px; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  @media (max-width: 520px) { .form-row { grid-template-columns: 1fr; } }
-
-  .form-divider {
-    border: none;
-    border-top: 1px solid var(--line);
-    margin: 24px 0;
-  }
-  .form-hint { font-size: 0.82rem; color: var(--ink-muted); margin-top: 4px; }
-
-  .cv-upload-label {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    border: 2px dashed var(--line);
-    border-radius: var(--radius-sm);
-    padding: 28px 20px;
-    cursor: pointer;
-    transition: border-color var(--t), background var(--t);
-    text-align: center;
-  }
-  .cv-upload-label:hover, .cv-upload-label.drag-over {
-    border-color: var(--accent);
-    background: rgba(138, 106, 59, 0.04);
-  }
-  .cv-upload-label.has-file {
-    border-color: var(--accent);
-    background: rgba(138, 106, 59, 0.06);
-  }
-  .cv-upload-icon { font-size: 1.6rem; line-height: 1; }
-  .cv-upload-label span { font-size: 0.9rem; color: var(--ink-muted); }
-  .cv-upload-label strong { font-size: 0.9rem; color: var(--accent); }
-  .cv-file-name { font-size: 0.85rem; color: var(--ink); font-weight: 500; }
-  #cv-input { display: none; }
-  .form-error {
-    background: #fff0f0;
-    border: 1px solid #f5c6c6;
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    font-size: 0.9rem;
-    color: #c0392b;
-    margin-bottom: 16px;
-    display: none;
-  }
-  .form-success {
-    text-align: center;
-    padding: 40px 24px;
-    display: none;
-  }
-  .form-success .success-icon {
-    width: 56px;
-    height: 56px;
-    background: var(--accent);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 20px;
-    color: #fff;
-    font-size: 1.4rem;
-  }
-  .form-success h3 { margin-bottom: 8px; }
-  .form-success p { margin-bottom: 20px; }
-</style>
 </head>
 <body>
-
 <header class="nav">
   <div class="container nav-inner">
-    <a href="/" class="brand">
-      Rentalium
-    </a>
+    <a href="/" class="brand">Rentalium</a>
     <nav class="nav-links">
       <a href="/#services">Services</a>
-      <a href="/#neighbourhoods">Neighbourhoods</a>
       <a href="/unit-finder">Available units</a>
+      <a href="/landlord-intake">List your unit</a>
       <a href="/blog">Blog</a>
-      <a href="/#contact">Contact</a>
-      <button class="lang-toggle" type="button" aria-label="Language">FR</button>
+      <a href="/agent-apply" class="active">Join our team</a>
       <a href="/unit-finder" class="btn btn-primary btn-sm">Browse rentals</a>
+      <button class="lang-toggle" type="button" aria-label="Language">FR</button>
     </nav>
   </div>
 </header>
 
-<section class="agent-hero">
-  <div class="container">
-    <div class="eyebrow">Join the team · Montréal</div>
-    <h1>Become a Rentalium lease agent.</h1>
-    <p class="hero-lede">
-      We're building Montréal's best leasing team. If you know the city, love people, and want to
-      earn on every placement — apply to join us. Flexible schedule, strong commissions, real training.
-    </p>
-  </div>
-</section>
-
-<section style="padding: 60px 0; background: var(--surface); border-bottom: 1px solid var(--line);">
-  <div class="container">
-    <div class="section-head">
-      <div>
-        <div class="eyebrow">Why Rentalium</div>
-        <h2>What you get as <br/>a Rentalium agent.</h2>
-      </div>
-      <p>We give our agents real listings, real clients, and a system that handles the admin — so you can focus on showing units and closing leases.</p>
+<main class="li-wrap">
+  <form id="apply-form" novalidate>
+    <div class="li-head">
+      <h1>Become a Rentalium lease agent.</h1>
+      <p>Show apartments, sign tenants and earn on every lease, on your own schedule. Apply in two minutes.</p>
+      <ul class="li-perks">
+        <li>Commission on every lease</li>
+        <li>Flexible schedule</li>
+        <li>Training provided</li>
+        <li>No licence needed</li>
+      </ul>
     </div>
-    <div class="perks-grid">
-      <div class="perk-card">
-        <span class="perk-icon">💰</span>
-        <h3>Commission-based earnings</h3>
-        <p>Earn a competitive commission on every unit you place. More placements, more income — no ceiling.</p>
+
+    <section class="li-card">
+      <h2>About you</h2>
+      <p class="sub">Your email becomes your agent login if we work together.</p>
+
+      <div class="f" id="f-name">
+        <label for="name">Full name</label>
+        <input type="text" id="name" autocomplete="name" />
+        <div class="err">Please enter your full name.</div>
       </div>
-      <div class="perk-card">
-        <span class="perk-icon">🗺️</span>
-        <h3>Island-wide portfolio</h3>
-        <p>Access to listings across Plateau, Downtown, Griffintown, Verdun, Mile End and beyond.</p>
-      </div>
-      <div class="perk-card">
-        <span class="perk-icon">📅</span>
-        <h3>Flexible schedule</h3>
-        <p>Work when it suits you. Book your own showings and manage your pipeline from anywhere.</p>
-      </div>
-      <div class="perk-card">
-        <span class="perk-icon">🧑‍💼</span>
-        <h3>Full training & support</h3>
-        <p>Québec lease (bail) training, client scripts, and an admin platform built for agents.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="apply-section">
-  <div class="container">
-    <div class="apply-layout">
-
-      <div class="apply-sidebar">
-        <div class="eyebrow">What we look for</div>
-        <h2>The right fit for <br/>Rentalium.</h2>
-        <p>You don't need a real-estate licence to apply — but you do need to be bilingual, client-focused, and genuinely excited about Montréal's rental market.</p>
-        <ul>
-          <li>Bilingual English &amp; French (spoken)</li>
-          <li>Knowledge of Montréal neighbourhoods</li>
-          <li>Strong communication and follow-through</li>
-          <li>Comfortable with digital tools and apps</li>
-          <li>Available for weekend showings</li>
-          <li>Reliable transportation or transit access</li>
-        </ul>
-        <p class="muted small">Applications are reviewed within 3–5 business days. We'll reach out by email to schedule a short call if you're a fit.</p>
-      </div>
-
-      <div class="apply-form-card">
-        <h2>Apply to join</h2>
-        <p class="muted small">Takes about 3 minutes. We review every application personally.</p>
-
-        <div class="form-error" id="form-error"></div>
-
-        <form id="apply-form" novalidate>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="name">Full name <span style="color:var(--accent)">*</span></label>
-              <input type="text" id="name" name="name" autocomplete="name" required placeholder="Marie Tremblay" />
-            </div>
-            <div class="form-field">
-              <label for="phone">Phone number</label>
-              <input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="514-555-0100" />
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label for="email">Email address <span style="color:var(--accent)">*</span></label>
-            <input type="email" id="email" name="email" autocomplete="email" required placeholder="marie@example.com" />
-          </div>
-
-          <div class="form-field">
-            <label for="message">Why do you want to join Rentalium? <span style="color:var(--accent)">*</span></label>
-            <textarea id="message" name="message" required placeholder="Tell us a bit about yourself, your experience with real estate or sales, and why Montréal's rental market interests you…"></textarea>
-          </div>
-
-          <div class="form-field">
-            <label>CV / Résumé <span style="color:var(--accent)">*</span></label>
-            <input type="file" id="cv-input" name="cv" accept=".pdf,.doc,.docx,.odt,.rtf,.txt,.pages,.jpg,.jpeg,.png,.webp,.heic,.heif,application/pdf,image/*" required />
-            <label for="cv-input" class="cv-upload-label" id="cv-upload-label">
-              <span class="cv-upload-icon">📄</span>
-              <strong>Choose a file</strong>
-              <span id="cv-hint">or drag and drop here</span>
-              <span class="form-hint" style="margin:0;">PDF, Word, Pages, OpenDocument or a photo · max 10 MB</span>
-            </label>
-          </div>
-
-          <button type="submit" class="btn btn-primary" style="width:100%;margin-top:20px;" id="submit-btn">
-            Submit application &rarr;
-          </button>
-        </form>
-
-        <div class="form-success" id="form-success">
-          <div class="success-icon">✓</div>
-          <h3>Application received!</h3>
-          <p>Thanks for applying to Rentalium. We review every application personally and will reach out within 3–5 business days if you're a strong fit.</p>
-          <a href="/" class="btn btn-ghost">Back to homepage</a>
+      <div class="row2">
+        <div class="f" id="f-email">
+          <label for="email">Email</label>
+          <input type="email" id="email" autocomplete="email" inputmode="email" />
+          <div class="err" id="email-err">Please enter a valid email address.</div>
+        </div>
+        <div class="f">
+          <label for="phone">Phone <span class="opt">(optional)</span></label>
+          <input type="tel" id="phone" autocomplete="tel" inputmode="tel" />
         </div>
       </div>
+    </section>
 
+    <section class="li-card">
+      <h2>A bit more</h2>
+      <p class="sub">All optional, but it helps us get back to you faster.</p>
+
+      <div class="f">
+        <span class="lbl">Languages you speak</span>
+        <div class="chips" data-multi="languages">
+          <button type="button" class="chip" data-v="French">Français</button>
+          <button type="button" class="chip" data-v="English">English</button>
+          <button type="button" class="chip" data-v="Other">Other</button>
+        </div>
+      </div>
+      <div class="f">
+        <span class="lbl">When are you available?</span>
+        <div class="chips" data-multi="availability">
+          <button type="button" class="chip" data-v="Weekdays">Weekdays</button>
+          <button type="button" class="chip" data-v="Evenings">Evenings</button>
+          <button type="button" class="chip" data-v="Weekends">Weekends</button>
+        </div>
+      </div>
+      <div class="f">
+        <label for="message">Why Rentalium?</label>
+        <textarea id="message" placeholder="Your experience in sales, real estate or customer service, the neighbourhoods you know…"></textarea>
+      </div>
+      <div class="f" id="f-cv">
+        <span class="lbl">CV / résumé</span>
+        <input type="file" id="cv-input" accept=".pdf,.doc,.docx,.odt,.rtf,.txt,.pages,.jpg,.jpeg,.png,.webp,.heic,.heif,application/pdf,image/*" />
+        <label for="cv-input" class="cv-drop" id="cv-drop">
+          <strong>Choose a file</strong>
+          <span class="file" id="cv-file" hidden></span>
+          <span class="hint" id="cv-hint">or drag and drop here</span>
+          <span class="hint">PDF, Word, Pages, OpenDocument or a photo · max 10 MB</span>
+        </label>
+        <div class="err" id="cv-err"></div>
+      </div>
+    </section>
+
+    <div class="li-alert" id="li-alert" role="alert"></div>
+    <div class="li-submit">
+      <button type="submit" class="btn btn-primary" id="submit-btn">Submit application &rarr;</button>
+      <p class="fine">We review every application personally and reply within 3–5 business days.</p>
     </div>
+  </form>
+
+  <div class="li-done" id="li-done" hidden>
+    <div class="mark">✓</div>
+    <h1>Application received!</h1>
+    <p>Thanks for applying to Rentalium. We review every application personally and will reach out within 3–5 business days if you're a strong fit.</p>
+    <a href="/" class="btn btn-ghost">Back to homepage</a>
   </div>
-</section>
+</main>
 
-<footer>
+<footer class="site-footer">
   <div class="container footer-grid">
-    <div class="brand">
-      Rentalium
-    </div>
+    <div class="brand">Rentalium</div>
     <small>
       Rentalium &middot; Leasing agency in Montréal, QC &middot;
       <a href="tel:+14383400510" style="color: inherit;">+1 (438) 340-0510</a> &middot;
-      <a href="mailto:hello@rentalium.ca" style="color: inherit;">hello@rentalium.ca</a><br/>
-      &copy; 2026 Rentalium. All rights reserved. · <a href="/admin" style="color: inherit;">Staff</a>
+      <a href="mailto:hello@rentalium.ca" style="color: inherit;">hello@rentalium.ca</a>
     </small>
   </div>
 </footer>
 
 <script>
-  const form = document.getElementById('apply-form');
-  const errorBox = document.getElementById('form-error');
-  const successBox = document.getElementById('form-success');
-  const submitBtn = document.getElementById('submit-btn');
-  const cvInput = document.getElementById('cv-input');
-  const cvLabel = document.getElementById('cv-upload-label');
-  const cvHint = document.getElementById('cv-hint');
-
-  function showError(msg) {
-    errorBox.textContent = msg;
-    errorBox.style.display = 'block';
-    errorBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-  function hideError() { errorBox.style.display = 'none'; }
-
-  // CV file selection feedback
-  function updateCvLabel(file) {
-    if (file) {
-      cvLabel.classList.add('has-file');
-      cvHint.textContent = file.name;
-      cvHint.className = 'cv-file-name';
-    } else {
-      cvLabel.classList.remove('has-file');
-      cvHint.textContent = window.PUBLIC_LANG === 'fr' ? 'ou glissez-déposez ici' : 'or drag and drop here';
-      cvHint.className = '';
-    }
-  }
-  cvInput.addEventListener('change', () => updateCvLabel(cvInput.files[0] || null));
-
-  // Drag-and-drop on the label
-  cvLabel.addEventListener('dragover', (e) => { e.preventDefault(); cvLabel.classList.add('drag-over'); });
-  cvLabel.addEventListener('dragleave', () => cvLabel.classList.remove('drag-over'));
-  cvLabel.addEventListener('drop', (e) => {
-    e.preventDefault();
-    cvLabel.classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    cvInput.files = dt.files;
-    updateCvLabel(file);
-  });
-
-  // Messages in the visitor's language, keyed by the server's error codes.
-  const MSG = {
+(function () {
+  var FR = window.PUBLIC_LANG === 'fr';
+  var MSG = {
     en: {
       name: 'Please enter your full name.',
       email: 'Please enter a valid email address.',
-      message: 'Please tell us why you want to join Rentalium.',
-      cv_missing: 'Please upload your CV or résumé.',
       cv_size: 'Your CV file must be under 10 MB.',
       cv_type: 'Please upload your CV as a PDF, Word, Pages, OpenDocument, text file or a photo.',
       cv_upload: 'Your CV could not be uploaded. Please try again.',
       exists_user: 'An account with that email already exists.',
       exists_pending: 'An application with that email is already under review.',
-      network: 'Network error. Please check your connection and try again.',
+      network: 'Sorry, that didn’t go through. Please try again, or email us at hello@rentalium.ca.',
       generic: 'Something went wrong. Please try again.',
-      submit: 'Submit application →',
-      submitting: 'Submitting…',
+      sending: 'Sending…',
+      drag: 'or drag and drop here',
+      change: 'Choose another file',
     },
     fr: {
       name: 'Veuillez entrer votre nom complet.',
       email: 'Veuillez entrer une adresse courriel valide.',
-      message: 'Dites-nous pourquoi vous voulez rejoindre Rentalium.',
-      cv_missing: 'Veuillez joindre votre CV.',
       cv_size: 'Votre CV doit faire moins de 10 Mo.',
       cv_type: 'Veuillez joindre votre CV en PDF, Word, Pages, OpenDocument, fichier texte ou en photo.',
       cv_upload: 'Votre CV n’a pas pu être téléversé. Veuillez réessayer.',
       exists_user: 'Un compte existe déjà avec ce courriel.',
       exists_pending: 'Une candidature avec ce courriel est déjà en cours d’examen.',
-      network: 'Erreur réseau. Vérifiez votre connexion et réessayez.',
+      network: 'Désolé, l’envoi n’a pas fonctionné. Réessayez, ou écrivez-nous à hello@rentalium.ca.',
       generic: 'Une erreur est survenue. Veuillez réessayer.',
-      submit: 'Soumettre la candidature →',
-      submitting: 'Envoi…',
+      sending: 'Envoi…',
+      drag: 'ou glissez-déposez ici',
+      change: 'Choisir un autre fichier',
     },
   };
-  const msg = (k) => (MSG[window.PUBLIC_LANG === 'fr' ? 'fr' : 'en'][k] || '');
+  var msg = function (k) { return MSG[FR ? 'fr' : 'en'][k] || ''; };
 
-  form.addEventListener('submit', async (e) => {
+  var form = document.getElementById('apply-form');
+  var picks = { languages: {}, availability: {} };
+  document.querySelectorAll('[data-multi]').forEach(function (group) {
+    var key = group.getAttribute('data-multi');
+    group.querySelectorAll('.chip').forEach(function (chip) {
+      chip.setAttribute('aria-pressed', 'false');
+      chip.addEventListener('click', function () {
+        var on = chip.getAttribute('aria-pressed') !== 'true';
+        chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+        picks[key][chip.textContent.trim()] = on; // label as the applicant saw it (FR or EN)
+      });
+    });
+  });
+  var chosen = function (key) { return Object.keys(picks[key]).filter(function (k) { return picks[key][k]; }); };
+
+  // CV picker + drag and drop
+  var input = document.getElementById('cv-input');
+  var drop = document.getElementById('cv-drop');
+  var cvFile = null;
+  function setCv(file) {
+    cvFile = file || null;
+    document.getElementById('f-cv').classList.remove('has-error');
+    var nameEl = document.getElementById('cv-file');
+    nameEl.hidden = !cvFile;
+    nameEl.textContent = cvFile ? cvFile.name : '';
+    drop.classList.toggle('has-file', !!cvFile);
+    drop.querySelector('strong').textContent = cvFile ? msg('change') : (FR ? 'Choisir un fichier' : 'Choose a file');
+    document.getElementById('cv-hint').hidden = !!cvFile;
+    if (cvFile && cvFile.size > 10 * 1024 * 1024) cvError(msg('cv_size'));
+  }
+  function cvError(text) {
+    document.getElementById('cv-err').textContent = text;
+    document.getElementById('f-cv').classList.add('has-error');
+  }
+  input.addEventListener('change', function () { setCv(input.files[0]); });
+  drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('drag'); });
+  drop.addEventListener('dragleave', function () { drop.classList.remove('drag'); });
+  drop.addEventListener('drop', function (e) {
+    e.preventDefault(); drop.classList.remove('drag');
+    if (e.dataTransfer.files[0]) setCv(e.dataTransfer.files[0]);
+  });
+
+  function setErr(id, on) { document.getElementById(id).classList.toggle('has-error', on); }
+  document.getElementById('name').addEventListener('input', function () { setErr('f-name', false); });
+  document.getElementById('email').addEventListener('input', function () { setErr('f-email', false); });
+
+  form.addEventListener('submit', async function (e) {
     e.preventDefault();
-    hideError();
+    var alertBox = document.getElementById('li-alert');
+    alertBox.classList.remove('on');
+    var name = document.getElementById('name').value.trim();
+    var email = document.getElementById('email').value.trim();
+    var first = null;
+    if (!name) { setErr('f-name', true); first = first || 'name'; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setErr('f-email', true); first = first || 'email'; }
+    if (cvFile && cvFile.size > 10 * 1024 * 1024) { cvError(msg('cv_size')); first = first || 'cv-input'; }
+    if (first) { document.getElementById(first === 'cv-input' ? 'cv-drop' : first).focus(); return; }
 
-    const name = form.name.value.trim();
-    const email = form.email.value.trim();
-    const phone = form.phone.value.trim();
-    const message = form.message.value.trim();
-    const cvFile = cvInput.files[0];
+    // Languages and availability ride along at the top of the message.
+    var extra = [];
+    if (chosen('languages').length) extra.push((FR ? 'Langues : ' : 'Languages: ') + chosen('languages').join(', '));
+    if (chosen('availability').length) extra.push((FR ? 'Disponibilités : ' : 'Availability: ') + chosen('availability').join(', '));
+    var message = [extra.join(' · '), document.getElementById('message').value.trim()].filter(Boolean).join('\n\n');
 
-    if (!name) return showError(msg('name'));
-    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return showError(msg('email'));
-    if (!message) return showError(msg('message'));
-    if (!cvFile) return showError(msg('cv_missing'));
-    if (cvFile.size > 10 * 1024 * 1024) return showError(msg('cv_size'));
+    var fd = new FormData();
+    fd.append('name', name);
+    fd.append('email', email);
+    fd.append('phone', document.getElementById('phone').value.trim());
+    fd.append('message', message);
+    if (cvFile) fd.append('cv', cvFile);
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = msg('submitting');
-
+    var btn = document.getElementById('submit-btn');
+    var label = btn.innerHTML;
+    btn.disabled = true;
+    btn.textContent = msg('sending');
     try {
-      const fd = new FormData();
-      fd.append('name', name);
-      fd.append('email', email);
-      fd.append('phone', phone);
-      fd.append('message', message);
-      fd.append('cv', cvFile);
-
-      const res = await fetch('/api/agent-applications', { method: 'POST', body: fd });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        showError(msg(data.code) || data.error || msg('generic'));
-        submitBtn.disabled = false;
-        submitBtn.textContent = msg('submit');
+      var r = await fetch('/api/agent-applications', { method: 'POST', body: fd });
+      var data = await r.json().catch(function () { return {}; });
+      if (!r.ok) {
+        if (data.code && data.code.indexOf('cv_') === 0) cvError(msg(data.code));
+        else if (data.code === 'email' || data.code === 'exists_user' || data.code === 'exists_pending') {
+          document.getElementById('email-err').textContent = msg(data.code); setErr('f-email', true);
+        } else if (data.code === 'name') setErr('f-name', true);
+        else { alertBox.textContent = data.error || msg('generic'); alertBox.classList.add('on'); }
+        btn.disabled = false; btn.innerHTML = label;
         return;
       }
-      form.style.display = 'none';
-      successBox.style.display = 'block';
-    } catch {
-      showError(msg('network'));
-      submitBtn.disabled = false;
-      submitBtn.textContent = msg('submit');
+      form.hidden = true;
+      document.getElementById('li-done').hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (window.gtag) gtag('event', 'generate_lead', { form: 'agent_application' });
+    } catch (err) {
+      alertBox.textContent = msg('network'); alertBox.classList.add('on');
+      btn.disabled = false; btn.innerHTML = label;
     }
   });
+})();
 </script>
-
 </body>
 </html>

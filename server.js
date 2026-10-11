@@ -1205,8 +1205,8 @@ ${canonical ? `<meta property="og:url" content="${escHtml(canonical)}" />` : ''}
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/400.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/500.css" />
-<link rel="stylesheet" href="/styles.css?v=ed7" />
-<script src="/i18n-public.js?v=fr11"></script>
+<link rel="stylesheet" href="/styles.css?v=ed8" />
+<script src="/i18n-public.js?v=fr12"></script>
 <script src="/nav.js?v=2" defer></script>
 ${head}
 </head>
@@ -1691,18 +1691,20 @@ app.post('/api/agent-applications', cvUploadSingle, wrap(async (req, res) => {
 
   if (!name)    return fail('name', 'Full name is required.');
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail('email', 'A valid email address is required.');
-  if (!message) return fail('message', 'Please tell us why you want to join.');
-  if (!req.file || !req.file.size) return fail('cv_missing', 'A CV or résumé file is required.');
 
   // Reject if an active user or pending application already exists with this email.
   if (await repo.getUserByEmail(email)) return fail('exists_user', 'An account with that email already exists.', 409);
   const existing = await repo.getAgentApplicationByEmail(email);
   if (existing && existing.status === 'pending') return fail('exists_pending', 'An application for that email is already under review.', 409);
 
-  // Save with the real extension even if the original name had none.
-  const ext = cvExt(req.file);
-  const base = path.basename(req.file.originalname || 'cv', path.extname(req.file.originalname || '')) || 'cv';
-  const cv_key = await storage.save({ buffer: req.file.buffer, originalname: base + ext, mimetype: CV_TYPES[ext] || req.file.mimetype });
+  // The CV is optional. When given, save it with the real extension even if
+  // the original name had none.
+  let cv_key = null;
+  if (req.file && req.file.size) {
+    const ext = cvExt(req.file);
+    const base = path.basename(req.file.originalname || 'cv', path.extname(req.file.originalname || '')) || 'cv';
+    cv_key = await storage.save({ buffer: req.file.buffer, originalname: base + ext, mimetype: CV_TYPES[ext] || req.file.mimetype });
+  }
   const appl = await repo.createAgentApplication({ name, email, phone, message, cv_key });
   res.status(201).json({ ok: true, id: appl.id });
 }));
