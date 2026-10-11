@@ -93,11 +93,14 @@ const geo = JSON.parse(fs.readFileSync(GEO_PATH, 'utf8'));
 const buildingOfAddr = new Map();
 for (const [key, b] of Object.entries(geo)) for (const a of b.units) buildingOfAddr.set(a, { key, ...b });
 
+// Known typos in the sheet → the real address (kept until the sheet is fixed).
+const ADDRESS_FIXES = [[/\blaundry saint eustache\b/i, 'Rue Landry, Saint-Eustache']];
 const records = [];
 const skipped = [];
 for (const r of rows.slice(headerIdx + 1)) {
-  const address = clean(g(r, ix.address));
+  let address = clean(g(r, ix.address));
   if (!address) continue;
+  for (const [re, to] of ADDRESS_FIXES) address = address.replace(re, to);
   // Skip rows whose "address" isn't one (e.g. an entrance code pasted there).
   if (!/^\s*\d/.test(address.replace(/^#\d+\s+/, ''))) { skipped.push(address); continue; }
   const size = clean(g(r, ix.size));
@@ -136,7 +139,12 @@ for (const u of existing) { const k = normAddr(u.address); if (!dbByKey.has(k)) 
 const toUpdate = [], toInsert = [], matched = new Set();
 for (const [k, rec] of byKey) {
   const m = dbByKey.get(k);
-  if (m && m.length) for (const u of m) { toUpdate.push({ u, rec }); matched.add(u.id); }
+  if (m && m.length) {
+    // Old data sometimes has the same apartment twice: keep the first, the
+    // rest fall through to "not in the sheet" and are hidden.
+    const keep = m.slice().sort((a, b) => a.id - b.id)[0];
+    toUpdate.push({ u: keep, rec }); matched.add(keep.id);
+  }
   else toInsert.push(rec);
 }
 const toRent = existing.filter((u) => !matched.has(u.id) && u.status !== 'rented');
@@ -175,7 +183,7 @@ const run = db.transaction(() => {
   const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   db.exec(`CREATE TABLE IF NOT EXISTS units_backup_${stamp} AS SELECT * FROM units`);
   db.exec(`CREATE TABLE IF NOT EXISTS buildings_backup_${stamp} AS SELECT * FROM buildings`);
-  const upd = db.prepare(`UPDATE units SET ${UPDATE_COLS.map((c) => `${c}=@${c}`).join(', ')}, title=@title, building_id=@building_id, lat=@lat, lng=@lng, geocode_attempted=1 WHERE id=@id`);
+  const upd = db.prepare(`UPDATE units SET ${UPDATE_COLS.map((c) => `${c}=@${c}`).join(', ')}, title=@title, address=@address, building_id=@building_id, lat=@lat, lng=@lng, geocode_attempted=1 WHERE id=@id`);
   const ins = db.prepare(`INSERT INTO units (unit_code, title, address, ${UPDATE_COLS.join(', ')}, building_id, lat, lng, geocode_attempted)
     VALUES (@unit_code, @title, @address, ${UPDATE_COLS.map((c) => '@' + c).join(', ')}, @building_id, @lat, @lng, 1)`);
   const updB = db.prepare('UPDATE buildings SET name=@name, address=@address, neighborhood=@neighborhood, lat=@lat, lng=@lng, geocode_attempted=1 WHERE id=@id');
