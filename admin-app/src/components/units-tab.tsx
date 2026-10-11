@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { api, cap, type Me, type Unit } from '@/lib/api'
 import { fmtBeds, fmtPrice } from '@/lib/format'
 import { useT } from '@/lib/i18n'
+import { MapPin } from 'lucide-react'
 import { UnitDialog } from '@/components/unit-dialog'
 import { UnitDetails } from '@/components/unit-details'
 import { CsvImportDialog } from '@/components/csv-import-dialog'
@@ -98,7 +99,7 @@ export function UnitsTab({ me }: { me: Me }) {
                   <Badge variant={u.status === 'available' ? 'default' : 'secondary'}
                     className={STATUS_META[u.status]?.cls}>{t(STATUS_META[u.status]?.label ?? u.status)}</Badge>
                   {u.lat != null
-                    ? <Badge variant="outline" className="text-teal-700">📍 {t('located')}</Badge>
+                    ? <Badge variant="outline" className="gap-1 text-teal-700"><MapPin className="size-3" />{t('located')}</Badge>
                     : <Badge variant="outline" className="text-amber-700">{t('no pin')}</Badge>}
                   {u.unit_code && <span className="text-xs text-muted-foreground">{u.unit_code}</span>}
                 </div>

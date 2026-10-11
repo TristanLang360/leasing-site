@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { useT } from '@/lib/i18n'
+import { fmtDate, fmtMoney } from '@/lib/format'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 
@@ -163,7 +164,7 @@ export function LandlordsTab() {
   return (
     <div className="grid gap-4">
       <div className="flex items-center">
-        <span className="text-sm text-muted-foreground">{items.length} {t('submission(s)')}</span>
+        <span className="text-sm text-muted-foreground">{items.length} {items.length === 1 ? t('submission') : t('submissions')}</span>
       </div>
 
       {items.length === 0 && (
@@ -186,11 +187,11 @@ export function LandlordsTab() {
               </div>
               {s.address && <p className="mt-1 text-sm text-foreground/80 line-clamp-1">{s.address}{s.city ? `, ${s.city}` : ''}</p>}
               <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                {s.desired_rent && <span className="rounded bg-muted px-1.5 py-0.5">{t('Rent')}: ${s.desired_rent}</span>}
+                {s.desired_rent && <span className="rounded bg-muted px-1.5 py-0.5">{t('Rent')}: {fmtMoney(s.desired_rent)}</span>}
                 {s.property_type && <span className="rounded bg-muted px-1.5 py-0.5">{s.property_type}</span>}
                 {s.size && <span className="rounded bg-muted px-1.5 py-0.5">{s.size}</span>}
               </div>
-              <div className="text-xs text-muted-foreground">{new Date(s.created_at).toLocaleDateString()}</div>
+              <div className="text-xs text-muted-foreground">{fmtDate(s.created_at)}</div>
             </div>
 
             <div className="flex shrink-0 sm:items-end">

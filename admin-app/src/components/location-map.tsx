@@ -38,7 +38,7 @@ export function LocationMap({
   const { t } = useT()
   const center = lat != null && lng != null ? ([lat, lng] as [number, number]) : MONTREAL
   return (
-    <MapContainer center={center} zoom={lat != null ? 14 : 12} className="h-56 w-full rounded-md border">
+    <MapContainer center={center} zoom={lat != null ? 14 : 12} className="adm-map h-56 w-full rounded-md border">
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution="&copy; OpenStreetMap"

@@ -58,6 +58,18 @@ const FR: Record<string, string> = {
   'Failed to load landlord submissions': 'Échec du chargement des soumissions de propriétaires',
   'Property': 'Propriété',
   'Rent': 'Loyer',
+  'All': 'Toutes',
+  'No leads': 'Aucun prospect',
+  'Pending': 'En attente',
+  'Approved': 'Approuvées',
+  'Rejected': 'Refusées',
+  'pending': 'en attente',
+  'approved': 'approuvée',
+  'rejected': 'refusée',
+  'application': 'candidature',
+  'applications': 'candidatures',
+  'submission': 'soumission',
+  'submissions': 'soumissions',
   'Owner & contact': 'Propriétaire et contact',
   'Rent & lease term': 'Loyer et durée du bail',
   'Parking & storage': 'Stationnement et rangement',
@@ -244,7 +256,7 @@ const FR: Record<string, string> = {
   // ── Unit details ─────────────────────────────────────────────
   'video': 'vidéo',
   '⬇ Download': '⬇ Télécharger',
-  '⬇ Download all photos (.zip)': '⬇ Télécharger toutes les photos (.zip)',
+  'Download all photos (.zip)': 'Télécharger toutes les photos (.zip)',
   'Get directions': 'Itinéraire',
   'Open in Google Maps': 'Ouvrir dans Google Maps',
   'Open in Apple Maps': 'Ouvrir dans Apple Maps',
@@ -452,13 +464,13 @@ const FR: Record<string, string> = {
   'Longitude': 'Longitude',
   'auto': 'auto',
   '↻ Re-locate from address': '↻ Relocaliser depuis l’adresse',
-  '🧭 Directions': '🧭 Itinéraire',
+  'Directions': 'Itinéraire',
   'Pinned at': 'Épinglé à',
   'Click or drag the pin to adjust.': 'Cliquez ou glissez l’épingle pour ajuster.',
   '⏳ Not located yet — re-locate from the address, or click the map to drop a pin.':
     '⏳ Pas encore localisée — relocalisez depuis l’adresse, ou cliquez sur la carte pour poser une épingle.',
   'Photos & videos': 'Photos et vidéos',
-  '⬇ Download all (.zip)': '⬇ Tout télécharger (.zip)',
+  'Download all (.zip)': 'Tout télécharger (.zip)',
   'No photos or videos yet.': 'Aucune photo ou vidéo pour l’instant.',
   'Drag to reorder. The first one is the thumbnail shown everywhere.':
     'Glissez pour réorganiser. La première est la vignette affichée partout.',
@@ -485,8 +497,8 @@ const FR: Record<string, string> = {
   'Located on the map': 'Localisée sur la carte',
   'Could not auto-locate — set the pin manually': 'Localisation automatique impossible — placez l’épingle manuellement',
   'Re-locate failed': 'Échec de la relocalisation',
-  '📍 Location follows the building — set the pin on the building to move it.':
-    '📍 L’emplacement suit l’immeuble — réglez l’épingle sur l’immeuble pour le déplacer.',
+  'Location follows the building — set the pin on the building to move it.':
+    'L’emplacement suit l’immeuble — réglez l’épingle sur l’immeuble pour le déplacer.',
 
   // ── Buildings ────────────────────────────────────────────────
   'Buildings': 'Immeubles',

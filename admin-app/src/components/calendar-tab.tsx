@@ -94,7 +94,7 @@ export function CalendarTab({ me }: { me: Me }) {
                   {shownTasks.map((t) => (
                     <button key={'t' + t.id} onClick={(e) => { e.stopPropagation(); setTaskEditing(t) }}
                       className={`truncate rounded px-1 py-0.5 text-left text-[11px] ${taskChip(t.status)}`}>
-                      📋 {t.title}
+                      {t.title}
                     </button>
                   ))}
                   {more > 0 && <span className="px-1 text-[10px] text-muted-foreground">+{more} {t('more')}</span>}
@@ -119,7 +119,7 @@ export function CalendarTab({ me }: { me: Me }) {
                     {tk.due_at ? new Date(tk.due_at).toLocaleString(locale(), { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : <span className="text-muted-foreground">{t('No due date')}</span>}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium">📋 {tk.title}</span>
+                    <span className="block truncate font-medium">{tk.title}</span>
                     <span className="block truncate text-xs text-muted-foreground">{tk.unit ? tk.unit.title : t('No unit')}</span>
                   </span>
                   <Badge variant="outline" className={tk.status === 'done' ? 'text-emerald-700' : tk.status === 'in_progress' ? 'text-violet-700' : 'text-slate-600'}>{t(TASK_LABEL[tk.status] ?? tk.status)}</Badge>

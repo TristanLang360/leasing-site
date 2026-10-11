@@ -10,6 +10,15 @@ import { UnitDetails } from '@/components/unit-details'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { Building2, ChevronRight } from 'lucide-react'
+
+// Second line of a building row: what the name doesn't already say (city, neighbourhood).
+function subtitle(b: Building) {
+  const addr = b.address ?? ''
+  const rest = addr.toLowerCase().startsWith(b.name.toLowerCase()) ? addr.slice(b.name.length).replace(/^[\s,]+/, '') : addr
+  const parts = [rest, b.neighborhood].filter((x): x is string => !!x && x.trim() !== '')
+  return parts.filter((x, i) => parts.findIndex((y) => y.toLowerCase() === x.toLowerCase()) === i).join(' · ')
+}
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
   available: { label: 'Available', cls: '' },
@@ -82,19 +91,19 @@ export function BuildingsTab({ me }: { me: Me }) {
               {filtered.map((b) => (
                 <button key={b.id} type="button" onClick={() => setSelectedId(b.id)}
                   className="flex items-center gap-4 rounded-lg border bg-card p-3 text-left hover:bg-muted/40">
-                  <div className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-md bg-muted text-lg">
-                    {b.cover_url ? <img src={b.cover_url} alt="" className="h-full w-full object-cover" /> : '🏢'}
+                  <div className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-md bg-muted text-muted-foreground">
+                    {b.cover_url ? <img src={b.cover_url} alt="" className="h-full w-full object-cover" /> : <Building2 className="size-5" strokeWidth={1.5} />}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium">{b.name}</span>
                       {b.lat == null && <Badge variant="outline" className="text-amber-700">{t('no pin')}</Badge>}
                     </div>
-                    <div className="truncate text-sm text-muted-foreground">{b.address}{b.neighborhood ? ` · ${b.neighborhood}` : ''}</div>
+                    <div className="truncate text-sm text-muted-foreground">{subtitle(b)}</div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
-                    <Badge variant="secondary">{b.unit_count ?? 0} {t('units')}</Badge>
-                    <span className="text-muted-foreground">→</span>
+                    <Badge variant="secondary" className="tabular-nums">{b.unit_count ?? 0} {(b.unit_count ?? 0) === 1 ? t('unit') : t('units')}</Badge>
+                    <ChevronRight className="size-4 text-muted-foreground" />
                   </div>
                 </button>
               ))}

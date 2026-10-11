@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { api, cap, type Building, type Me, type NearbyUnit, type Photo, type Unit } from '@/lib/api'
 import { fmtPrice } from '@/lib/format'
 import { useT } from '@/lib/i18n'
+import { Navigation, MapPin, Download } from 'lucide-react'
 import { LocationMap } from '@/components/location-map'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -275,9 +276,9 @@ export function UnitDialog({
                 <Label>{t('Location')}</Label>
                 <LocationMap lat={lat} lng={lng} editable={false} nearby={nearby} />
                 <div className="flex flex-wrap gap-2">
-                  <Button type="button" variant="outline" size="sm" onClick={directions}>{t('🧭 Directions')}</Button>
+                  <Button type="button" variant="outline" size="sm" onClick={directions}><Navigation className="size-3.5" /> {t('Directions')}</Button>
                 </div>
-                <p className="text-sm text-muted-foreground">{t('📍 Location follows the building — set the pin on the building to move it.')}</p>
+                <p className="text-sm text-muted-foreground"><MapPin className="mr-1 inline size-3.5 align-[-2px]" />{t('Location follows the building — set the pin on the building to move it.')}</p>
               </div>
 
               {/* Photos */}
@@ -286,7 +287,7 @@ export function UnitDialog({
                 <div className="flex items-center justify-between">
                   <Label>{t('Photos & videos')}</Label>
                   {photos.length > 0 && (
-                    <a className="text-sm text-primary hover:underline" href={`/api/units/${unit.id}/photos.zip`}>{t('⬇ Download all (.zip)')}</a>
+                    <a className="text-sm text-primary hover:underline" href={`/api/units/${unit.id}/photos.zip`}><Download className="mr-1 inline size-3.5 align-[-2px]" />{t('Download all (.zip)')}</a>
                   )}
                 </div>
                 {photos.length === 0 && <p className="text-sm text-muted-foreground">{t('No photos or videos yet.')}</p>}
@@ -314,7 +315,7 @@ export function UnitDialog({
                         <span className="pointer-events-none absolute left-1 top-1 rounded bg-black/60 px-1 text-[10px] font-medium text-white">▶ {t('video')}</span>
                       )}
                       <a href={`/api/photos/${p.id}/download`} download
-                        className="absolute bottom-1 left-1 grid size-6 place-items-center rounded bg-black/55 text-xs text-white opacity-0 transition group-hover:opacity-100">⬇</a>
+                        className="absolute bottom-1 left-1 grid size-6 place-items-center rounded bg-black/55 text-xs text-white opacity-0 transition group-hover:opacity-100"><Download className="size-3.5" /></a>
                       {editable && (
                         <>
                           {i > 0 && (

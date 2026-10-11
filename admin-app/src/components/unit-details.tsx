@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { Download, Navigation } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
@@ -91,12 +92,12 @@ export function UnitDetails({
           {hasPhotos && (
             <Button size="sm" variant="outline"
               onClick={() => { window.location.href = `/api/units/${unit.id}/photos.zip` }}>
-              {t('⬇ Download all photos (.zip)')}
+              <Download className="size-3.5" /> {t('Download all photos (.zip)')}
             </Button>
           )}
           <DropdownMenu>
             <DropdownMenuTrigger className={cn(buttonVariants({ size: 'sm' }))}>
-              🧭 {t('Get directions')}
+              <Navigation className="size-3.5" /> {t('Get directions')}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
               <DropdownMenuItem onClick={() => window.open(directionsUrl('google', unit), '_blank', 'noopener')}>

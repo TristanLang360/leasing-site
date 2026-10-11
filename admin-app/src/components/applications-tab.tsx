@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { useT } from '@/lib/i18n'
+import { Download } from 'lucide-react'
+import { fmtDate } from '@/lib/format'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -104,7 +106,7 @@ export function ApplicationsTab() {
             )}
           </Button>
         ))}
-        <span className="ml-auto text-sm text-muted-foreground">{visible.length} {t('application(s)')}</span>
+        <span className="ml-auto text-sm text-muted-foreground">{visible.length} {visible.length === 1 ? t('application') : t('applications')}</span>
       </div>
 
       {visible.length === 0 && (
@@ -129,12 +131,12 @@ export function ApplicationsTab() {
               {a.message && (
                 <p className="mt-1 text-sm text-foreground/80 line-clamp-3">{a.message}</p>
               )}
-              <div className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleDateString()}</div>
+              <div className="text-xs text-muted-foreground">{fmtDate(a.created_at)}</div>
             </div>
 
             <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col sm:items-end">
               {a.cv_url && (
-                <Button variant="outline" size="sm" onClick={() => downloadCv(a.cv_url!)}>⬇ CV</Button>
+                <Button variant="outline" size="sm" onClick={() => downloadCv(a.cv_url!)}><Download className="size-3.5" /> CV</Button>
               )}
               {a.status === 'pending' && (
                 <>

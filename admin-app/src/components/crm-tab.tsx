@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { api, cap, LEAD_STAGES, type Lead, type LeadStage, type Me, type Unit, type User } from '@/lib/api'
 import { fmtPrice } from '@/lib/format'
 import { useT } from '@/lib/i18n'
+import { Home } from 'lucide-react'
 import { LeadDialog } from '@/components/lead-dialog'
 import { Button } from '@/components/ui/button'
 
@@ -49,11 +50,11 @@ export function CrmTab({ me }: { me: Me }) {
       </div>
 
       {/* Kanban board — scrolls horizontally on small screens */}
-      <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2">
+      <div className="-mx-1 grid auto-cols-[minmax(15rem,1fr)] grid-flow-col gap-3 overflow-x-auto px-1 pb-2">
         {LEAD_STAGES.map((stage) => {
           const items = byStage(stage.value)
           return (
-            <div key={stage.value} className="flex w-72 shrink-0 flex-col gap-2">
+            <div key={stage.value} className="flex min-w-0 flex-col gap-2">
               <div className="flex items-center gap-2 px-1">
                 <span className={`size-2.5 rounded-full ${stage.accent}`} />
                 <span className="text-sm font-medium">{t(stage.label)}</span>
@@ -61,7 +62,7 @@ export function CrmTab({ me }: { me: Me }) {
               </div>
               <div className="flex min-h-16 flex-col gap-2 rounded-lg bg-muted/40 p-2">
                 {items.length === 0 ? (
-                  <div className="px-2 py-6 text-center text-xs text-muted-foreground">—</div>
+                  <div className="px-2 py-6 text-center text-xs text-muted-foreground/70">{t('No leads')}</div>
                 ) : (
                   items.map((l) => (
                     <LeadCard key={l.id} lead={l} onOpen={() => setEditing(l)} onMove={move} />
@@ -95,9 +96,9 @@ function LeadCard({ lead, onOpen, onMove }: { lead: Lead; onOpen: () => void; on
       <button type="button" onClick={onOpen} className="block w-full text-left">
         <div className="truncate text-sm font-medium">{lead.name}</div>
         {contact && <div className="truncate text-xs text-muted-foreground">{contact}</div>}
-        {lead.unit && <div className="mt-1 truncate text-xs text-foreground/70">🏠 {lead.unit.title}</div>}
+        {lead.unit && <div className="mt-1 flex items-center gap-1 truncate text-xs text-foreground/70"><Home className="size-3 shrink-0" />{lead.unit.title}</div>}
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
-          {lead.budget != null && <span>{fmtPrice(lead.budget)}/mo</span>}
+          {lead.budget != null && <span>{fmtPrice(lead.budget)}</span>}
           {lead.agent && <span>· {lead.agent.name || lead.agent.email}</span>}
           {lead.source === 'website' && <span className="rounded bg-sky-100 px-1.5 text-[10px] font-medium text-sky-700">{t('web')}</span>}
         </div>

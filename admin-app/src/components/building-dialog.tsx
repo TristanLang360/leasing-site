@@ -136,7 +136,7 @@ export function BuildingDialog({
                 </div>
               )}
               <p className="text-sm text-muted-foreground">
-                {latN != null ? `📍 ${t('Pinned at')} ${latN.toFixed(5)}, ${lngN!.toFixed(5)}. ${t('Click or drag the pin to adjust.')}`
+                {latN != null ? `${t('Pinned at')} ${latN.toFixed(5)}, ${lngN!.toFixed(5)}. ${t('Click or drag the pin to adjust.')}`
                   : t('⏳ Not located yet — re-locate from the address, or click the map to drop a pin.')}
               </p>
             </div>

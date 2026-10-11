@@ -134,3 +134,36 @@
    mobile where the map sits behind the unit-details modal. Isolating the map
    container contains those z-indexes in their own stacking context. */
 .leaflet-container { isolation: isolate; }
+/* ---------- Maps: monochrome, ink pins + count clusters (matches the public site) ---------- */
+.adm-map.leaflet-container, .adm-map .leaflet-container { background: #eeeeec; font-family: var(--font-sans); }
+.adm-map .leaflet-tile-pane { filter: grayscale(1) brightness(1.06) contrast(0.88); }
+.dark .adm-map .leaflet-tile-pane { filter: grayscale(1) invert(1) brightness(0.9) contrast(0.9); }
+.dark .adm-map.leaflet-container, .dark .adm-map .leaflet-container { background: #1b1b1b; }
+.adm-pin-wrap, .adm-cluster-wrap { background: none; border: 0; }
+.adm-pin {
+  position: absolute; left: 0; top: 0; transform: translate(-50%, calc(-100% - 5px));
+  display: inline-block; white-space: nowrap; padding: 5px 8px; border-radius: 4px;
+  background: #111; color: #fff; font: 500 12px/1 var(--font-sans); font-variant-numeric: tabular-nums;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.2); transition: transform 150ms;
+}
+.adm-pin::after {
+  content: ""; position: absolute; left: 50%; bottom: -5px; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: #111; border-bottom: 0;
+}
+.leaflet-marker-icon:hover .adm-pin { transform: translate(-50%, calc(-100% - 5px)) scale(1.08); }
+.adm-dot {
+  position: absolute; left: 0; top: 0; transform: translate(-50%, -50%);
+  width: 16px; height: 16px; border-radius: 50%; background: #111;
+  border: 3px solid #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.25), 0 2px 6px rgb(0 0 0 / 0.3);
+}
+.adm-cluster {
+  display: grid; place-items: center; border-radius: 50%;
+  background: #111; color: #fff; font: 600 13px/1 var(--font-sans); font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 5px rgb(17 17 17 / 0.15), 0 4px 12px rgb(0 0 0 / 0.22); transition: transform 150ms;
+}
+.leaflet-marker-icon:hover .adm-cluster { transform: scale(1.06); }
+.adm-popup { display: grid; gap: 2px; font: 13px/1.4 var(--font-sans); min-width: 180px; }
+.adm-popup strong { font-weight: 600; }
+.adm-popup div { color: #666; }
+.adm-popup button { justify-self: start; margin-top: 6px; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.adm-map .leaflet-popup-content-wrapper { border-radius: 8px; }
