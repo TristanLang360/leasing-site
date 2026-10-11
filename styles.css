@@ -16,8 +16,8 @@
   --radius-sm: 0px;
   --shadow-sm: none;
   --shadow-md: 0 20px 50px rgba(0, 0, 0, 0.08);
-  --container: 1440px;
-  --gutter: 40px;
+  --container: 1920px;
+  --gutter: clamp(20px, 2.8vw, 72px);
   --display: 'Open Sauce One', 'Helvetica Neue', Arial, sans-serif;
   --sans: 'Open Sauce One', 'Helvetica Neue', Arial, sans-serif;
   --wordmark: 'Marcellus', 'Times New Roman', serif;
@@ -31,7 +31,7 @@ body {
   font-family: var(--sans);
   color: var(--ink);
   background: var(--bg);
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -1207,7 +1207,7 @@ a { transition: color var(--t); }
 /* ---------- Generic sections ---------- */
 section { padding: 120px 0; }
 .section-head { margin-bottom: 56px; gap: 40px; align-items: flex-end; }
-.section-head p { max-width: 520px; color: var(--ink-muted); }
+.section-head p { max-width: 34rem; color: var(--ink-muted); }
 .services { background: var(--surface); border: 0; }
 
 /* Cards used on inner pages */
@@ -1371,14 +1371,14 @@ footer .brand { color: #fff; }
    ================================================================ */
 .home section { padding: 0; }
 .home .home-hero { padding: 0 var(--gutter); margin: 24px auto 0; max-width: var(--container); }
-.home-hero .frame { position: relative; overflow: hidden; height: min(72vh, 640px); background: #ddd; }
+.home-hero .frame { position: relative; overflow: hidden; height: min(74vh, 46vw); background: #ddd; }
 .home-hero .frame img { width: 100%; height: 100%; object-fit: cover; object-position: center 62%; }
 
 .home-intro { padding: 96px 0 72px !important; }
 .home-intro .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px 80px; align-items: start; }
 .home-intro h1 { font-size: clamp(2.3rem, 3.4vw, 3rem); max-width: 14ch; margin: 0; }
 .home-intro h1 .accent { color: inherit; font-style: normal; }
-.home-intro .lede { font-size: 1.02rem; color: var(--ink); max-width: 640px; margin: 6px 0 32px; line-height: 1.6; }
+.home-intro .lede { font-size: 1.02rem; color: var(--ink); max-width: 40rem; margin: 6px 0 32px; line-height: 1.6; }
 .home-intro .actions { display: flex; gap: 12px; flex-wrap: wrap; }
 
 /* Services carousel */
@@ -1388,7 +1388,7 @@ footer .brand { color: #fff; }
   overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none;
 }
 .svc-track::-webkit-scrollbar { display: none; }
-.svc { scroll-snap-align: start; display: grid; grid-template-columns: 1fr 1fr; min-height: 470px; position: relative; }
+.svc { scroll-snap-align: start; display: grid; grid-template-columns: 1fr 1fr; min-height: max(470px, 30vw); position: relative; }
 .svc-img { position: relative; overflow: hidden; background: #ddd; }
 .svc-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
 .svc:hover .svc-img img { transform: scale(1.04); }
@@ -1420,12 +1420,12 @@ footer .brand { color: #fff; }
 .statement-line { display: block; font-size: clamp(3rem, 7vw, 6.3rem); line-height: 1.04; letter-spacing: -0.03em; font-weight: 400; margin: 0; }
 .statement-line.right { text-align: right; }
 .statement-mid { display: grid; grid-template-columns: 1fr 1fr; margin: 72px 0; }
-.statement-mid > div { grid-column: 2; max-width: 540px; }
+.statement-mid > div { grid-column: 2; max-width: 34rem; }
 .statement-mid p { color: var(--ink); margin: 0 0 10px; }
 
 /* Big image with parallax */
 .home-bigimg { padding: 0 0 120px !important; }
-.home-bigimg .frame { position: relative; overflow: hidden; height: min(86vh, 760px); background: #ddd; }
+.home-bigimg .frame { position: relative; overflow: hidden; height: min(86vh, 52vw); background: #ddd; }
 .home-bigimg .frame img { position: absolute; left: 0; top: -12%; width: 100%; height: 124%; object-fit: cover; will-change: transform; }
 
 /* Neighbourhood names row (in place of partner logos) */
@@ -1594,7 +1594,7 @@ html.lenis, html.lenis body { height: auto; }
    SHORT FORM PAGES (owner listing + agent application)
    ================================================================ */
   
-  .li-wrap { max-width: 720px; margin: 0 auto; padding: 64px var(--gutter) 96px; min-height: calc(100vh - 260px); }
+  .li-wrap { max-width: 46rem; margin: 0 auto; padding: 64px var(--gutter) 96px; min-height: calc(100vh - 260px); }
   .li-head h1 { font-size: clamp(2rem, 4vw, 2.8rem); margin: 0 0 12px; }
   .li-head p { margin: 0 0 8px; color: var(--ink-muted); font-size: 1.02rem; }
   .li-perks { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 18px 0 40px; padding: 0; list-style: none; color: var(--ink); font-size: 0.92rem; }
@@ -1654,3 +1654,17 @@ html.lenis, html.lenis body { height: auto; }
 .li-card .cv-drop .file { font-weight: 500; color: var(--ink); word-break: break-all; }
 .li-card .cv-drop.has-file { border-style: solid; border-color: var(--ink); background: #fff; }
 .li-card input[type=file] { display: none; }
+
+/* ================================================================
+   LARGE SCREENS — scale type and spacing with the viewport so the
+   layout keeps its laptop proportions on 27" / 4K / ultrawide monitors.
+   (Most sizes are in rem, so raising the root size scales them.)
+   ================================================================ */
+@media (min-width: 1700px) { html { font-size: 17px; } }
+@media (min-width: 2200px) { html { font-size: 18px; } }
+@media (min-width: 2800px) { html { font-size: 20px; } }
+@media (min-width: 1700px) {
+  .nav-inner { height: 5.25rem; }
+  .svc-body p { max-width: 38ch; }
+  .pf-grid { gap: 20px; }
+}
