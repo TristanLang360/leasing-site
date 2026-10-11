@@ -1291,6 +1291,15 @@ footer .brand { color: #fff; }
 }
 .map-zoomed-out .price-pin::after { display: none; }
 .map-zoomed-out .leaflet-marker-icon:hover .price-pin { transform: translate(-50%, -50%) scale(1.4); }
+/* cluster bubbles: count of units in the area */
+.unit-cluster-wrap { background: none; border: 0; }
+.unit-cluster {
+  display: grid; place-items: center; border-radius: 50%;
+  background: var(--ink); color: #fff; font: 500 14px/1 var(--sans);
+  box-shadow: 0 0 0 6px rgba(17,17,17,0.14), 0 4px 14px rgba(0,0,0,0.22);
+  transition: background 150ms, transform 150ms;
+}
+.unit-cluster-wrap:hover .unit-cluster { background: var(--accent); transform: scale(1.06); }
 /* listing page: one dot with a soft ring */
 .unit-dot-wrap { background: none; border: 0; }
 .unit-dot { display: block; width: 22px; height: 22px; border-radius: 50%; background: var(--ink); border: 4px solid #fff; box-shadow: 0 0 0 10px rgba(17,17,17,0.12), 0 2px 8px rgba(0,0,0,0.25); }

@@ -65,10 +65,28 @@ function priceIcon(u) {
     popupAnchor: [0, -14],
   });
 }
-function trackZoom(m) {
-  const set = () => m.getContainer().classList.toggle('map-zoomed-out', m.getZoom() < 13);
-  m.on('zoomend', set);
-  set();
+// Groups nearby units into one count bubble; bubbles split as you zoom in
+// until individual price tags appear. Falls back to a plain layer if the
+// clustering plugin failed to load.
+function unitLayer() {
+  if (typeof L.markerClusterGroup !== 'function') return L.layerGroup();
+  return L.markerClusterGroup({
+    showCoverageOnHover: false,
+    spiderfyOnMaxZoom: true,
+    disableClusteringAtZoom: 17,
+    // Wide radius when zoomed out (one bubble for the whole city), tighter
+    // as you zoom in so groups split by neighbourhood, then by street.
+    maxClusterRadius: (z) => (z <= 9 ? 400 : z <= 10 ? 160 : z <= 12 ? 90 : z <= 14 ? 60 : 40),
+    iconCreateFunction: (cluster) => {
+      const n = cluster.getChildCount();
+      const size = n >= 100 ? 64 : n >= 25 ? 54 : n >= 10 ? 46 : 38;
+      return L.divIcon({
+        className: 'unit-cluster-wrap',
+        html: `<span class="unit-cluster" style="width:${size}px;height:${size}px">${n}</span>`,
+        iconSize: [size, size],
+      });
+    },
+  });
 }
 
 function showFsMap(budget, beds) {
@@ -81,8 +99,7 @@ function showFsMap(budget, beds) {
     L.tileLayer(TILE_URL, {
       maxZoom: 19, attribution: '&copy; OpenStreetMap contributors',
     }).addTo(fsMap);
-    trackZoom(fsMap);
-    fsLayer = L.layerGroup().addTo(fsMap);
+    fsLayer = unitLayer().addTo(fsMap);
   }
   setTimeout(() => { if (fsMap) fsMap.invalidateSize(); }, 60);
   renderFsMap(budget, beds);
@@ -208,8 +225,7 @@ function initMap() {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors',
   }).addTo(map);
-  trackZoom(map);
-  markerLayer = L.layerGroup().addTo(map);
+  markerLayer = unitLayer().addTo(map);
 
   const toggle = document.getElementById('toggle-map');
   if (toggle) toggle.addEventListener('click', () => {
