@@ -337,6 +337,9 @@
     'Choose a file': 'Choisir un fichier',
     'or drag and drop here': 'ou glissez-déposez ici',
     'PDF, DOC or DOCX · max 10 MB': 'PDF, DOC ou DOCX · 10 Mo max',
+    "Thanks for applying to Rentalium. We review every application personally and will reach out within 3–5 business days if you're a strong fit.":
+      'Merci d’avoir postulé chez Rentalium. Nous examinons chaque candidature personnellement et vous contacterons d’ici 3 à 5 jours ouvrables si votre profil correspond.',
+    'PDF, Word, Pages, OpenDocument or a photo · max 10 MB': 'PDF, Word, Pages, OpenDocument ou une photo · 10 Mo max',
     'Submitting…': 'Envoi en cours…',
     'Application received!': 'Candidature reçue !',
     'Back to homepage': 'Retour à l’accueil',

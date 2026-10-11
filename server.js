@@ -1205,8 +1205,8 @@ ${canonical ? `<meta property="og:url" content="${escHtml(canonical)}" />` : ''}
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/400.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/500.css" />
-<link rel="stylesheet" href="/styles.css?v=ed6" />
-<script src="/i18n-public.js?v=fr9"></script>
+<link rel="stylesheet" href="/styles.css?v=ed7" />
+<script src="/i18n-public.js?v=fr11"></script>
 <script src="/nav.js?v=2" defer></script>
 ${head}
 </head>
@@ -1635,34 +1635,74 @@ app.get(['/units/:id', '/units/:id/:slug'], wrap(async (req, res) => {
 // ───────────────────────────────────────────────────────────────
 app.get('/agent-apply', (req, res) => res.sendFile(path.join(__dirname, 'agent-apply.html')));
 
-// CV upload: PDF / Word only, 10 MB cap.
+// CV upload: documents or a photo of the CV, 10 MB cap. Browsers (Safari,
+// some phones) often label Word/Pages files as application/octet-stream, so a
+// file passes if EITHER its extension or its reported type is a known CV format.
+const CV_TYPES = {
+  '.pdf': 'application/pdf',
+  '.doc': 'application/msword',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.odt': 'application/vnd.oasis.opendocument.text',
+  '.rtf': 'application/rtf',
+  '.txt': 'text/plain',
+  '.pages': 'application/vnd.apple.pages',
+  '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp',
+  '.heic': 'image/heic', '.heif': 'image/heif',
+};
+const CV_MIME_TO_EXT = {
+  'application/pdf': '.pdf', 'application/msword': '.doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+  'application/vnd.oasis.opendocument.text': '.odt', 'application/rtf': '.rtf', 'text/rtf': '.rtf',
+  'text/plain': '.txt', 'application/vnd.apple.pages': '.pages', 'application/x-iwork-pages-sffpages': '.pages',
+  'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/heic': '.heic', 'image/heif': '.heif',
+};
+function cvExt(file) {
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  if (CV_TYPES[ext]) return ext;
+  return CV_MIME_TO_EXT[(file.mimetype || '').toLowerCase()] || null;
+}
 const cvUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const ok = /^application\/(pdf|msword|vnd\.openxmlformats-officedocument\.wordprocessingml\.document)$/.test(file.mimetype);
-    cb(ok ? null : new Error('Only PDF or Word documents are accepted.'), ok);
+    if (cvExt(file)) return cb(null, true);
+    const err = new Error('Please upload your CV as a PDF, Word, Pages, OpenDocument, text file or a photo.');
+    err.code = 'cv_type';
+    cb(err, false);
   },
+});
+// Run the upload and turn multer errors into clear 400s with a code the
+// page can translate (cv_type / cv_size).
+const cvUploadSingle = (req, res, next) => cvUpload.single('cv')(req, res, (err) => {
+  if (!err) return next();
+  if (err.code === 'LIMIT_FILE_SIZE') return res.status(400).json({ error: 'The CV file must be under 10 MB.', code: 'cv_size' });
+  if (err.code === 'cv_type') return res.status(400).json({ error: err.message, code: 'cv_type' });
+  console.error('[agent-applications] upload error:', err.code || '', err.message);
+  return res.status(400).json({ error: 'The CV could not be uploaded. Please try again.', code: 'cv_upload' });
 });
 
 // Public: submit an application to become a lease agent.
-app.post('/api/agent-applications', cvUpload.single('cv'), wrap(async (req, res) => {
+app.post('/api/agent-applications', cvUploadSingle, wrap(async (req, res) => {
   const name    = String(req.body.name    || '').trim();
   const email   = String(req.body.email   || '').trim().toLowerCase();
   const phone   = String(req.body.phone   || '').trim() || null;
   const message = String(req.body.message || '').trim() || null;
+  const fail = (code, error, status = 400) => res.status(status).json({ error, code });
 
-  if (!name)    return res.status(400).json({ error: 'Full name is required.' });
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return res.status(400).json({ error: 'A valid email address is required.' });
-  if (!message) return res.status(400).json({ error: 'Please tell us why you want to join.' });
-  if (!req.file) return res.status(400).json({ error: 'A CV or résumé file is required.' });
+  if (!name)    return fail('name', 'Full name is required.');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail('email', 'A valid email address is required.');
+  if (!message) return fail('message', 'Please tell us why you want to join.');
+  if (!req.file || !req.file.size) return fail('cv_missing', 'A CV or résumé file is required.');
 
   // Reject if an active user or pending application already exists with this email.
-  if (await repo.getUserByEmail(email)) return res.status(409).json({ error: 'An account with that email already exists.' });
+  if (await repo.getUserByEmail(email)) return fail('exists_user', 'An account with that email already exists.', 409);
   const existing = await repo.getAgentApplicationByEmail(email);
-  if (existing && existing.status === 'pending') return res.status(409).json({ error: 'An application for that email is already under review.' });
+  if (existing && existing.status === 'pending') return fail('exists_pending', 'An application for that email is already under review.', 409);
 
-  const cv_key = await storage.save({ buffer: req.file.buffer, originalname: req.file.originalname, mimetype: req.file.mimetype });
+  // Save with the real extension even if the original name had none.
+  const ext = cvExt(req.file);
+  const base = path.basename(req.file.originalname || 'cv', path.extname(req.file.originalname || '')) || 'cv';
+  const cv_key = await storage.save({ buffer: req.file.buffer, originalname: base + ext, mimetype: CV_TYPES[ext] || req.file.mimetype });
   const appl = await repo.createAgentApplication({ name, email, phone, message, cv_key });
   res.status(201).json({ ok: true, id: appl.id });
 }));
@@ -1681,11 +1721,11 @@ app.get('/api/agent-applications', requireCap(can.manageUsers), wrap(async (req,
 app.get('/api/agent-applications/:id/cv', requireCap(can.manageUsers), wrap(async (req, res) => {
   const appl = await repo.getAgentApplication(req.params.id);
   if (!appl || !appl.cv_key) return res.status(404).json({ error: 'CV not found.' });
-  const buf = await storage.getBuffer(appl.cv_key);
+  let buf;
+  try { buf = await storage.getBuffer(appl.cv_key); }
+  catch { return res.status(404).json({ error: 'This CV file is no longer on the server (uploaded before the move from Supabase).' }); }
   const ext = path.extname(appl.cv_key).toLowerCase();
-  const mime = ext === '.pdf' ? 'application/pdf'
-    : ext === '.docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    : 'application/msword';
+  const mime = CV_TYPES[ext] || 'application/octet-stream';
   res.setHeader('Content-Type', mime);
   res.setHeader('Content-Disposition', `attachment; filename="cv-${appl.name.replace(/[^a-z0-9]/gi, '-')}${ext}"`);
   res.send(buf);

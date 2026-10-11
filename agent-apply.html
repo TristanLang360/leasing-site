@@ -25,8 +25,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/400.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/500.css" />
-<link rel="stylesheet" href="styles.css?v=ed6" />
-<script src="/i18n-public.js?v=fr9"></script>
+<link rel="stylesheet" href="styles.css?v=ed7" />
+<script src="/i18n-public.js?v=fr11"></script>
 <script src="/nav.js?v=2" defer></script>
 <style>
   .agent-hero {
@@ -307,12 +307,12 @@
 
           <div class="form-field">
             <label>CV / Résumé <span style="color:var(--accent)">*</span></label>
-            <input type="file" id="cv-input" name="cv" accept=".pdf,.doc,.docx" required />
+            <input type="file" id="cv-input" name="cv" accept=".pdf,.doc,.docx,.odt,.rtf,.txt,.pages,.jpg,.jpeg,.png,.webp,.heic,.heif,application/pdf,image/*" required />
             <label for="cv-input" class="cv-upload-label" id="cv-upload-label">
               <span class="cv-upload-icon">📄</span>
               <strong>Choose a file</strong>
               <span id="cv-hint">or drag and drop here</span>
-              <span class="form-hint" style="margin:0;">PDF, DOC or DOCX · max 10 MB</span>
+              <span class="form-hint" style="margin:0;">PDF, Word, Pages, OpenDocument or a photo · max 10 MB</span>
             </label>
           </div>
 
@@ -391,6 +391,41 @@
     updateCvLabel(file);
   });
 
+  // Messages in the visitor's language, keyed by the server's error codes.
+  const MSG = {
+    en: {
+      name: 'Please enter your full name.',
+      email: 'Please enter a valid email address.',
+      message: 'Please tell us why you want to join Rentalium.',
+      cv_missing: 'Please upload your CV or résumé.',
+      cv_size: 'Your CV file must be under 10 MB.',
+      cv_type: 'Please upload your CV as a PDF, Word, Pages, OpenDocument, text file or a photo.',
+      cv_upload: 'Your CV could not be uploaded. Please try again.',
+      exists_user: 'An account with that email already exists.',
+      exists_pending: 'An application with that email is already under review.',
+      network: 'Network error. Please check your connection and try again.',
+      generic: 'Something went wrong. Please try again.',
+      submit: 'Submit application →',
+      submitting: 'Submitting…',
+    },
+    fr: {
+      name: 'Veuillez entrer votre nom complet.',
+      email: 'Veuillez entrer une adresse courriel valide.',
+      message: 'Dites-nous pourquoi vous voulez rejoindre Rentalium.',
+      cv_missing: 'Veuillez joindre votre CV.',
+      cv_size: 'Votre CV doit faire moins de 10 Mo.',
+      cv_type: 'Veuillez joindre votre CV en PDF, Word, Pages, OpenDocument, fichier texte ou en photo.',
+      cv_upload: 'Votre CV n’a pas pu être téléversé. Veuillez réessayer.',
+      exists_user: 'Un compte existe déjà avec ce courriel.',
+      exists_pending: 'Une candidature avec ce courriel est déjà en cours d’examen.',
+      network: 'Erreur réseau. Vérifiez votre connexion et réessayez.',
+      generic: 'Une erreur est survenue. Veuillez réessayer.',
+      submit: 'Soumettre la candidature →',
+      submitting: 'Envoi…',
+    },
+  };
+  const msg = (k) => (MSG[window.PUBLIC_LANG === 'fr' ? 'fr' : 'en'][k] || '');
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideError();
@@ -401,14 +436,14 @@
     const message = form.message.value.trim();
     const cvFile = cvInput.files[0];
 
-    if (!name) return showError('Please enter your full name.');
-    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return showError('Please enter a valid email address.');
-    if (!message) return showError('Please tell us why you want to join Rentalium.');
-    if (!cvFile) return showError('Please upload your CV or résumé.');
-    if (cvFile.size > 10 * 1024 * 1024) return showError('CV file must be under 10 MB.');
+    if (!name) return showError(msg('name'));
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return showError(msg('email'));
+    if (!message) return showError(msg('message'));
+    if (!cvFile) return showError(msg('cv_missing'));
+    if (cvFile.size > 10 * 1024 * 1024) return showError(msg('cv_size'));
 
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Submitting…';
+    submitBtn.textContent = msg('submitting');
 
     try {
       const fd = new FormData();
@@ -419,19 +454,19 @@
       fd.append('cv', cvFile);
 
       const res = await fetch('/api/agent-applications', { method: 'POST', body: fd });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        showError(data.error || 'Something went wrong. Please try again.');
+        showError(msg(data.code) || data.error || msg('generic'));
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit application →';
+        submitBtn.textContent = msg('submit');
         return;
       }
       form.style.display = 'none';
       successBox.style.display = 'block';
     } catch {
-      showError('Network error. Please check your connection and try again.');
+      showError(msg('network'));
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Submit application →';
+      submitBtn.textContent = msg('submit');
     }
   });
 </script>

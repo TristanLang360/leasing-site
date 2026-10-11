@@ -1357,7 +1357,12 @@ footer .brand { color: #fff; }
 .perk-icon { font-size: 0 !important; display: block; width: 28px; height: 1px; background: var(--ink); margin-bottom: 22px !important; }
 .apply-form-card { border-radius: 0 !important; box-shadow: none !important; }
 .form-field input, .form-field textarea, .form-field select { border-radius: 0 !important; }
-.form-field label.cv-upload-label { font-size: 0.9rem !important; font-weight: 400 !important; text-transform: none; letter-spacing: 0; }
+.form-field label.cv-upload-label {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+  font-size: 0.9rem !important; font-weight: 400 !important; text-transform: none; letter-spacing: 0;
+}
+.form-field label.cv-upload-label .form-hint { display: block; margin: 4px 0 0 !important; font-size: 0.8rem; }
+.form-field label.cv-upload-label .cv-file-name { font-weight: 500; color: var(--ink); word-break: break-all; }
 .cv-upload-icon { display: none; }
 .cv-upload-label { border-radius: 0 !important; border-width: 1px !important; }
 

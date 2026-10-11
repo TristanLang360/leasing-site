@@ -6,6 +6,30 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
+// Download the CV via fetch so a missing file shows a notice instead of a raw
+// JSON page (CVs uploaded before the Supabase move were not recovered).
+async function downloadCv(url: string) {
+  try {
+    const r = await fetch(url, { credentials: 'same-origin' })
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}))
+      toast.error(j.error || 'CV not available.')
+      return
+    }
+    const blob = await r.blob()
+    const name = /filename="([^"]+)"/.exec(r.headers.get('Content-Disposition') || '')?.[1] || 'cv'
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = name
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000)
+  } catch {
+    toast.error('Download failed. Please try again.')
+  }
+}
+
 interface AgentApplication {
   id: number
   name: string
@@ -110,9 +134,7 @@ export function ApplicationsTab() {
 
             <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col sm:items-end">
               {a.cv_url && (
-                <a href={a.cv_url} target="_blank" rel="noreferrer">
-                  <Button variant="outline" size="sm">⬇ CV</Button>
-                </a>
+                <Button variant="outline" size="sm" onClick={() => downloadCv(a.cv_url!)}>⬇ CV</Button>
               )}
               {a.status === 'pending' && (
                 <>
