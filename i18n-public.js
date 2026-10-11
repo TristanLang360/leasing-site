@@ -275,6 +275,11 @@
     'Repeat password': 'Répétez le mot de passe',
     'Min. 8 characters': 'Min. 8 caractères',
     'Submit application →': 'Soumettre la candidature →',
+    "You don't need a real-estate licence to apply — but you do need to be bilingual, client-focused, and genuinely excited about Montréal's rental market.": "Aucun permis de courtier n'est requis pour postuler — mais vous devez être bilingue, axé sur le client et sincèrement enthousiaste face au marché locatif montréalais.",
+    "Tell us a bit about yourself, your experience with real estate or sales, and why Montréal's rental market interests you…": "Parlez-nous un peu de vous, de votre expérience en immobilier ou en vente, et de ce qui vous attire dans le marché locatif montréalais…",
+    'Choose a file': 'Choisir un fichier',
+    'or drag and drop here': 'ou glissez-déposez ici',
+    'PDF, DOC or DOCX · max 10 MB': 'PDF, DOC ou DOCX · 10 Mo max',
     'Submitting…': 'Envoi en cours…',
     'Application received!': 'Candidature reçue !',
     'Back to homepage': 'Retour à l’accueil',
@@ -334,7 +339,7 @@
       .replace(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s*(\d{4})\b/g, function (m, mo, d, y) { return d + ' ' + MONTHS[mo] + ' ' + y; })
       .replace(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/g, function (m) { return MONTHS[m]; })
       .replace(/\bAvailable\b/g, 'Disponible')
-      .replace(/\bNow\b/g, 'Maintenant')
+      .replace(/\bNow\b/g, 'maintenant')
       .replace(/\bYes\b/g, 'Oui')
       .replace(/\bNo\b/g, 'Non');
   }
