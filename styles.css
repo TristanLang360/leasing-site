@@ -1518,7 +1518,7 @@ footer .brand { font-size: 1.05rem; }
 .listing-noimg {
   position: relative; display: flex; align-items: flex-end; justify-content: center;
   aspect-ratio: 16 / 9; max-height: 560px; width: 100%; padding: 28px;
-  background: #121214 url('/placeholder-unit.svg') center 38% / cover no-repeat;
+  background: radial-gradient(600px 300px at 50% 40%, rgba(201,169,110,0.06), transparent 70%), #121214 url('/placeholder-unit.svg') center / contain no-repeat;
   border: 1px solid var(--line); border-radius: 0;
 }
 .listing-noimg span {
