@@ -1194,13 +1194,14 @@ ${canonical ? `<meta property="og:url" content="${escHtml(canonical)}" />` : ''}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=noir1" />
+<link rel="stylesheet" href="/styles.css?v=noir2" />
 <script src="/i18n-public.js?v=fr5"></script>
+<script src="/nav.js?v=1" defer></script>
 ${head}
 </head>
 <body>
 <header class="nav"><div class="container nav-inner">
-  <a href="/index.html" class="brand"><span class="brand-mark"></span> Rentalium</a>
+  <a href="/index.html" class="brand">Rentalium</a>
   <nav class="nav-links">
     <a href="/index.html#services">Services</a>
     <a href="/index.html#neighbourhoods">Neighbourhoods</a>
@@ -1213,7 +1214,7 @@ ${head}
 </div></header>
 ${body}
 <footer><div class="container footer-grid">
-  <div class="brand"><span class="brand-mark"></span> Rentalium</div>
+  <div class="brand">Rentalium</div>
   <small>Rentalium &middot; Leasing agency in Montréal, QC &middot;
   <a href="mailto:hello@rentalium.ca" style="color:inherit;">hello@rentalium.ca</a><br/>
   &copy; 2026 Rentalium. All rights reserved. · <a href="/admin" style="color:inherit;">Staff</a></small>
